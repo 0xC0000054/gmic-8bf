@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GmicPlugin", "GmicPlugin.vcxproj", "{DD55B319-CD8F-4EC7-9F99-154100576E07}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E7D26D3B-F9F4-44D5-8C24-072659C12817}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+		GmicPlugin.sln.licenseheader = GmicPlugin.sln.licenseheader
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DD55B319-CD8F-4EC7-9F99-154100576E07}.Debug|x64.ActiveCfg = Debug|x64
+		{DD55B319-CD8F-4EC7-9F99-154100576E07}.Debug|x64.Build.0 = Debug|x64
+		{DD55B319-CD8F-4EC7-9F99-154100576E07}.Debug|x86.ActiveCfg = Debug|Win32
+		{DD55B319-CD8F-4EC7-9F99-154100576E07}.Debug|x86.Build.0 = Debug|Win32
+		{DD55B319-CD8F-4EC7-9F99-154100576E07}.Release|x64.ActiveCfg = Release|x64
+		{DD55B319-CD8F-4EC7-9F99-154100576E07}.Release|x64.Build.0 = Release|x64
+		{DD55B319-CD8F-4EC7-9F99-154100576E07}.Release|x86.ActiveCfg = Release|Win32
+		{DD55B319-CD8F-4EC7-9F99-154100576E07}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CD76394A-E65E-4691-A30E-D035214B7F4C}
+	EndGlobalSection
+EndGlobal
