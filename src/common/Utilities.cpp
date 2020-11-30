@@ -320,11 +320,7 @@ namespace
         {
             result = false;
         }
-        else if (layersDescriptor->minVersion != ReadImageDocumentDescFirstVersion)
-        {
-            result = false;
-        }
-        else if (layersDescriptor->maxVersion < RequiredReadImageDocumentDescVersion)
+        else if (layersDescriptor->minVersion != ReadLayerDescFirstVersion)
         {
             result = false;
         }
