@@ -2,6 +2,8 @@
 
 A filter plug-in for Adobe® Photoshop®* and other compatible software that interacts with [G'MIC-Qt](https://github.com/c-koi/gmic-qt).
 
+The latest version can be downloaded from the [Releases](https://github.com/0xC0000054/gmic-8bf/releases) tab.
+
 ## Installation
 
 1. Close your host application.
