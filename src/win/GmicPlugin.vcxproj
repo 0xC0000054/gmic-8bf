@@ -214,7 +214,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\common\version.h" />
     <ClInclude Include="FileUtilWin.h" />
     <ClInclude Include="FolderBrowserWin.h" />
-    <ClInclude Include="PngReader.h" />
+    <ClInclude Include="..\common\PngReader.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -233,7 +233,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FileUtilWin.cpp" />
     <ClCompile Include="FolderBrowserWin.cpp" />
-    <ClCompile Include="PngReader.cpp" />
+    <ClCompile Include="..\common\PngReader.cpp" />
     <ClCompile Include="UIWin.cpp" />
   </ItemGroup>
   <ItemGroup>

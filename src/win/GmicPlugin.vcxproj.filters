@@ -48,13 +48,13 @@
     <ClInclude Include="..\common\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PngReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\common\FolderBrowser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FolderBrowserWin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\PngReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -95,13 +95,13 @@
     <ClCompile Include="..\common\Write.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PngReader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\FolderBrowser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FolderBrowserWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\PngReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
