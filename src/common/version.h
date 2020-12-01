@@ -10,5 +10,5 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#define VI_VERSION       1,0,1,0
-#define VI_VERSION_STR  "1.0.1.0"
+#define VI_VERSION       1,0,2,0
+#define VI_VERSION_STR  "1.0.2.0"
