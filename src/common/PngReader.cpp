@@ -186,7 +186,7 @@ namespace
                 if (interlaceType == PNG_INTERLACE_NONE)
                 {
                     // A non-interlaced image can be read in smaller chunks.
-                    const int32 tileHeight = filterRecord->inTileHeight != 0 ? filterRecord->inTileHeight : 256;
+                    const int32 tileHeight = filterRecord->outTileHeight != 0 ? filterRecord->outTileHeight : 256;
                     const int32 maxChunkHeight = static_cast<int32>(std::min(static_cast<png_uint_32>(tileHeight), height));
 
                     BufferID pngImageRows;
