@@ -180,7 +180,7 @@ namespace
                 static constexpr std::array<float, 256> premultipliedAlphaTable = BuildPremultipliedAlphaLookupTable();
 
                 const int32 pngColumnBytes = colorType == PNG_COLOR_TYPE_RGB_ALPHA ? 4 : 3;
-                const int32 pngRowBytes = maxWidth * pngColumnBytes;
+                const int32 pngRowBytes = width * pngColumnBytes;
                 const bool premultiplyAlpha = colorType == PNG_COLOR_TYPE_RGB_ALPHA && !includeTransparency;
 
                 if (interlaceType == PNG_INTERLACE_NONE)
