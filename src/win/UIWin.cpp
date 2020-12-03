@@ -144,3 +144,20 @@ OSErr DoAbout(const AboutRecord* about) noexcept
 
     return noErr;
 }
+
+OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode)
+{
+    PlatformData* platformData = static_cast<PlatformData*>(filterRecord->platformData);
+
+    HWND parent = platformData != nullptr ? reinterpret_cast<HWND>(platformData->hwnd) : nullptr;
+
+    if (MessageBoxA(parent, message, "G'MIC-Qt filter", MB_OK | MB_ICONERROR) == IDOK)
+    {
+        // Any positive number is a plug-in handled error message.
+        return 1;
+    }
+    else
+    {
+        return fallbackErrorCode;
+    }
+}
