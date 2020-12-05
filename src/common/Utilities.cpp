@@ -466,6 +466,7 @@ namespace
 #if _DEBUG
 void DebugOut(const char* fmt, ...) noexcept
 {
+#if __PIWin__
     va_list argp;
     char dbg_out[4096] = {};
 
@@ -475,6 +476,9 @@ void DebugOut(const char* fmt, ...) noexcept
 
     OutputDebugStringA(dbg_out);
     OutputDebugStringA("\n");
+#else
+#error "Debug output has not been configured for this platform."
+#endif // __PIWin__
 }
 
 std::string FourCCToString(const uint32 fourCC)
