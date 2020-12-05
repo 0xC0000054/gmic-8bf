@@ -140,7 +140,20 @@ namespace
         int32 height = imageSize.v;
 
         constexpr int bitDepth = 8;
-        int colorType = hasTransparency ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB;
+        int colorType = 0;
+
+        switch (filterRecord->imageMode)
+        {
+        case plugInModeGrayScale:
+            colorType = hasTransparency ? PNG_COLOR_TYPE_GRAY_ALPHA : PNG_COLOR_TYPE_GRAY;
+            break;
+        case plugInModeRGBColor:
+            colorType = hasTransparency ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB;
+            break;
+        default:
+            png_destroy_write_struct(&pngPtr, &infoPtr);
+            return filterBadMode;
+        }
 
         png_set_IHDR(
             pngPtr,
@@ -159,7 +172,18 @@ namespace
 
         if (err == noErr)
         {
-            filterRecord->inColumnBytes = hasTransparency ? 4 : 3;
+            switch (filterRecord->imageMode)
+            {
+            case plugInModeGrayScale:
+                filterRecord->inColumnBytes = hasTransparency ? 2 : 1;
+                break;
+            case plugInModeRGBColor:
+                filterRecord->inColumnBytes = hasTransparency ? 4 : 3;
+                break;
+            default:
+                png_destroy_write_struct(&pngPtr, &infoPtr);
+                return filterBadMode;
+            }
             filterRecord->inPlaneBytes = 1;
             filterRecord->inputRate = int2fixed(1);
             filterRecord->inRowBytes = width * filterRecord->inColumnBytes;
@@ -289,7 +313,20 @@ namespace
         int32 height = imageSize.v;
 
         constexpr int bitDepth = 8;
-        int colorType = hasTransparency ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB;
+        int colorType = 0;
+
+        switch (filterRecord->imageMode)
+        {
+        case plugInModeGrayScale:
+            colorType = hasTransparency ? PNG_COLOR_TYPE_GRAY_ALPHA : PNG_COLOR_TYPE_GRAY;
+            break;
+        case plugInModeRGBColor:
+            colorType = hasTransparency ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB;
+            break;
+        default:
+            png_destroy_write_struct(&pngPtr, &infoPtr);
+            return filterBadMode;
+        }
 
         png_set_IHDR(
             pngPtr,
@@ -308,7 +345,18 @@ namespace
 
         if (err == noErr)
         {
-            filterRecord->inColumnBytes = hasTransparency ? 4 : 3;
+            switch (filterRecord->imageMode)
+            {
+            case plugInModeGrayScale:
+                filterRecord->inColumnBytes = hasTransparency ? 2 : 1;
+                break;
+            case plugInModeRGBColor:
+                filterRecord->inColumnBytes = hasTransparency ? 4 : 3;
+                break;
+            default:
+                png_destroy_write_struct(&pngPtr, &infoPtr);
+                return filterBadMode;
+            }
             filterRecord->inPlaneBytes = 1;
             filterRecord->inputRate = int2fixed(1);
             filterRecord->inRowBytes = width * filterRecord->inColumnBytes;
@@ -352,10 +400,22 @@ namespace
 
                         ReadChannelDesc* imageChannels[4] = { nullptr, nullptr, nullptr, nullptr };
 
-                        imageChannels[0] = layerDescriptor->compositeChannelsList;
-                        imageChannels[1] = imageChannels[0]->next;
-                        imageChannels[2] = imageChannels[1]->next;
-                        imageChannels[3] = layerDescriptor->transparency;
+                        switch (filterRecord->imageMode)
+                        {
+                        case plugInModeGrayScale:
+                            imageChannels[0] = layerDescriptor->compositeChannelsList;
+                            imageChannels[1] = layerDescriptor->transparency;
+                            break;
+                        case plugInModeRGBColor:
+                            imageChannels[0] = layerDescriptor->compositeChannelsList;
+                            imageChannels[1] = imageChannels[0]->next;
+                            imageChannels[2] = imageChannels[1]->next;
+                            imageChannels[3] = layerDescriptor->transparency;
+                            break;
+                        default:
+                            png_destroy_write_struct(&pngPtr, &infoPtr);
+                            return filterBadMode;
+                        }
 
                         for (row = 0; row < height; row += maxChunkHeight)
                         {

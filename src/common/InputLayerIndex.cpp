@@ -21,26 +21,28 @@ namespace
 {
     struct IndexFileHeader
     {
-        IndexFileHeader(int32 numberOfLayers, int32 activeLayer)
+        IndexFileHeader(int32 numberOfLayers, int32 activeLayer, bool isGrayScale)
         {
             // G8IX = GMIC 8BF index
             signature[0] = 'G';
             signature[1] = '8';
             signature[2] = 'I';
             signature[3] = 'X';
-            version = 1;
+            version = 2;
             layerCount = numberOfLayers;
             activeLayerIndex = activeLayer;
+            grayScale = isGrayScale ? 1 : 0;
         }
 
         char signature[4];
         boost::endian::big_int32_t version;
         boost::endian::big_int32_t layerCount;
         boost::endian::big_int32_t activeLayerIndex;
+        boost::endian::big_int32_t grayScale;
     };
 }
 
-InputLayerIndex::InputLayerIndex() : inputFiles(), activeLayerIndex(0)
+InputLayerIndex::InputLayerIndex(int16 imageMode) : inputFiles(), activeLayerIndex(0), grayScale(imageMode == plugInModeGrayScale)
 {
 }
 
@@ -98,7 +100,7 @@ OSErr InputLayerIndex::Write(const boost::filesystem::path& path)
 
         if (err == noErr)
         {
-            IndexFileHeader header(static_cast<int32>(inputFiles.size()), activeLayerIndex);
+            IndexFileHeader header(static_cast<int32>(inputFiles.size()), activeLayerIndex, grayScale);
 
             err = WriteFile(file.get(), &header, sizeof(header));
 

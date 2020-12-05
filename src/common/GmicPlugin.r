@@ -37,14 +37,14 @@ resource 'PiPL' ( 16000, "GmicPlugin", purgeable )
 
 		SupportedModes
 		{
-			noBitmap, noGrayScale,
+			noBitmap, doesSupportGrayScale,
 			noIndexedColor, doesSupportRGBColor,
 			noCMYKColor, noHSLColor,
 			noHSBColor, noMultichannel,
 			noDuotone, noLABColor
 		},
 
-		EnableInfo { "in (PSHOP_ImageMode, RGBMode)" },
+		EnableInfo { "in (PSHOP_ImageMode, RGBMode, GrayScaleMode)" },
 
 		/* Limit large documents to 100,000 x 100,000 pixels. */
 		PlugInMaxSize { 100000, 100000 },

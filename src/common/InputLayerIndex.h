@@ -22,7 +22,7 @@
 class InputLayerIndex
 {
 public:
-    InputLayerIndex();
+    InputLayerIndex(int16 imageMode);
 
     ~InputLayerIndex();
 
@@ -41,5 +41,6 @@ private:
 
     std::vector<InputLayerInfo> inputFiles;
     int32 activeLayerIndex;
+    bool grayScale;
 };
 

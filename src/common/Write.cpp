@@ -31,7 +31,7 @@ OSErr WriteGmicFiles(
 
     try
     {
-        std::unique_ptr<InputLayerIndex> inputLayerIndex = std::make_unique<InputLayerIndex>();
+        std::unique_ptr<InputLayerIndex> inputLayerIndex = std::make_unique<InputLayerIndex>(filterRecord->imageMode);
 
 #if PSSDK_HAS_LAYER_SUPPORT
         int32 targetLayerIndex = 0;

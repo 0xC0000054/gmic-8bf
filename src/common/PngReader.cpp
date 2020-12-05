@@ -169,7 +169,18 @@ namespace
             const int32 maxWidth = static_cast<int32>(std::min(static_cast<png_uint_32>(imageSize.h), width));
             const int32 maxHeight = static_cast<int32>(std::min(static_cast<png_uint_32>(imageSize.v), height));;
 
-            filterRecord->outColumnBytes = includeTransparency ? 4 : 3;
+            switch (filterRecord->imageMode)
+            {
+            case plugInModeGrayScale:
+                filterRecord->outColumnBytes = includeTransparency ? 2 : 1;
+                break;
+            case plugInModeRGBColor:
+                filterRecord->outColumnBytes = includeTransparency ? 4 : 3;
+                break;
+            default:
+                png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+                return filterBadMode;
+            }
             filterRecord->outPlaneBytes = 1;
             filterRecord->outRowBytes = maxWidth * filterRecord->outColumnBytes;
             filterRecord->outLoPlane = 0;
@@ -262,14 +273,29 @@ namespace
                                             {
                                                 float alpha = premultipliedAlphaTable[pngPixel[3]];
 
-                                                pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
-                                                pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
-                                                pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
+                                                switch (filterRecord->outColumnBytes)
+                                                {
+                                                case 1:
+                                                    pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                                                    break;
+                                                case 3:
+                                                    pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                                                    pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
+                                                    pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
+                                                    break;
+                                                }
                                             }
                                             else
                                             {
                                                 switch (filterRecord->outColumnBytes)
                                                 {
+                                                case 1:
+                                                    pixel[0] = pngPixel[0];
+                                                    break;
+                                                case 2:
+                                                    pixel[0] = pngPixel[0];
+                                                    pixel[1] = pngPixel[3];
+                                                    break;
                                                 case 3:
                                                     pixel[0] = pngPixel[0];
                                                     pixel[1] = pngPixel[1];
@@ -362,14 +388,29 @@ namespace
                                                 {
                                                     float alpha = premultipliedAlphaTable[pngPixel[3]];
 
-                                                    pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
-                                                    pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
-                                                    pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
+                                                    switch (filterRecord->outColumnBytes)
+                                                    {
+                                                    case 1:
+                                                        pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                                                        break;
+                                                    case 3:
+                                                        pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                                                        pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
+                                                        pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
+                                                        break;
+                                                    }
                                                 }
                                                 else
                                                 {
                                                     switch (filterRecord->outColumnBytes)
                                                     {
+                                                    case 1:
+                                                        pixel[0] = pngPixel[0];
+                                                        break;
+                                                    case 2:
+                                                        pixel[0] = pngPixel[0];
+                                                        pixel[1] = pngPixel[3];
+                                                        break;
                                                     case 3:
                                                         pixel[0] = pngPixel[0];
                                                         pixel[1] = pngPixel[1];
