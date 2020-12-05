@@ -69,7 +69,7 @@ namespace
         bool isValid;
     };
 
-    OSErr GetSessionRootDirectory(boost::filesystem::path& path)
+    OSErr GetSessionDirectory(boost::filesystem::path& path)
     {
 
         OSErr err = noErr;
@@ -139,7 +139,7 @@ OSErr GetInputDirectory(boost::filesystem::path& path)
 
     try
     {
-        err = GetSessionRootDirectory(path);
+        err = GetSessionDirectory(path);
     }
     catch (const std::bad_alloc&)
     {
@@ -159,7 +159,7 @@ OSErr GetOutputDirectory(boost::filesystem::path& path)
 
     try
     {
-        err = GetSessionRootDirectory(path);
+        err = GetSessionDirectory(path);
         if (err == noErr)
         {
             path /= "out";
