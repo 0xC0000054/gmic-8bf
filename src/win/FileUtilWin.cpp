@@ -83,7 +83,7 @@ private:
     wil::unique_hfile hFile;
 };
 
-boost::filesystem::path GetSessionRootDirectoryNative()
+boost::filesystem::path GetSessionDirectoriesRootNative()
 {
     boost::filesystem::path path;
 
@@ -95,9 +95,6 @@ boost::filesystem::path GetSessionRootDirectoryNative()
         {
             path = appDataPath.get();
             path /= L"Gmic8bfPlugin";
-            path /= boost::filesystem::unique_path();
-
-            boost::filesystem::create_directories(path);
         }
     }
     catch (...)

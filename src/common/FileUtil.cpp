@@ -25,8 +25,19 @@ namespace
     {
     public:
 
-        TempDirectory(boost::filesystem::path dir) : path(dir), isValid(!dir.empty())
+        TempDirectory(boost::filesystem::path sessionDirectoriesRoot) : path(), isValid(false)
         {
+            if (sessionDirectoriesRoot.empty())
+            {
+                throw std::runtime_error("The session directories root path is empty.");
+            }
+
+            path = sessionDirectoriesRoot;
+            path /= boost::filesystem::unique_path();
+
+            boost::filesystem::create_directories(path);
+
+            isValid = true;
         }
 
         TempDirectory(const TempDirectory&) = delete;
@@ -65,7 +76,7 @@ namespace
 
         try
         {
-            static std::unique_ptr<TempDirectory> sessionDir = std::make_unique<TempDirectory>(GetSessionRootDirectoryNative());
+            static std::unique_ptr<TempDirectory> sessionDir = std::make_unique<TempDirectory>(GetSessionDirectoriesRootNative());
 
             if (sessionDir->IsValid())
             {
@@ -84,7 +95,7 @@ namespace
         {
             err = memFullErr;
         }
-        catch (const boost::filesystem::filesystem_error&)
+        catch (...)
         {
             err = ioErr;
         }
