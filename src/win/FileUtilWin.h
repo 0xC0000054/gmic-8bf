@@ -12,6 +12,9 @@
 
 #pragma once
 
+#ifndef FILEUTILWIN_H
+#define FILEUTILWIN_H
+
 #include <boost/filesystem.hpp>
 
 constexpr inline const char ExecutableName[] = "gmic_8bf_qt.exe";
@@ -28,3 +31,4 @@ OSErr SetFilePositionNative(const FileHandle* fileHandle, int16 posMode, int64 p
 
 OSErr WriteFileNative(const FileHandle* fileHandle, const void* data, size_t dataSize);
 
+#endif // !FILEUTILWIN_H

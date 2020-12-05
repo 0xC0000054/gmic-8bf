@@ -12,6 +12,9 @@
 
 #pragma once
 
+#ifndef GMICPLUGIN_H
+#define GMICPLUGIN_H
+
 // Suppress C4121: 'FilterRecord': alignment of a member was sensitive to packing
 #pragma warning(push)
 #pragma warning(disable: 4121)
@@ -88,3 +91,5 @@ std::string FourCCToString(const uint32 fourCC);
 #endif // DEBUG_BUILD
 
 #define PrintFunctionName() DebugOut("%s", __FUNCTION__)
+
+#endif // !GMICPLUGIN_H

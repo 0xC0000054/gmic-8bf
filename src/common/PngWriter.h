@@ -12,6 +12,9 @@
 
 #pragma once
 
+#ifndef PNGWRITER_H
+#define PNGWRITER_H
+
 #include "GmicPlugin.h"
 #include "InputLayerIndex.h"
 #include <boost/filesystem.hpp>
@@ -26,3 +29,4 @@ OSErr SaveAllLayers(
     FilterRecordPtr filterRecord);
 #endif // PSSDK_HAS_LAYER_SUPPORT
 
+#endif // !PNGWRITER_H

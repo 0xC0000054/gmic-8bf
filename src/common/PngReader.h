@@ -12,6 +12,11 @@
 
 #pragma once
 
+#ifndef PNGREADER_H
+#define PNGREADER_H
+
 #include "GmicPlugin.h"
 
 OSErr LoadPngImage(const boost::filesystem::path& path, FilterRecord* filterRecord);
+
+#endif // !PNGREADER_H

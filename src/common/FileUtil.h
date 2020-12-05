@@ -12,6 +12,9 @@
 
 #pragma once
 
+#ifndef FILEUTIL_H
+#define FILEUTIL_H
+
 #include <boost/filesystem.hpp>
 #include <new>
 
@@ -59,3 +62,4 @@ OSErr SetFilePosition(const FileHandle* fileHandle, int16 posMode, int64 posOffs
 
 OSErr WriteFile(const FileHandle* fileHandle, const void* data, size_t dataSize);
 
+#endif // !FILEUTIL_H

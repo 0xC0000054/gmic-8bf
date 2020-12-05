@@ -12,6 +12,11 @@
 
 #pragma once
 
+#ifndef FOLDERBROWSER_H
+#define FOLDERBROWSER_H
+
 #include "GmicPlugin.h"
 
 OSErr GetGmicOutputFolder(FilterRecordPtr filterRecord, boost::filesystem::path& outputFolderPath);
+
+#endif // !FOLDERBROWSER_H

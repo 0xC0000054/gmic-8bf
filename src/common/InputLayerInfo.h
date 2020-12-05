@@ -12,6 +12,9 @@
 
 #pragma once
 
+#ifndef INPUTLAYERINFO_H
+#define INPUTLAYERINFO_H
+
 #include "GmicPlugin.h"
 #include "FileUtil.h"
 #include <string>
@@ -39,3 +42,4 @@ private:
     std::string utf8LayerName;
 };
 
+#endif // !INPUTLAYERINFO_H

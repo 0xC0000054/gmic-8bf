@@ -12,6 +12,9 @@
 
 #pragma once
 
+#ifndef INPUTLAYERINDEX_H
+#define INPUTLAYERINDEX_H
+
 #include "GmicPlugin.h"
 #include "FileUtil.h"
 #include "InputLayerInfo.h"
@@ -44,3 +47,4 @@ private:
     bool grayScale;
 };
 
+#endif // !INPUTLAYERINDEX_H

@@ -12,8 +12,13 @@
 
 #pragma once
 
+#ifndef PNGWARNINGHANDLER_H
+#define PNGWARNINGHANDLER_H
+
 #include <png.h>
 
 #if DEBUG_BUILD
 void PngWarningHandler(png_structp png, png_const_charp errorDescription);
 #endif // DEBUG_BUILD
+
+#endif // !PNGWARNINGHANDLER_H
