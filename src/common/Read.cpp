@@ -15,6 +15,7 @@
 #include "FolderBrowser.h"
 #include "PngReader.h"
 #include "resource.h"
+#include <algorithm>
 #include <memory>
 #include <vector>
 #include <wil\result.h>
@@ -32,6 +33,12 @@ namespace
             for (auto& file : boost::filesystem::directory_iterator(outputDir))
             {
                 filePaths.push_back(file.path());
+            }
+
+            if (filePaths.size() > 1)
+            {
+                // Sort the returned file names.
+                std::sort(filePaths.begin(), filePaths.end());
             }
         }
         catch (const std::bad_alloc&)
