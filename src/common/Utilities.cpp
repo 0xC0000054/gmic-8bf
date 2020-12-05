@@ -65,7 +65,7 @@ namespace
     bool HostBufferProcsAvailable(const FilterRecord* filterRecord) noexcept
     {
         const BufferProcs* procs = filterRecord->bufferProcs;
-#if _DEBUG
+#if DEBUG_BUILD
         if (procs != nullptr)
         {
             DebugOut("bufferProcsVersion=%d numBufferProcs=%d allocateProc=%p lockProc=%p unlockProc=%p freeProc=%p spaceProc=%p",
@@ -81,7 +81,7 @@ namespace
         {
             DebugOut("BufferProcs == nullptr");
         }
-#endif // _DEBUG
+#endif // DEBUG_BUILD
 
 
         bool available = true;		// assume docInfo are available
@@ -152,7 +152,7 @@ namespace
     bool HostHandleProcsAvailable(const FilterRecord* filterRecord) noexcept
     {
         const HandleProcs* procs = filterRecord->handleProcs;
-#if _DEBUG
+#if DEBUG_BUILD
         if (procs != nullptr)
         {
             DebugOut("handleProcsVersion=%d numHandleProcs=%d newProc=%p disposeProc=%p getSizeProc=%p setSizeProc=%p lockProc=%p unlockProc=%p",
@@ -169,7 +169,7 @@ namespace
         {
             DebugOut("HandleProcs == nullptr");
         }
-#endif // _DEBUG
+#endif // DEBUG_BUILD
 
         Boolean available = true;		// assume docInfo are available
 
@@ -234,7 +234,7 @@ namespace
     {
         ChannelPortProcs* procs = filterRecord->channelPortProcs;
 
-#if _DEBUG
+#if DEBUG_BUILD
         if (procs != nullptr)
         {
             DebugOut("channelPortProcsVersion=%d numChannelPortProcs=%d readPixelsProc=%p readPortForWritePortProc=%p writeBasePixelsProc=%p",
@@ -248,7 +248,7 @@ namespace
         {
             DebugOut("ChannelPortProcs == nullptr");
         }
-#endif // _DEBUG
+#endif // DEBUG_BUILD
 
         bool available = true;		// assume docInfo are available
 
@@ -301,7 +301,7 @@ namespace
 
     bool ReadLayerDescSupported(const ReadLayerDesc* layersDescriptor)
     {
-#if _DEBUG
+#if DEBUG_BUILD
         if (layersDescriptor != nullptr)
         {
             DebugOut("ReadLayerDesc: minVersion=%d maxVersion=%d",
@@ -312,7 +312,7 @@ namespace
         {
             DebugOut("ReadLayerDesc == nullptr");
         }
-#endif // _DEBUG
+#endif // DEBUG_BUILD
 
         bool result = true;
 
@@ -354,7 +354,7 @@ namespace
     bool ReadImageDocumentSupportsLayers(const FilterRecord* filterRecord)
     {
         const ReadImageDocumentDesc* docInfo = filterRecord->documentInfo;
-#if _DEBUG
+#if DEBUG_BUILD
         if (docInfo != nullptr)
         {
             DebugOut("ReadImageDocumentDesc: minVersion=%d maxVersion=%d",
@@ -365,7 +365,7 @@ namespace
         {
             DebugOut("ReadImageDocumentDesc == nullptr");
         }
-#endif // _DEBUG
+#endif // DEBUG_BUILD
 
         bool result = true;
 
@@ -413,7 +413,7 @@ namespace
     bool HostPropertyProcsAvailable(const FilterRecord* filterRecord) noexcept
     {
         const PropertyProcs* procs = filterRecord->propertyProcs;
-#if _DEBUG
+#if DEBUG_BUILD
         if (procs != nullptr)
         {
             DebugOut("propertyProcsVersion=%d numPropertyProcs=%d getPropertyProc=%p setPropertyProc=%p",
@@ -426,7 +426,7 @@ namespace
         {
             DebugOut("PropertyProcs == nullptr");
         }
-#endif // _DEBUG
+#endif // DEBUG_BUILD
 
         // Affinity Photo populates all the callback pointers, but sets the propertyProcsVersion and numPropertyProcs fields to zero.
         const bool isAffinityPhoto = IsAffinityPhoto(filterRecord);
@@ -463,7 +463,7 @@ namespace
 }
 
 
-#if _DEBUG
+#if DEBUG_BUILD
 void DebugOut(const char* fmt, ...) noexcept
 {
 #if __PIWin__
@@ -494,7 +494,7 @@ std::string FourCCToString(const uint32 fourCC)
 
     return value;
 }
-#endif // _DEBUG
+#endif // DEBUG_BUILD
 
 bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName)
 {

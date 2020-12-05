@@ -13,11 +13,11 @@
 #include "GmicPlugin.h"
 #include "PngWarningHandler.h"
 
-#if _DEBUG
+#if DEBUG_BUILD
 void PngWarningHandler(png_structp png, png_const_charp errorDescription)
 {
     (void)png;
     DebugOut("LibPng warning: %s", errorDescription);
 }
-#endif // _DEBUG
+#endif // DEBUG_BUILD
 

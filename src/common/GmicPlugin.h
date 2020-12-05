@@ -45,6 +45,12 @@ struct FilterParameters
 #define PSSDK_HAS_LAYER_SUPPORT 0
 #endif
 
+#if defined(DEBUG) || defined(_DEBUG)
+#define DEBUG_BUILD 1
+#else
+#define DEBUG_BUILD 0
+#endif
+
 FilterParameters* LockParameters(FilterRecordPtr filterRecord);
 void UnlockParameters(FilterRecordPtr filterRecord);
 
@@ -73,12 +79,12 @@ bool TryGetTargetLayerIndex(const FilterRecord* filterRecord, int32& targetLayer
 #endif // PSSDK_HAS_LAYER_SUPPORT
 
 
-#if _DEBUG
+#if DEBUG_BUILD
 void DebugOut(const char* fmt, ...) noexcept;
 std::string FourCCToString(const uint32 fourCC);
 #else
 #define DebugOut(fmt, ...)
 #define FourCCToString(fourCC)
-#endif // _DEBUG
+#endif // DEBUG_BUILD
 
 #define PrintFunctionName() DebugOut("%s", __FUNCTION__)

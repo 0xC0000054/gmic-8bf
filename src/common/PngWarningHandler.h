@@ -14,6 +14,6 @@
 
 #include <png.h>
 
-#if _DEBUG
+#if DEBUG_BUILD
 void PngWarningHandler(png_structp png, png_const_charp errorDescription);
-#endif // _DEBUG
+#endif // DEBUG_BUILD
