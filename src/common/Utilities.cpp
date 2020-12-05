@@ -643,8 +643,8 @@ bool DocumentHasMultipleLayers(const FilterRecord* filterRecord)
 
         if (filterRecord->propertyProcs->getPropertyProc(kPhotoshopSignature, propNumberOfLayers, 0, &numberOfLayers, nullptr) == noErr)
         {
-            // Photoshop considers a document with only a single layer to have zero layers.
-            return numberOfLayers >= 1;
+            // Photoshop considers a document with only a single "Background" layer as having zero layers.
+            return numberOfLayers >= 2;
         }
     }
 
