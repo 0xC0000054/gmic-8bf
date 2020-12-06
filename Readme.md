@@ -35,7 +35,7 @@ See [License.txt](License.txt) for more information.
 ## Prerequisites
 
 * Visual Studio 2019
-* The boost::filesystem, boost::endian and LibPNG packages from [VCPkg](https://github.com/microsoft/vcpkg).
+* The `boost-filesystem`, `boost-endian` and `LibPNG` packages from [VCPkg](https://github.com/microsoft/vcpkg).
 * The Adobe Photoshop CS6 SDK, see the read-me in the ext folder for more details.
 
 ## Building the plugin
