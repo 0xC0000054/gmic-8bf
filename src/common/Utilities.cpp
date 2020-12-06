@@ -14,6 +14,7 @@
 #include <codecvt>
 #include <locale>
 #include <string>
+#include <boost/predef.h>
 
 namespace
 {
@@ -487,10 +488,19 @@ std::string FourCCToString(const uint32 fourCC)
 
     const char* sigPtr = reinterpret_cast<const char*>(&fourCC);
 
+#if BOOST_ENDIAN_BIG_BYTE
+    value.insert(0, 1, sigPtr[0]);
+    value.insert(1, 1, sigPtr[1]);
+    value.insert(2, 1, sigPtr[2]);
+    value.insert(3, 1, sigPtr[3]);
+#elif BOOST_ENDIAN_LITTLE_BYTE
     value.insert(0, 1, sigPtr[3]);
     value.insert(1, 1, sigPtr[2]);
     value.insert(2, 1, sigPtr[1]);
     value.insert(3, 1, sigPtr[0]);
+#else
+#error "Unknown endianness on this platform."
+#endif
 
     return value;
 }
