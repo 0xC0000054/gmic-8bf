@@ -69,7 +69,7 @@ OSErr WriteGmicFiles(
 bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName);
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
 Fixed int2fixed(int value);
-VPoint GetImageSize(FilterRecordPtr filterRecord);
+VPoint GetImageSize(const FilterRecordPtr filterRecord);
 void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
 void SetOutputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
 void SetMaskRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);

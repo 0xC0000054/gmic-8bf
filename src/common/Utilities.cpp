@@ -561,7 +561,7 @@ Fixed int2fixed(int value)
     return value << 16;
 }
 
-VPoint GetImageSize(FilterRecordPtr filterRecord)
+VPoint GetImageSize(const FilterRecordPtr filterRecord)
 {
     if (filterRecord->bigDocumentData != nullptr && filterRecord->bigDocumentData->PluginUsing32BitCoordinates)
     {
