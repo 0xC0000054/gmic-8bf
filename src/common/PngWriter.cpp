@@ -414,60 +414,64 @@ namespace
                             break;
                         default:
                             png_destroy_write_struct(&pngPtr, &infoPtr);
-                            return filterBadMode;
-                        }
-
-                        for (row = 0; row < height; row += maxChunkHeight)
-                        {
-                            VRect writeRect{};
-                            writeRect.top = row;
-                            writeRect.left = 0;
-                            writeRect.bottom = std::min(row + maxChunkHeight, imageSize.v);
-                            writeRect.right = imageSize.h;
-
-                            PSScaling scaling{};
-                            scaling.sourceRect = scaling.destinationRect = writeRect;
-
-                            for (int32 i = 0; i < filterRecord->inColumnBytes; i++)
-                            {
-                                VRect wroteRect;
-
-                                dest.bitOffset = i * 8;
-
-                                err = filterRecord->channelPortProcs->readPixelsProc(imageChannels[i]->port, &scaling, &writeRect, &dest, &wroteRect);
-
-                                if (err != noErr)
-                                {
-                                    goto readPixelsError;
-                                }
-
-                                if (wroteRect.top != writeRect.top ||
-                                    wroteRect.left != writeRect.left ||
-                                    wroteRect.bottom != writeRect.bottom ||
-                                    wroteRect.right != writeRect.right)
-                                {
-                                    err = readErr;
-                                    goto readPixelsError;
-                                }
-                            }
-
-                            const png_uint_32 rowCount = static_cast<png_uint_32>(writeRect.bottom - writeRect.top);
-
-                            png_write_rows(pngPtr, rowPointers, rowCount);
-
-                            err = writerState->GetWriteErrorCode();
-
-                            if (err != noErr)
-                            {
-                                break;
-                            }
+                            err = filterBadMode;
+                            break;
                         }
 
                         if (err == noErr)
                         {
-                            png_write_end(pngPtr, infoPtr);
+                            for (row = 0; row < height; row += maxChunkHeight)
+                            {
+                                VRect writeRect{};
+                                writeRect.top = row;
+                                writeRect.left = 0;
+                                writeRect.bottom = std::min(row + maxChunkHeight, imageSize.v);
+                                writeRect.right = imageSize.h;
 
-                            err = writerState->GetWriteErrorCode();
+                                PSScaling scaling{};
+                                scaling.sourceRect = scaling.destinationRect = writeRect;
+
+                                for (int32 i = 0; i < filterRecord->inColumnBytes; i++)
+                                {
+                                    VRect wroteRect;
+
+                                    dest.bitOffset = i * 8;
+
+                                    err = filterRecord->channelPortProcs->readPixelsProc(imageChannels[i]->port, &scaling, &writeRect, &dest, &wroteRect);
+
+                                    if (err != noErr)
+                                    {
+                                        goto readPixelsError;
+                                    }
+
+                                    if (wroteRect.top != writeRect.top ||
+                                        wroteRect.left != writeRect.left ||
+                                        wroteRect.bottom != writeRect.bottom ||
+                                        wroteRect.right != writeRect.right)
+                                    {
+                                        err = readErr;
+                                        goto readPixelsError;
+                                    }
+                                }
+
+                                const png_uint_32 rowCount = static_cast<png_uint_32>(writeRect.bottom - writeRect.top);
+
+                                png_write_rows(pngPtr, rowPointers, rowCount);
+
+                                err = writerState->GetWriteErrorCode();
+
+                                if (err != noErr)
+                                {
+                                    break;
+                                }
+                            }
+
+                            if (err == noErr)
+                            {
+                                png_write_end(pngPtr, infoPtr);
+
+                                err = writerState->GetWriteErrorCode();
+                            }
                         }
 
                     readPixelsError:
