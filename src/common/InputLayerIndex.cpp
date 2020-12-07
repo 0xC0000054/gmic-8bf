@@ -35,10 +35,10 @@ namespace
         }
 
         char signature[4];
-        boost::endian::big_int32_t version;
-        boost::endian::big_int32_t layerCount;
-        boost::endian::big_int32_t activeLayerIndex;
-        boost::endian::big_int32_t grayScale;
+        boost::endian::little_int32_t version;
+        boost::endian::little_int32_t layerCount;
+        boost::endian::little_int32_t activeLayerIndex;
+        boost::endian::little_int32_t grayScale;
     };
 }
 

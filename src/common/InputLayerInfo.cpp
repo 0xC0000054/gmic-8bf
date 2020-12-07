@@ -22,7 +22,7 @@ namespace
             return ioErr;
         }
 
-        boost::endian::big_int32_t stringLength = static_cast<int32>(value.size());
+        boost::endian::little_int32_t stringLength = static_cast<int32>(value.size());
 
         OSErr err = WriteFile(fileHandle, &stringLength, sizeof(stringLength));
 
@@ -43,9 +43,9 @@ namespace
             layerIsVisible = visible ? 1 : 0;
         }
 
-        boost::endian::big_int32_t layerWidth;
-        boost::endian::big_int32_t layerHeight;
-        boost::endian::big_int32_t layerIsVisible;
+        boost::endian::little_int32_t layerWidth;
+        boost::endian::little_int32_t layerHeight;
+        boost::endian::little_int32_t layerIsVisible;
     };
 }
 
