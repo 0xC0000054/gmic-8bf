@@ -143,8 +143,8 @@ namespace
         err = readerState->GetReadErrorCode();
         if (err == noErr)
         {
-            png_uint_32 width;
-            png_uint_32 height;
+            png_uint_32 pngWidth;
+            png_uint_32 pngHeight;
             int bitDepth;
             int colorType;
             int interlaceType;
@@ -154,8 +154,8 @@ namespace
             png_get_IHDR(
                 pngPtr,
                 infoPtr,
-                &width,
-                &height,
+                &pngWidth,
+                &pngHeight,
                 &bitDepth,
                 &colorType,
                 &interlaceType,
@@ -166,12 +166,23 @@ namespace
 
             if (err == noErr)
             {
+                if (pngWidth > static_cast<png_uint_32>(std::numeric_limits<int32>::max()) ||
+                    pngHeight > static_cast<png_uint_32>(std::numeric_limits<int32>::max()))
+                {
+                    // The image width and/or height is greater than the largest positive int32 value.
+                    png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+
+                    return memFullErr;
+                }
+
+                const int32 width = static_cast<int32>(pngWidth);
+                const int32 height = static_cast<int32>(pngWidth);
                 const bool includeTransparency = colorType == PNG_COLOR_TYPE_RGB_ALPHA && filterRecord->outLayerPlanes != 0 && filterRecord->outTransparencyMask != 0;
 
                 const VPoint imageSize = GetImageSize(filterRecord);
 
-                const int32 maxWidth = static_cast<int32>(std::min(static_cast<png_uint_32>(imageSize.h), width));
-                const int32 maxHeight = static_cast<int32>(std::min(static_cast<png_uint_32>(imageSize.v), height));;
+                const int32 maxWidth = std::min(imageSize.h, width);
+                const int32 maxHeight = std::min(imageSize.v, height);
 
                 switch (filterRecord->imageMode)
                 {
@@ -200,7 +211,7 @@ namespace
                 {
                     // A non-interlaced image can be read in smaller chunks.
                     const int32 tileHeight = filterRecord->outTileHeight != 0 ? filterRecord->outTileHeight : 256;
-                    const int32 maxChunkHeight = static_cast<int32>(std::min(static_cast<png_uint_32>(tileHeight), height));
+                    const int32 maxChunkHeight = std::min(tileHeight, height);
 
                     BufferID pngImageRows;
 
