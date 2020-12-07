@@ -347,7 +347,7 @@ namespace
                     // If the image is interlaced we need to load the entire image into memory.
                     BufferID pngImageRows;
 
-                    err = filterRecord->bufferProcs->allocateProc(maxHeight * pngRowBytes, &pngImageRows);
+                    err = filterRecord->bufferProcs->allocateProc(height * pngRowBytes, &pngImageRows);
 
                     if (err == noErr)
                     {
@@ -355,13 +355,13 @@ namespace
 
                         BufferID pngRowBuffer;
 
-                        err = filterRecord->bufferProcs->allocateProc(maxHeight * sizeof(png_bytep), &pngRowBuffer);
+                        err = filterRecord->bufferProcs->allocateProc(height * sizeof(png_bytep), &pngRowBuffer);
 
                         if (err == noErr)
                         {
                             png_bytepp pngRows = reinterpret_cast<png_bytepp>(filterRecord->bufferProcs->lockProc(pngRowBuffer, false));
 
-                            for (int16 y = 0; y < maxHeight; y++)
+                            for (int16 y = 0; y < height; y++)
                             {
                                 pngRows[y] = buffer + (static_cast<int64>(y) * pngRowBytes);
                             }
@@ -378,15 +378,13 @@ namespace
 
                             if (err == noErr)
                             {
-                                const png_uint_32 rowCount = static_cast<png_uint_32>(maxHeight);
-
-                                png_read_rows(pngPtr, pngRows, nullptr, rowCount);
+                                png_read_rows(pngPtr, pngRows, nullptr, static_cast<png_uint_32>(height));
 
                                 err = readerState->GetReadErrorCode();
 
                                 if (err == noErr)
                                 {
-                                    for (size_t y = 0; y < rowCount; y++)
+                                    for (size_t y = 0; y < maxHeight; y++)
                                     {
                                         const uint8* pngPixel = buffer + (y * pngRowBytes);
                                         uint8* pixel = static_cast<uint8*>(filterRecord->outData) + (y * filterRecord->outRowBytes);
