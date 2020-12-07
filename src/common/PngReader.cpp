@@ -162,32 +162,34 @@ namespace
                 &compressionType,
                 &filterType);
 
-            const bool includeTransparency = colorType == PNG_COLOR_TYPE_RGB_ALPHA && filterRecord->outLayerPlanes != 0 && filterRecord->outTransparencyMask != 0;
-
-            const VPoint imageSize = GetImageSize(filterRecord);
-
-            const int32 maxWidth = static_cast<int32>(std::min(static_cast<png_uint_32>(imageSize.h), width));
-            const int32 maxHeight = static_cast<int32>(std::min(static_cast<png_uint_32>(imageSize.v), height));;
-
-            switch (filterRecord->imageMode)
-            {
-            case plugInModeGrayScale:
-                filterRecord->outColumnBytes = includeTransparency ? 2 : 1;
-                break;
-            case plugInModeRGBColor:
-                filterRecord->outColumnBytes = includeTransparency ? 4 : 3;
-                break;
-            default:
-                png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
-                return filterBadMode;
-            }
-            filterRecord->outPlaneBytes = 1;
-            filterRecord->outRowBytes = maxWidth * filterRecord->outColumnBytes;
-            filterRecord->outLoPlane = 0;
-            filterRecord->outHiPlane = static_cast<int16>(filterRecord->outColumnBytes - 1);
+            err = readerState->GetReadErrorCode();
 
             if (err == noErr)
             {
+                const bool includeTransparency = colorType == PNG_COLOR_TYPE_RGB_ALPHA && filterRecord->outLayerPlanes != 0 && filterRecord->outTransparencyMask != 0;
+
+                const VPoint imageSize = GetImageSize(filterRecord);
+
+                const int32 maxWidth = static_cast<int32>(std::min(static_cast<png_uint_32>(imageSize.h), width));
+                const int32 maxHeight = static_cast<int32>(std::min(static_cast<png_uint_32>(imageSize.v), height));;
+
+                switch (filterRecord->imageMode)
+                {
+                case plugInModeGrayScale:
+                    filterRecord->outColumnBytes = includeTransparency ? 2 : 1;
+                    break;
+                case plugInModeRGBColor:
+                    filterRecord->outColumnBytes = includeTransparency ? 4 : 3;
+                    break;
+                default:
+                    png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+                    return filterBadMode;
+                }
+                filterRecord->outPlaneBytes = 1;
+                filterRecord->outRowBytes = maxWidth * filterRecord->outColumnBytes;
+                filterRecord->outLoPlane = 0;
+                filterRecord->outHiPlane = static_cast<int16>(filterRecord->outColumnBytes - 1);
+
                 static constexpr std::array<float, 256> premultipliedAlphaTable = BuildPremultipliedAlphaLookupTable();
 
                 const int32 pngColumnBytes = colorType == PNG_COLOR_TYPE_RGB_ALPHA ? 4 : 3;
