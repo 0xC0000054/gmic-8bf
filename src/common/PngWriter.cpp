@@ -186,7 +186,14 @@ namespace
             }
             filterRecord->inPlaneBytes = 1;
             filterRecord->inputRate = int2fixed(1);
-            filterRecord->inRowBytes = width * filterRecord->inColumnBytes;
+
+            if (!TryMultiplyInt32(width, filterRecord->inColumnBytes, filterRecord->inRowBytes))
+            {
+                // The multiplication would have resulted in an integer overflow / underflow.
+                png_destroy_write_struct(&pngPtr, &infoPtr);
+                return memFullErr;
+            }
+
             filterRecord->inLoPlane = 0;
             filterRecord->inHiPlane = static_cast<int16>(filterRecord->inColumnBytes - 1);
 
@@ -195,63 +202,74 @@ namespace
 
             if (err == noErr)
             {
-                BufferID rowStrideBuffer;
+                int32 rowStrideBufferSize;
 
-                err = filterRecord->bufferProcs->allocateProc(maxChunkHeight * sizeof(int32), &rowStrideBuffer);
+                if (!TryMultiplyInt32(maxChunkHeight, sizeof(int32), rowStrideBufferSize))
+                {
+                    // The multiplication would have resulted in an integer overflow / underflow.
+                    err = memFullErr;
+                }
 
                 if (err == noErr)
                 {
-                    int32* rowStride = reinterpret_cast<int32*>(filterRecord->bufferProcs->lockProc(rowStrideBuffer, false));
+                    BufferID rowStrideBuffer;
 
-                    for (int16 y = 0; y < maxChunkHeight; y++)
-                    {
-                        rowStride[y] = static_cast<int32>(y) * filterRecord->inRowBytes;
-                    }
-
-                    const int32 left = 0;
-                    const int32 right = imageSize.h;
-
-                    for (int32 y = 0; y < height; y += maxChunkHeight)
-                    {
-                        const int32 top = y;
-                        const int32 bottom = std::min(y + maxChunkHeight, imageSize.v);
-
-                        SetInputRect(filterRecord, top, left, bottom, right);
-
-                        err = filterRecord->advanceState();
-                        if (err != noErr)
-                        {
-                            break;
-                        }
-
-                        const int32 rowCount = bottom - top;
-
-                        // AdvanceState will update the filterRecord->inData pointer, so we have to use
-                        // png_write_row instead of png_write_rows.
-                        for (int16 i = 0; i < rowCount; i++)
-                        {
-                            png_bytep row = static_cast<png_bytep>(filterRecord->inData) + rowStride[i];
-
-                            png_write_row(pngPtr, row);
-                        }
-
-                        err = writerState->GetWriteErrorCode();
-
-                        if (err != noErr)
-                        {
-                            break;
-                        }
-                    }
+                    err = filterRecord->bufferProcs->allocateProc(rowStrideBufferSize, &rowStrideBuffer);
 
                     if (err == noErr)
                     {
-                        png_write_end(pngPtr, infoPtr);
+                        int32* rowStride = reinterpret_cast<int32*>(filterRecord->bufferProcs->lockProc(rowStrideBuffer, false));
 
-                        err = writerState->GetWriteErrorCode();
+                        for (int32 y = 0; y < maxChunkHeight; y++)
+                        {
+                            rowStride[y] = static_cast<int32>(y) * filterRecord->inRowBytes;
+                        }
+
+                        const int32 left = 0;
+                        const int32 right = imageSize.h;
+
+                        for (int32 y = 0; y < height; y += maxChunkHeight)
+                        {
+                            const int32 top = y;
+                            const int32 bottom = std::min(y + maxChunkHeight, imageSize.v);
+
+                            SetInputRect(filterRecord, top, left, bottom, right);
+
+                            err = filterRecord->advanceState();
+                            if (err != noErr)
+                            {
+                                break;
+                            }
+
+                            const int32 rowCount = bottom - top;
+
+                            // AdvanceState will update the filterRecord->inData pointer, so we have to use
+                            // png_write_row instead of png_write_rows.
+                            for (int32 i = 0; i < rowCount; i++)
+                            {
+                                png_bytep row = static_cast<png_bytep>(filterRecord->inData) + rowStride[i];
+
+                                png_write_row(pngPtr, row);
+                            }
+
+                            err = writerState->GetWriteErrorCode();
+
+                            if (err != noErr)
+                            {
+                                break;
+                            }
+                        }
+
+                        if (err == noErr)
+                        {
+                            png_write_end(pngPtr, infoPtr);
+
+                            err = writerState->GetWriteErrorCode();
+                        }
+
+                        filterRecord->bufferProcs->unlockProc(rowStrideBuffer);
+                        filterRecord->bufferProcs->freeProc(rowStrideBuffer);
                     }
-
-                    filterRecord->bufferProcs->unlockProc(rowStrideBuffer);
-                    filterRecord->bufferProcs->freeProc(rowStrideBuffer);
                 }
             }
         }
@@ -359,26 +377,48 @@ namespace
             }
             filterRecord->inPlaneBytes = 1;
             filterRecord->inputRate = int2fixed(1);
-            filterRecord->inRowBytes = width * filterRecord->inColumnBytes;
+
+            if (!TryMultiplyInt32(width, filterRecord->inColumnBytes, filterRecord->inRowBytes))
+            {
+                // The multiplication would have resulted in an integer overflow / underflow.
+                png_destroy_write_struct(&pngPtr, &infoPtr);
+                return memFullErr;
+            }
+
             filterRecord->inLoPlane = 0;
             filterRecord->inHiPlane = static_cast<int16>(filterRecord->inColumnBytes - 1);
 
             const int32 tileHeight = filterRecord->inTileHeight != 0 ? filterRecord->inTileHeight : 256;
             const int32 maxChunkHeight = std::min(tileHeight, height);
 
+            BufferID imageDataBufferID;
+            int32 imageDataBufferSize;
+
+            if (!TryMultiplyInt32(maxChunkHeight, filterRecord->inRowBytes, imageDataBufferSize))
+            {
+                // The multiplication would have resulted in an integer overflow / underflow.
+                png_destroy_write_struct(&pngPtr, &infoPtr);
+                return memFullErr;
+            }
+
+            err = filterRecord->bufferProcs->allocateProc(imageDataBufferSize, &imageDataBufferID);
+
             if (err == noErr)
             {
-                BufferID imageDataBufferID;
+                void* imageDataBuffer = filterRecord->bufferProcs->lockProc(imageDataBufferID, false);
 
-                err = filterRecord->bufferProcs->allocateProc(maxChunkHeight * filterRecord->inRowBytes, &imageDataBufferID);
+                BufferID pngRowBuffer;
+                int32 pngRowBufferSize;
+
+                if (!TryMultiplyInt32(maxChunkHeight, sizeof(png_bytepp), pngRowBufferSize))
+                {
+                    // The multiplication would have resulted in an integer overflow / underflow.
+                    err = memFullErr;
+                }
 
                 if (err == noErr)
                 {
-                    void* imageDataBuffer = filterRecord->bufferProcs->lockProc(imageDataBufferID, false);
-
-                    BufferID pngRowBuffer;
-
-                    err = filterRecord->bufferProcs->allocateProc(maxChunkHeight * sizeof(png_bytep), &pngRowBuffer);
+                    err = filterRecord->bufferProcs->allocateProc(pngRowBufferSize, &pngRowBuffer);
 
                     if (err == noErr)
                     {
@@ -394,83 +434,92 @@ namespace
                         PixelMemoryDesc dest{};
                         dest.data = imageDataBuffer;
                         dest.bitOffset = 0;
-                        dest.colBits = filterRecord->inColumnBytes * 8;
-                        dest.rowBits = filterRecord->inRowBytes * 8;
                         dest.depth = filterRecord->depth;
 
-                        ReadChannelDesc* imageChannels[4] = { nullptr, nullptr, nullptr, nullptr };
-
-                        switch (filterRecord->imageMode)
+                        if (!TryMultiplyInt32(filterRecord->inColumnBytes, 8, dest.colBits) ||
+                            !TryMultiplyInt32(filterRecord->inRowBytes, 8, dest.rowBits))
                         {
-                        case plugInModeGrayScale:
-                            imageChannels[0] = layerDescriptor->compositeChannelsList;
-                            imageChannels[1] = layerDescriptor->transparency;
-                            break;
-                        case plugInModeRGBColor:
-                            imageChannels[0] = layerDescriptor->compositeChannelsList;
-                            imageChannels[1] = imageChannels[0]->next;
-                            imageChannels[2] = imageChannels[1]->next;
-                            imageChannels[3] = layerDescriptor->transparency;
-                            break;
-                        default:
-                            png_destroy_write_struct(&pngPtr, &infoPtr);
-                            err = filterBadMode;
+                            // The multiplication would have resulted in an integer overflow / underflow.
+                            err = memFullErr;
                             break;
                         }
 
                         if (err == noErr)
                         {
-                            for (row = 0; row < height; row += maxChunkHeight)
+                            ReadChannelDesc* imageChannels[4] = { nullptr, nullptr, nullptr, nullptr };
+
+                            switch (filterRecord->imageMode)
                             {
-                                VRect writeRect{};
-                                writeRect.top = row;
-                                writeRect.left = 0;
-                                writeRect.bottom = std::min(row + maxChunkHeight, imageSize.v);
-                                writeRect.right = imageSize.h;
-
-                                PSScaling scaling{};
-                                scaling.sourceRect = scaling.destinationRect = writeRect;
-
-                                for (int32 i = 0; i < filterRecord->inColumnBytes; i++)
-                                {
-                                    VRect wroteRect;
-
-                                    dest.bitOffset = i * 8;
-
-                                    err = filterRecord->channelPortProcs->readPixelsProc(imageChannels[i]->port, &scaling, &writeRect, &dest, &wroteRect);
-
-                                    if (err != noErr)
-                                    {
-                                        goto readPixelsError;
-                                    }
-
-                                    if (wroteRect.top != writeRect.top ||
-                                        wroteRect.left != writeRect.left ||
-                                        wroteRect.bottom != writeRect.bottom ||
-                                        wroteRect.right != writeRect.right)
-                                    {
-                                        err = readErr;
-                                        goto readPixelsError;
-                                    }
-                                }
-
-                                const png_uint_32 rowCount = static_cast<png_uint_32>(writeRect.bottom - writeRect.top);
-
-                                png_write_rows(pngPtr, rowPointers, rowCount);
-
-                                err = writerState->GetWriteErrorCode();
-
-                                if (err != noErr)
-                                {
-                                    break;
-                                }
+                            case plugInModeGrayScale:
+                                imageChannels[0] = layerDescriptor->compositeChannelsList;
+                                imageChannels[1] = layerDescriptor->transparency;
+                                break;
+                            case plugInModeRGBColor:
+                                imageChannels[0] = layerDescriptor->compositeChannelsList;
+                                imageChannels[1] = imageChannels[0]->next;
+                                imageChannels[2] = imageChannels[1]->next;
+                                imageChannels[3] = layerDescriptor->transparency;
+                                break;
+                            default:
+                                png_destroy_write_struct(&pngPtr, &infoPtr);
+                                err = filterBadMode;
+                                break;
                             }
 
                             if (err == noErr)
                             {
-                                png_write_end(pngPtr, infoPtr);
+                                for (row = 0; row < height; row += maxChunkHeight)
+                                {
+                                    VRect writeRect{};
+                                    writeRect.top = row;
+                                    writeRect.left = 0;
+                                    writeRect.bottom = std::min(row + maxChunkHeight, imageSize.v);
+                                    writeRect.right = imageSize.h;
 
-                                err = writerState->GetWriteErrorCode();
+                                    PSScaling scaling{};
+                                    scaling.sourceRect = scaling.destinationRect = writeRect;
+
+                                    for (int32 i = 0; i < filterRecord->inColumnBytes; i++)
+                                    {
+                                        VRect wroteRect;
+
+                                        dest.bitOffset = i * 8;
+
+                                        err = filterRecord->channelPortProcs->readPixelsProc(imageChannels[i]->port, &scaling, &writeRect, &dest, &wroteRect);
+
+                                        if (err != noErr)
+                                        {
+                                            goto readPixelsError;
+                                        }
+
+                                        if (wroteRect.top != writeRect.top ||
+                                            wroteRect.left != writeRect.left ||
+                                            wroteRect.bottom != writeRect.bottom ||
+                                            wroteRect.right != writeRect.right)
+                                        {
+                                            err = readErr;
+                                            goto readPixelsError;
+                                        }
+                                    }
+
+                                    const png_uint_32 rowCount = static_cast<png_uint_32>(writeRect.bottom - writeRect.top);
+
+                                    png_write_rows(pngPtr, rowPointers, rowCount);
+
+                                    err = writerState->GetWriteErrorCode();
+
+                                    if (err != noErr)
+                                    {
+                                        break;
+                                    }
+                                }
+
+                                if (err == noErr)
+                                {
+                                    png_write_end(pngPtr, infoPtr);
+
+                                    err = writerState->GetWriteErrorCode();
+                                }
                             }
                         }
 
@@ -479,10 +528,10 @@ namespace
                         filterRecord->bufferProcs->unlockProc(pngRowBuffer);
                         filterRecord->bufferProcs->freeProc(pngRowBuffer);
                     }
-
-                    filterRecord->bufferProcs->unlockProc(imageDataBufferID);
-                    filterRecord->bufferProcs->freeProc(imageDataBufferID);
                 }
+
+                filterRecord->bufferProcs->unlockProc(imageDataBufferID);
+                filterRecord->bufferProcs->freeProc(imageDataBufferID);
             }
         }
 

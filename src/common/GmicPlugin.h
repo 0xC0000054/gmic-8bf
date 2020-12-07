@@ -73,6 +73,7 @@ VPoint GetImageSize(const FilterRecordPtr filterRecord);
 void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
 void SetOutputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
 void SetMaskRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
+bool TryMultiplyInt32(int32 a, int32 x, int32& result);
 
 #if PSSDK_HAS_LAYER_SUPPORT
 std::string ConvertLayerNameToUTF8(const uint16* layerName);

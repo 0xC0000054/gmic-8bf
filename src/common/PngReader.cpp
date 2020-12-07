@@ -197,15 +197,29 @@ namespace
                     return filterBadMode;
                 }
                 filterRecord->outPlaneBytes = 1;
-                filterRecord->outRowBytes = maxWidth * filterRecord->outColumnBytes;
+
+                if (!TryMultiplyInt32(width, filterRecord->outColumnBytes, filterRecord->outRowBytes))
+                {
+                    // The multiplication would have resulted in an integer overflow / underflow.
+                    png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+
+                    return memFullErr;
+                }
+
                 filterRecord->outLoPlane = 0;
                 filterRecord->outHiPlane = static_cast<int16>(filterRecord->outColumnBytes - 1);
 
                 static constexpr std::array<float, 256> premultipliedAlphaTable = BuildPremultipliedAlphaLookupTable();
-
-                const int32 pngColumnBytes = colorType == PNG_COLOR_TYPE_RGB_ALPHA ? 4 : 3;
-                const int32 pngRowBytes = width * pngColumnBytes;
                 const bool premultiplyAlpha = colorType == PNG_COLOR_TYPE_RGB_ALPHA && !includeTransparency;
+                const int32 pngColumnBytes = colorType == PNG_COLOR_TYPE_RGB_ALPHA ? 4 : 3;
+                int32 pngRowBytes;
+                if (!TryMultiplyInt32(width, pngColumnBytes, pngRowBytes))
+                {
+                    // The multiplication would have resulted in an integer overflow / underflow.
+                    png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+
+                    return memFullErr;
+                }
 
                 if (interlaceType == PNG_INTERLACE_NONE)
                 {
@@ -214,183 +228,88 @@ namespace
                     const int32 maxChunkHeight = std::min(tileHeight, height);
 
                     BufferID pngImageRows;
+                    int32 pngImageRowsSize = 0;
 
-                    err = filterRecord->bufferProcs->allocateProc(maxChunkHeight * pngRowBytes, &pngImageRows);
+                    if (!TryMultiplyInt32(maxChunkHeight, pngRowBytes, pngImageRowsSize))
+                    {
+                        // The multiplication would have resulted in an integer overflow / underflow.
+                        png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+
+                        return memFullErr;
+                    }
+
+                    err = filterRecord->bufferProcs->allocateProc(pngImageRowsSize, &pngImageRows);
 
                     if (err == noErr)
                     {
                         uint8* buffer = reinterpret_cast<uint8*>(filterRecord->bufferProcs->lockProc(pngImageRows, false));
 
                         BufferID rowStrideBuffer;
+                        int32 rowStrideBufferSize = 0;
 
-                        err = filterRecord->bufferProcs->allocateProc(maxChunkHeight * sizeof(png_bytep), &rowStrideBuffer);
-
-                        if (err == noErr)
+                        if (!TryMultiplyInt32(maxChunkHeight, sizeof(png_bytepp), rowStrideBufferSize))
                         {
-                            png_bytepp pngRows = reinterpret_cast<png_bytepp>(filterRecord->bufferProcs->lockProc(rowStrideBuffer, false));
-
-                            for (int16 y = 0; y < maxChunkHeight; y++)
-                            {
-                                pngRows[y] = buffer + (static_cast<int64>(y) * pngRowBytes);
-                            }
-
-                            if (filterRecord->haveMask)
-                            {
-                                filterRecord->maskRate = int2fixed(1);
-                            }
-
-                            const int32 left = 0;
-                            const int32 right = maxWidth;
-
-                            for (int32 y = 0; y < maxHeight; y += maxChunkHeight)
-                            {
-                                const int32 top = y;
-                                const int32 bottom = std::min(top + maxChunkHeight, maxHeight);
-
-                                SetOutputRect(filterRecord, top, left, bottom, right);
-
-                                if (filterRecord->haveMask)
-                                {
-                                    SetMaskRect(filterRecord, top, left, bottom, right);
-                                }
-
-                                err = filterRecord->advanceState();
-                                if (err != noErr)
-                                {
-                                    break;
-                                }
-
-                                const png_uint_32 rowCount = static_cast<png_uint_32>(bottom - top);
-
-                                png_read_rows(pngPtr, pngRows, nullptr, rowCount);
-
-                                err = readerState->GetReadErrorCode();
-
-                                if (err != noErr)
-                                {
-                                    break;
-                                }
-
-                                for (size_t row = 0; row < rowCount; row++)
-                                {
-                                    const uint8* pngPixel = buffer + (row * pngRowBytes);
-                                    uint8* pixel = static_cast<uint8*>(filterRecord->outData) + (row * filterRecord->outRowBytes);
-                                    uint8* mask = filterRecord->haveMask ? static_cast<uint8*>(filterRecord->maskData) + (row * filterRecord->maskRowBytes) : nullptr;
-
-                                    for (int16 x = left; x < right; x++)
-                                    {
-                                        // Clip the output to the mask, if one is present.
-                                        if (mask == nullptr || *mask != 0)
-                                        {
-                                            if (premultiplyAlpha)
-                                            {
-                                                float alpha = premultipliedAlphaTable[pngPixel[3]];
-
-                                                switch (filterRecord->outColumnBytes)
-                                                {
-                                                case 1:
-                                                    pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
-                                                    break;
-                                                case 3:
-                                                    pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
-                                                    pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
-                                                    pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
-                                                    break;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                switch (filterRecord->outColumnBytes)
-                                                {
-                                                case 1:
-                                                    pixel[0] = pngPixel[0];
-                                                    break;
-                                                case 2:
-                                                    pixel[0] = pngPixel[0];
-                                                    pixel[1] = pngPixel[3];
-                                                    break;
-                                                case 3:
-                                                    pixel[0] = pngPixel[0];
-                                                    pixel[1] = pngPixel[1];
-                                                    pixel[2] = pngPixel[2];
-                                                    break;
-                                                case 4:
-                                                    pixel[0] = pngPixel[0];
-                                                    pixel[1] = pngPixel[1];
-                                                    pixel[2] = pngPixel[2];
-                                                    pixel[3] = pngPixel[3];
-                                                    break;
-                                                }
-                                            }
-                                        }
-
-                                        pngPixel += pngColumnBytes;
-                                        pixel += filterRecord->outColumnBytes;
-                                        if (mask != nullptr)
-                                        {
-                                            mask++;
-                                        }
-                                    }
-                                }
-                            }
-
-                            filterRecord->bufferProcs->unlockProc(rowStrideBuffer);
-                            filterRecord->bufferProcs->freeProc(rowStrideBuffer);
+                            // The multiplication would have resulted in an integer overflow / underflow.
+                            err = memFullErr;
                         }
 
-                        filterRecord->bufferProcs->unlockProc(pngImageRows);
-                        filterRecord->bufferProcs->freeProc(pngImageRows);
-                    }
-                }
-                else if (interlaceType == PNG_INTERLACE_ADAM7)
-                {
-                    // If the image is interlaced we need to load the entire image into memory.
-                    BufferID pngImageRows;
-
-                    err = filterRecord->bufferProcs->allocateProc(height * pngRowBytes, &pngImageRows);
-
-                    if (err == noErr)
-                    {
-                        uint8* buffer = reinterpret_cast<uint8*>(filterRecord->bufferProcs->lockProc(pngImageRows, false));
-
-                        BufferID pngRowBuffer;
-
-                        err = filterRecord->bufferProcs->allocateProc(height * sizeof(png_bytep), &pngRowBuffer);
-
                         if (err == noErr)
                         {
-                            png_bytepp pngRows = reinterpret_cast<png_bytepp>(filterRecord->bufferProcs->lockProc(pngRowBuffer, false));
-
-                            for (int16 y = 0; y < height; y++)
-                            {
-                                pngRows[y] = buffer + (static_cast<int64>(y) * pngRowBytes);
-                            }
-
-                            SetOutputRect(filterRecord, 0, 0, maxHeight, maxWidth);
-
-                            if (filterRecord->haveMask)
-                            {
-                                filterRecord->maskRate = int2fixed(1);
-                                SetMaskRect(filterRecord, 0, 0, maxHeight, maxWidth);
-                            }
-
-                            err = filterRecord->advanceState();
+                            err = filterRecord->bufferProcs->allocateProc(rowStrideBufferSize, &rowStrideBuffer);
 
                             if (err == noErr)
                             {
-                                png_read_rows(pngPtr, pngRows, nullptr, static_cast<png_uint_32>(height));
+                                png_bytepp pngRows = reinterpret_cast<png_bytepp>(filterRecord->bufferProcs->lockProc(rowStrideBuffer, false));
 
-                                err = readerState->GetReadErrorCode();
-
-                                if (err == noErr)
+                                for (int32 y = 0; y < maxChunkHeight; y++)
                                 {
-                                    for (size_t y = 0; y < maxHeight; y++)
-                                    {
-                                        const uint8* pngPixel = buffer + (y * pngRowBytes);
-                                        uint8* pixel = static_cast<uint8*>(filterRecord->outData) + (y * filterRecord->outRowBytes);
-                                        uint8* mask = filterRecord->haveMask ? static_cast<uint8*>(filterRecord->maskData) + (y * filterRecord->maskRowBytes) : nullptr;
+                                    pngRows[y] = buffer + (static_cast<int64>(y) * pngRowBytes);
+                                }
 
-                                        for (int16 x = 0; x < maxWidth; x++)
+                                if (filterRecord->haveMask)
+                                {
+                                    filterRecord->maskRate = int2fixed(1);
+                                }
+
+                                const int32 left = 0;
+                                const int32 right = maxWidth;
+
+                                for (int32 y = 0; y < maxHeight; y += maxChunkHeight)
+                                {
+                                    const int32 top = y;
+                                    const int32 bottom = std::min(top + maxChunkHeight, maxHeight);
+
+                                    SetOutputRect(filterRecord, top, left, bottom, right);
+
+                                    if (filterRecord->haveMask)
+                                    {
+                                        SetMaskRect(filterRecord, top, left, bottom, right);
+                                    }
+
+                                    err = filterRecord->advanceState();
+                                    if (err != noErr)
+                                    {
+                                        break;
+                                    }
+
+                                    const png_uint_32 rowCount = static_cast<png_uint_32>(bottom - top);
+
+                                    png_read_rows(pngPtr, pngRows, nullptr, rowCount);
+
+                                    err = readerState->GetReadErrorCode();
+
+                                    if (err != noErr)
+                                    {
+                                        break;
+                                    }
+
+                                    for (size_t row = 0; row < rowCount; row++)
+                                    {
+                                        const uint8* pngPixel = buffer + (row * pngRowBytes);
+                                        uint8* pixel = static_cast<uint8*>(filterRecord->outData) + (row * filterRecord->outRowBytes);
+                                        uint8* mask = filterRecord->haveMask ? static_cast<uint8*>(filterRecord->maskData) + (row * filterRecord->maskRowBytes) : nullptr;
+
+                                        for (int32 x = left; x < right; x++)
                                         {
                                             // Clip the output to the mask, if one is present.
                                             if (mask == nullptr || *mask != 0)
@@ -446,10 +365,142 @@ namespace
                                         }
                                     }
                                 }
-                            }
 
-                            filterRecord->bufferProcs->unlockProc(pngRowBuffer);
-                            filterRecord->bufferProcs->freeProc(pngRowBuffer);
+                                filterRecord->bufferProcs->unlockProc(rowStrideBuffer);
+                                filterRecord->bufferProcs->freeProc(rowStrideBuffer);
+                            }
+                        }
+
+                        filterRecord->bufferProcs->unlockProc(pngImageRows);
+                        filterRecord->bufferProcs->freeProc(pngImageRows);
+                    }
+                }
+                else if (interlaceType == PNG_INTERLACE_ADAM7)
+                {
+                    // If the image is interlaced we need to load the entire image into memory.
+                    BufferID pngImageRows;
+                    int32 pngImageRowsSize = 0;
+
+                    if (!TryMultiplyInt32(height, pngRowBytes, pngImageRowsSize))
+                    {
+                        // The multiplication would have resulted in an integer overflow / underflow.
+                        png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+                        return memFullErr;
+                    }
+
+                    err = filterRecord->bufferProcs->allocateProc(pngImageRowsSize, &pngImageRows);
+
+                    if (err == noErr)
+                    {
+                        uint8* buffer = reinterpret_cast<uint8*>(filterRecord->bufferProcs->lockProc(pngImageRows, false));
+
+                        int32 pngRowBufferSize = 0;
+
+                        if (!TryMultiplyInt32(height, sizeof(png_bytepp), pngRowBufferSize))
+                        {
+                            // The multiplication would have resulted in an integer overflow / underflow.
+                            err = memFullErr;
+                        }
+
+                        if (err == noErr)
+                        {
+                            BufferID pngRowBuffer;
+                            err = filterRecord->bufferProcs->allocateProc(pngRowBufferSize, &pngRowBuffer);
+
+                            if (err == noErr)
+                            {
+                                png_bytepp pngRows = reinterpret_cast<png_bytepp>(filterRecord->bufferProcs->lockProc(pngRowBuffer, false));
+
+                                for (int32 y = 0; y < height; y++)
+                                {
+                                    pngRows[y] = buffer + (static_cast<int64>(y) * pngRowBytes);
+                                }
+
+                                SetOutputRect(filterRecord, 0, 0, maxHeight, maxWidth);
+
+                                if (filterRecord->haveMask)
+                                {
+                                    filterRecord->maskRate = int2fixed(1);
+                                    SetMaskRect(filterRecord, 0, 0, maxHeight, maxWidth);
+                                }
+
+                                err = filterRecord->advanceState();
+
+                                if (err == noErr)
+                                {
+                                    png_read_rows(pngPtr, pngRows, nullptr, static_cast<png_uint_32>(height));
+
+                                    err = readerState->GetReadErrorCode();
+
+                                    if (err == noErr)
+                                    {
+                                        for (size_t y = 0; y < maxHeight; y++)
+                                        {
+                                            const uint8* pngPixel = buffer + (y * pngRowBytes);
+                                            uint8* pixel = static_cast<uint8*>(filterRecord->outData) + (y * filterRecord->outRowBytes);
+                                            uint8* mask = filterRecord->haveMask ? static_cast<uint8*>(filterRecord->maskData) + (y * filterRecord->maskRowBytes) : nullptr;
+
+                                            for (int32 x = 0; x < maxWidth; x++)
+                                            {
+                                                // Clip the output to the mask, if one is present.
+                                                if (mask == nullptr || *mask != 0)
+                                                {
+                                                    if (premultiplyAlpha)
+                                                    {
+                                                        float alpha = premultipliedAlphaTable[pngPixel[3]];
+
+                                                        switch (filterRecord->outColumnBytes)
+                                                        {
+                                                        case 1:
+                                                            pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                                                            break;
+                                                        case 3:
+                                                            pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                                                            pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
+                                                            pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
+                                                            break;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        switch (filterRecord->outColumnBytes)
+                                                        {
+                                                        case 1:
+                                                            pixel[0] = pngPixel[0];
+                                                            break;
+                                                        case 2:
+                                                            pixel[0] = pngPixel[0];
+                                                            pixel[1] = pngPixel[3];
+                                                            break;
+                                                        case 3:
+                                                            pixel[0] = pngPixel[0];
+                                                            pixel[1] = pngPixel[1];
+                                                            pixel[2] = pngPixel[2];
+                                                            break;
+                                                        case 4:
+                                                            pixel[0] = pngPixel[0];
+                                                            pixel[1] = pngPixel[1];
+                                                            pixel[2] = pngPixel[2];
+                                                            pixel[3] = pngPixel[3];
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+
+                                                pngPixel += pngColumnBytes;
+                                                pixel += filterRecord->outColumnBytes;
+                                                if (mask != nullptr)
+                                                {
+                                                    mask++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                filterRecord->bufferProcs->unlockProc(pngRowBuffer);
+                                filterRecord->bufferProcs->freeProc(pngRowBuffer);
+                            }
                         }
 
                         filterRecord->bufferProcs->unlockProc(pngImageRows);
