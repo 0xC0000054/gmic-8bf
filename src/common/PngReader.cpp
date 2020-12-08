@@ -100,64 +100,104 @@ namespace
         uint8* outData = static_cast<uint8*>(filterRecord->outData);
         const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
 
-        for (int32 y = 0; y < imageHeight; y++)
+        if (pngColumnStep == 1)
         {
-            const uint8* pngPixel = pngBuffer + (static_cast<int64>(y) * pngRowBytes);
-            uint8* pixel = outData + (static_cast<int64>(y) * filterRecord->outRowBytes);
-            const uint8* mask = filterRecord->haveMask ? maskData + (static_cast<int64>(y) * filterRecord->maskRowBytes) : nullptr;
-
-            for (int32 x = 0; x < imageWidth; x++)
+            for (int32 y = 0; y < imageHeight; y++)
             {
-                // Clip the output to the mask, if one is present.
-                if (mask == nullptr || *mask != 0)
+                const uint8* pngPixel = pngBuffer + (static_cast<int64>(y) * pngRowBytes);
+                uint8* pixel = outData + (static_cast<int64>(y) * filterRecord->outRowBytes);
+                const uint8* mask = filterRecord->haveMask ? maskData + (static_cast<int64>(y) * filterRecord->maskRowBytes) : nullptr;
+
+                for (int32 x = 0; x < imageWidth; x++)
                 {
-                    if (premultiplyAlpha)
+                    // Clip the output to the mask, if one is present.
+                    if (mask == nullptr || *mask != 0)
                     {
-                        float alpha = static_cast<float>(pngPixel[3]) / 255.0f;
+                        uint8 gray = pngPixel[0];
 
                         switch (filterRecord->outColumnBytes)
                         {
                         case 1:
-                            pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                            pixel[0] = gray;
                             break;
                         case 3:
-                            pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
-                            pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
-                            pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
+                            pixel[0] = gray;
+                            pixel[1] = gray;
+                            pixel[2] = gray;
                             break;
                         }
                     }
-                    else
+
+                    pngPixel++;
+                    pixel += filterRecord->outColumnBytes;
+                    if (mask != nullptr)
                     {
-                        switch (filterRecord->outColumnBytes)
-                        {
-                        case 1:
-                            pixel[0] = pngPixel[0];
-                            break;
-                        case 2:
-                            pixel[0] = pngPixel[0];
-                            pixel[1] = pngPixel[3];
-                            break;
-                        case 3:
-                            pixel[0] = pngPixel[0];
-                            pixel[1] = pngPixel[1];
-                            pixel[2] = pngPixel[2];
-                            break;
-                        case 4:
-                            pixel[0] = pngPixel[0];
-                            pixel[1] = pngPixel[1];
-                            pixel[2] = pngPixel[2];
-                            pixel[3] = pngPixel[3];
-                            break;
-                        }
+                        mask++;
                     }
                 }
+            }
+        }
+        else
+        {
+            for (int32 y = 0; y < imageHeight; y++)
+            {
+                const uint8* pngPixel = pngBuffer + (static_cast<int64>(y) * pngRowBytes);
+                uint8* pixel = outData + (static_cast<int64>(y) * filterRecord->outRowBytes);
+                const uint8* mask = filterRecord->haveMask ? maskData + (static_cast<int64>(y) * filterRecord->maskRowBytes) : nullptr;
 
-                pngPixel += pngColumnStep;
-                pixel += filterRecord->outColumnBytes;
-                if (mask != nullptr)
+                for (int32 x = 0; x < imageWidth; x++)
                 {
-                    mask++;
+                    // Clip the output to the mask, if one is present.
+                    if (mask == nullptr || *mask != 0)
+                    {
+                        if (premultiplyAlpha)
+                        {
+                            float alpha = static_cast<float>(pngPixel[3]) / 255.0f;
+
+                            switch (filterRecord->outColumnBytes)
+                            {
+                            case 1:
+                                pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                                break;
+                            case 3:
+                                pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                                pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
+                                pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            switch (filterRecord->outColumnBytes)
+                            {
+                            case 1:
+                                pixel[0] = pngPixel[0];
+                                break;
+                            case 2:
+                                pixel[0] = pngPixel[0];
+                                pixel[1] = pngPixel[3];
+                                break;
+                            case 3:
+                                pixel[0] = pngPixel[0];
+                                pixel[1] = pngPixel[1];
+                                pixel[2] = pngPixel[2];
+                                break;
+                            case 4:
+                                pixel[0] = pngPixel[0];
+                                pixel[1] = pngPixel[1];
+                                pixel[2] = pngPixel[2];
+                                pixel[3] = pngPixel[3];
+                                break;
+                            }
+                        }
+                    }
+
+                    pngPixel += pngColumnStep;
+                    pixel += filterRecord->outColumnBytes;
+                    if (mask != nullptr)
+                    {
+                        mask++;
+                    }
                 }
             }
         }
@@ -196,64 +236,104 @@ namespace
             uint16* outData = static_cast<uint16*>(filterRecord->outData);
             const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
 
-            for (int32 y = 0; y < imageHeight; y++)
+            if (pngColumnStep == 1)
             {
-                const uint16* pngPixel = reinterpret_cast<const uint16*>(pngBuffer + (static_cast<int64>(y) * pngStride));
-                uint16* pixel = outData + (static_cast<int64>(y) * outRowWords);
-                const uint8* mask = filterRecord->haveMask ? maskData + (static_cast<int64>(y) * filterRecord->maskRowBytes) : nullptr;
-
-                for (int32 x = 0; x < imageWidth; x++)
+                for (int32 y = 0; y < imageHeight; y++)
                 {
-                    // Clip the output to the mask, if one is present.
-                    if (mask == nullptr || *mask != 0)
+                    const uint16* pngPixel = reinterpret_cast<const uint16*>(pngBuffer + (static_cast<int64>(y) * pngStride));
+                    uint16* pixel = outData + (static_cast<int64>(y) * outRowWords);
+                    const uint8* mask = filterRecord->haveMask ? maskData + (static_cast<int64>(y) * filterRecord->maskRowBytes) : nullptr;
+
+                    for (int32 x = 0; x < imageWidth; x++)
                     {
-                        if (premultiplyAlpha)
+                        // Clip the output to the mask, if one is present.
+                        if (mask == nullptr || *mask != 0)
                         {
-                            double alpha = static_cast<double>(pngPixel[3]) / 65535.0;
+                            uint16 gray = pngToHostLUT[pngPixel[0]];
 
                             switch (outChannelCount)
                             {
                             case 1:
-                                pixel[0] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[0]) * alpha) + 0.5)];
+                                pixel[0] = gray;
                                 break;
                             case 3:
-                                pixel[0] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[0]) * alpha) + 0.5)];
-                                pixel[1] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[1]) * alpha) + 0.5)];
-                                pixel[2] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[2]) * alpha) + 0.5)];
+                                pixel[0] = gray;
+                                pixel[1] = gray;
+                                pixel[2] = gray;
                                 break;
                             }
                         }
-                        else
+
+                        pngPixel++;
+                        pixel += outChannelCount;
+                        if (mask != nullptr)
                         {
-                            switch (outChannelCount)
-                            {
-                            case 1:
-                                pixel[0] = pngToHostLUT[pngPixel[0]];
-                                break;
-                            case 2:
-                                pixel[0] = pngToHostLUT[pngPixel[0]];
-                                pixel[1] = pngToHostLUT[pngPixel[3]];
-                                break;
-                            case 3:
-                                pixel[0] = pngToHostLUT[pngPixel[0]];
-                                pixel[1] = pngToHostLUT[pngPixel[1]];
-                                pixel[2] = pngToHostLUT[pngPixel[2]];
-                                break;
-                            case 4:
-                                pixel[0] = pngToHostLUT[pngPixel[0]];
-                                pixel[1] = pngToHostLUT[pngPixel[1]];
-                                pixel[2] = pngToHostLUT[pngPixel[2]];
-                                pixel[3] = pngToHostLUT[pngPixel[3]];
-                                break;
-                            }
+                            mask++;
                         }
                     }
+                }
+            }
+            else
+            {
+                for (int32 y = 0; y < imageHeight; y++)
+                {
+                    const uint16* pngPixel = reinterpret_cast<const uint16*>(pngBuffer + (static_cast<int64>(y) * pngStride));
+                    uint16* pixel = outData + (static_cast<int64>(y) * outRowWords);
+                    const uint8* mask = filterRecord->haveMask ? maskData + (static_cast<int64>(y) * filterRecord->maskRowBytes) : nullptr;
 
-                    pngPixel += pngColumnStep;
-                    pixel += outChannelCount;
-                    if (mask != nullptr)
+                    for (int32 x = 0; x < imageWidth; x++)
                     {
-                        mask++;
+                        // Clip the output to the mask, if one is present.
+                        if (mask == nullptr || *mask != 0)
+                        {
+                            if (premultiplyAlpha)
+                            {
+                                double alpha = static_cast<double>(pngPixel[3]) / 65535.0;
+
+                                switch (outChannelCount)
+                                {
+                                case 1:
+                                    pixel[0] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[0]) * alpha) + 0.5)];
+                                    break;
+                                case 3:
+                                    pixel[0] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[0]) * alpha) + 0.5)];
+                                    pixel[1] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[1]) * alpha) + 0.5)];
+                                    pixel[2] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[2]) * alpha) + 0.5)];
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                switch (outChannelCount)
+                                {
+                                case 1:
+                                    pixel[0] = pngToHostLUT[pngPixel[0]];
+                                    break;
+                                case 2:
+                                    pixel[0] = pngToHostLUT[pngPixel[0]];
+                                    pixel[1] = pngToHostLUT[pngPixel[3]];
+                                    break;
+                                case 3:
+                                    pixel[0] = pngToHostLUT[pngPixel[0]];
+                                    pixel[1] = pngToHostLUT[pngPixel[1]];
+                                    pixel[2] = pngToHostLUT[pngPixel[2]];
+                                    break;
+                                case 4:
+                                    pixel[0] = pngToHostLUT[pngPixel[0]];
+                                    pixel[1] = pngToHostLUT[pngPixel[1]];
+                                    pixel[2] = pngToHostLUT[pngPixel[2]];
+                                    pixel[3] = pngToHostLUT[pngPixel[3]];
+                                    break;
+                                }
+                            }
+                        }
+
+                        pngPixel += pngColumnStep;
+                        pixel += outChannelCount;
+                        if (mask != nullptr)
+                        {
+                            mask++;
+                        }
                     }
                 }
             }
@@ -394,7 +474,7 @@ namespace
                 filterRecord->outHiPlane = static_cast<int16>(numberOfChannels - 1);
 
                 const bool premultiplyAlpha = colorType == PNG_COLOR_TYPE_RGB_ALPHA && !includeTransparency;
-                const int32 pngColumnStep = colorType == PNG_COLOR_TYPE_RGB_ALPHA ? 4 : 3;
+                const int32 pngColumnStep = png_get_channels(pngPtr, infoPtr);
                 int32 pngRowBytes;
                 if (!TryMultiplyInt32(width, pngColumnStep, pngRowBytes))
                 {
