@@ -66,9 +66,13 @@ OSErr WriteGmicFiles(
     boost::filesystem::path& indexFilePath,
     FilterRecord* filterRecord);
 
+constexpr Fixed int2fixed(int value)
+{
+    return value << 16;
+}
+
 bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName);
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
-Fixed int2fixed(int value);
 VPoint GetImageSize(const FilterRecordPtr filterRecord);
 void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
 void SetOutputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
