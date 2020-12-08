@@ -441,7 +441,6 @@ namespace
                         {
                             // The multiplication would have resulted in an integer overflow / underflow.
                             err = memFullErr;
-                            break;
                         }
 
                         if (err == noErr)
