@@ -13,7 +13,7 @@
 #include "PngReader.h"
 #include "FileUtil.h"
 #include <algorithm>
-#include <array>
+#include <boost/predef.h>
 #include <setjmp.h>
 #include <png.h>
 
@@ -88,16 +88,182 @@ namespace
         state->SetFileReadError(ReadFile(state->fileHandle, data, length));
     }
 
-    constexpr std::array<float, 256> BuildPremultipliedAlphaLookupTable()
+    void CopyDataFromPngEightBitsPerChannel(
+        const uint8* const pngBuffer,
+        int32 pngColumnStep,
+        int32 pngRowBytes,
+        FilterRecordPtr filterRecord,
+        int32 imageWidth,
+        int32 imageHeight,
+        bool premultiplyAlpha)
     {
-        std::array<float, 256> items = {};
+        uint8* outData = static_cast<uint8*>(filterRecord->outData);
+        const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
 
-        for (size_t i = 0; i < items.size(); i++)
+        for (int32 y = 0; y < imageHeight; y++)
         {
-            items[i] = static_cast<float>(i) / 255.0f;
+            const uint8* pngPixel = pngBuffer + (static_cast<int64>(y) * pngRowBytes);
+            uint8* pixel = outData + (static_cast<int64>(y) * filterRecord->outRowBytes);
+            const uint8* mask = filterRecord->haveMask ? maskData + (static_cast<int64>(y) * filterRecord->maskRowBytes) : nullptr;
+
+            for (int32 x = 0; x < imageWidth; x++)
+            {
+                // Clip the output to the mask, if one is present.
+                if (mask == nullptr || *mask != 0)
+                {
+                    if (premultiplyAlpha)
+                    {
+                        float alpha = static_cast<float>(pngPixel[3]) / 255.0f;
+
+                        switch (filterRecord->outColumnBytes)
+                        {
+                        case 1:
+                            pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                            break;
+                        case 3:
+                            pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
+                            pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
+                            pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        switch (filterRecord->outColumnBytes)
+                        {
+                        case 1:
+                            pixel[0] = pngPixel[0];
+                            break;
+                        case 2:
+                            pixel[0] = pngPixel[0];
+                            pixel[1] = pngPixel[3];
+                            break;
+                        case 3:
+                            pixel[0] = pngPixel[0];
+                            pixel[1] = pngPixel[1];
+                            pixel[2] = pngPixel[2];
+                            break;
+                        case 4:
+                            pixel[0] = pngPixel[0];
+                            pixel[1] = pngPixel[1];
+                            pixel[2] = pngPixel[2];
+                            pixel[3] = pngPixel[3];
+                            break;
+                        }
+                    }
+                }
+
+                pngPixel += pngColumnStep;
+                pixel += filterRecord->outColumnBytes;
+                if (mask != nullptr)
+                {
+                    mask++;
+                }
+            }
+        }
+    }
+
+    std::vector<uint16> BuildSixteenBitPngToHostLUT()
+    {
+        std::vector<uint16> sixteenBitPngToHostLUT;
+        sixteenBitPngToHostLUT.reserve(65536);
+
+        for (size_t i = 0; i < sixteenBitPngToHostLUT.capacity(); i++)
+        {
+            // According to the Photoshop SDK 16-bit image data is stored in the range of [0, 32768].
+            sixteenBitPngToHostLUT.push_back(static_cast<uint16>(((i * 32768) + 32767) / 65535));
         }
 
-        return items;
+        return sixteenBitPngToHostLUT;
+    }
+
+    OSErr CopyDataFromPngSixteenBitsPerChannel(
+        const uint8* const pngBuffer,
+        int32 pngColumnStep,
+        int32 pngStride,
+        FilterRecordPtr filterRecord,
+        int32 imageWidth,
+        int32 imageHeight,
+        bool premultiplyAlpha)
+    {
+        try
+        {
+            static const std::vector<uint16> pngToHostLUT = BuildSixteenBitPngToHostLUT();
+
+            const int32 outChannelCount = filterRecord->outColumnBytes / 2;
+            const int32 outRowWords = filterRecord->outRowBytes / 2;
+
+            uint16* outData = static_cast<uint16*>(filterRecord->outData);
+            const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
+
+            for (int32 y = 0; y < imageHeight; y++)
+            {
+                const uint16* pngPixel = reinterpret_cast<const uint16*>(pngBuffer + (static_cast<int64>(y) * pngStride));
+                uint16* pixel = outData + (static_cast<int64>(y) * outRowWords);
+                const uint8* mask = filterRecord->haveMask ? maskData + (static_cast<int64>(y) * filterRecord->maskRowBytes) : nullptr;
+
+                for (int32 x = 0; x < imageWidth; x++)
+                {
+                    // Clip the output to the mask, if one is present.
+                    if (mask == nullptr || *mask != 0)
+                    {
+                        if (premultiplyAlpha)
+                        {
+                            double alpha = static_cast<double>(pngPixel[3]) / 65535.0;
+
+                            switch (outChannelCount)
+                            {
+                            case 1:
+                                pixel[0] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[0]) * alpha) + 0.5)];
+                                break;
+                            case 3:
+                                pixel[0] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[0]) * alpha) + 0.5)];
+                                pixel[1] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[1]) * alpha) + 0.5)];
+                                pixel[2] = pngToHostLUT[static_cast<uint16>((static_cast<double>(pngPixel[2]) * alpha) + 0.5)];
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            switch (outChannelCount)
+                            {
+                            case 1:
+                                pixel[0] = pngToHostLUT[pngPixel[0]];
+                                break;
+                            case 2:
+                                pixel[0] = pngToHostLUT[pngPixel[0]];
+                                pixel[1] = pngToHostLUT[pngPixel[3]];
+                                break;
+                            case 3:
+                                pixel[0] = pngToHostLUT[pngPixel[0]];
+                                pixel[1] = pngToHostLUT[pngPixel[1]];
+                                pixel[2] = pngToHostLUT[pngPixel[2]];
+                                break;
+                            case 4:
+                                pixel[0] = pngToHostLUT[pngPixel[0]];
+                                pixel[1] = pngToHostLUT[pngPixel[1]];
+                                pixel[2] = pngToHostLUT[pngPixel[2]];
+                                pixel[3] = pngToHostLUT[pngPixel[3]];
+                                break;
+                            }
+                        }
+                    }
+
+                    pngPixel += pngColumnStep;
+                    pixel += outChannelCount;
+                    if (mask != nullptr)
+                    {
+                        mask++;
+                    }
+                }
+            }
+        }
+        catch (const std::bad_alloc&)
+        {
+            return memFullErr;
+        }
+
+        return noErr;
     }
 
     OSErr ReadPngImage(FilterRecordPtr filterRecord, PngReaderState* readerState)
@@ -184,19 +350,37 @@ namespace
                 const int32 maxWidth = std::min(imageSize.h, width);
                 const int32 maxHeight = std::min(imageSize.v, height);
 
+                int32 numberOfChannels;
+
                 switch (filterRecord->imageMode)
                 {
                 case plugInModeGrayScale:
-                    filterRecord->outColumnBytes = includeTransparency ? 2 : 1;
+                case plugInModeGray16:
+                    numberOfChannels = includeTransparency ? 2 : 1;
                     break;
                 case plugInModeRGBColor:
-                    filterRecord->outColumnBytes = includeTransparency ? 4 : 3;
+                case plugInModeRGB48:
+                    numberOfChannels = includeTransparency ? 4 : 3;
                     break;
                 default:
                     png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
                     return filterBadMode;
                 }
-                filterRecord->outPlaneBytes = 1;
+
+                if (bitDepth == 16)
+                {
+                    filterRecord->outColumnBytes = numberOfChannels * 2;
+                    filterRecord->outPlaneBytes = 2;
+
+#if BOOST_ENDIAN_LITTLE_BYTE
+                    png_set_swap(pngPtr);
+#endif
+                }
+                else
+                {
+                    filterRecord->outColumnBytes = numberOfChannels;
+                    filterRecord->outPlaneBytes = 1;
+                }
 
                 if (!TryMultiplyInt32(width, filterRecord->outColumnBytes, filterRecord->outRowBytes))
                 {
@@ -207,18 +391,28 @@ namespace
                 }
 
                 filterRecord->outLoPlane = 0;
-                filterRecord->outHiPlane = static_cast<int16>(filterRecord->outColumnBytes - 1);
+                filterRecord->outHiPlane = static_cast<int16>(numberOfChannels - 1);
 
-                static constexpr std::array<float, 256> premultipliedAlphaTable = BuildPremultipliedAlphaLookupTable();
                 const bool premultiplyAlpha = colorType == PNG_COLOR_TYPE_RGB_ALPHA && !includeTransparency;
-                const int32 pngColumnBytes = colorType == PNG_COLOR_TYPE_RGB_ALPHA ? 4 : 3;
+                const int32 pngColumnStep = colorType == PNG_COLOR_TYPE_RGB_ALPHA ? 4 : 3;
                 int32 pngRowBytes;
-                if (!TryMultiplyInt32(width, pngColumnBytes, pngRowBytes))
+                if (!TryMultiplyInt32(width, pngColumnStep, pngRowBytes))
                 {
                     // The multiplication would have resulted in an integer overflow / underflow.
                     png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
 
                     return memFullErr;
+                }
+
+                if (bitDepth == 16)
+                {
+                    if (!TryMultiplyInt32(pngRowBytes, 2, pngRowBytes))
+                    {
+                        // The multiplication would have resulted in an integer overflow / underflow.
+                        png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+
+                        return memFullErr;
+                    }
                 }
 
                 if (interlaceType == PNG_INTERLACE_NONE)
@@ -292,9 +486,9 @@ namespace
                                         break;
                                     }
 
-                                    const png_uint_32 rowCount = static_cast<png_uint_32>(bottom - top);
+                                    const int32 rowCount = bottom - top;
 
-                                    png_read_rows(pngPtr, pngRows, nullptr, rowCount);
+                                    png_read_rows(pngPtr, pngRows, nullptr, static_cast<png_uint_32>(rowCount));
 
                                     err = readerState->GetReadErrorCode();
 
@@ -303,66 +497,32 @@ namespace
                                         break;
                                     }
 
-                                    for (size_t row = 0; row < rowCount; row++)
+                                    if (bitDepth == 16)
                                     {
-                                        const uint8* pngPixel = buffer + (row * pngRowBytes);
-                                        uint8* pixel = static_cast<uint8*>(filterRecord->outData) + (row * filterRecord->outRowBytes);
-                                        uint8* mask = filterRecord->haveMask ? static_cast<uint8*>(filterRecord->maskData) + (row * filterRecord->maskRowBytes) : nullptr;
+                                        err = CopyDataFromPngSixteenBitsPerChannel(
+                                            buffer,
+                                            pngColumnStep,
+                                            pngRowBytes,
+                                            filterRecord,
+                                            maxWidth,
+                                            rowCount,
+                                            premultiplyAlpha);
 
-                                        for (int32 x = left; x < right; x++)
+                                        if (err != noErr)
                                         {
-                                            // Clip the output to the mask, if one is present.
-                                            if (mask == nullptr || *mask != 0)
-                                            {
-                                                if (premultiplyAlpha)
-                                                {
-                                                    float alpha = premultipliedAlphaTable[pngPixel[3]];
-
-                                                    switch (filterRecord->outColumnBytes)
-                                                    {
-                                                    case 1:
-                                                        pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
-                                                        break;
-                                                    case 3:
-                                                        pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
-                                                        pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
-                                                        pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
-                                                        break;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    switch (filterRecord->outColumnBytes)
-                                                    {
-                                                    case 1:
-                                                        pixel[0] = pngPixel[0];
-                                                        break;
-                                                    case 2:
-                                                        pixel[0] = pngPixel[0];
-                                                        pixel[1] = pngPixel[3];
-                                                        break;
-                                                    case 3:
-                                                        pixel[0] = pngPixel[0];
-                                                        pixel[1] = pngPixel[1];
-                                                        pixel[2] = pngPixel[2];
-                                                        break;
-                                                    case 4:
-                                                        pixel[0] = pngPixel[0];
-                                                        pixel[1] = pngPixel[1];
-                                                        pixel[2] = pngPixel[2];
-                                                        pixel[3] = pngPixel[3];
-                                                        break;
-                                                    }
-                                                }
-                                            }
-
-                                            pngPixel += pngColumnBytes;
-                                            pixel += filterRecord->outColumnBytes;
-                                            if (mask != nullptr)
-                                            {
-                                                mask++;
-                                            }
+                                            break;
                                         }
+                                    }
+                                    else
+                                    {
+                                        CopyDataFromPngEightBitsPerChannel(
+                                            buffer,
+                                            pngColumnStep,
+                                            pngRowBytes,
+                                            filterRecord,
+                                            maxWidth,
+                                            rowCount,
+                                            premultiplyAlpha);
                                     }
                                 }
 
@@ -434,66 +594,27 @@ namespace
 
                                     if (err == noErr)
                                     {
-                                        for (size_t y = 0; y < maxHeight; y++)
+                                        if (bitDepth == 16)
                                         {
-                                            const uint8* pngPixel = buffer + (y * pngRowBytes);
-                                            uint8* pixel = static_cast<uint8*>(filterRecord->outData) + (y * filterRecord->outRowBytes);
-                                            uint8* mask = filterRecord->haveMask ? static_cast<uint8*>(filterRecord->maskData) + (y * filterRecord->maskRowBytes) : nullptr;
-
-                                            for (int32 x = 0; x < maxWidth; x++)
-                                            {
-                                                // Clip the output to the mask, if one is present.
-                                                if (mask == nullptr || *mask != 0)
-                                                {
-                                                    if (premultiplyAlpha)
-                                                    {
-                                                        float alpha = premultipliedAlphaTable[pngPixel[3]];
-
-                                                        switch (filterRecord->outColumnBytes)
-                                                        {
-                                                        case 1:
-                                                            pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
-                                                            break;
-                                                        case 3:
-                                                            pixel[0] = static_cast<uint8>((static_cast<float>(pngPixel[0]) * alpha) + 0.5f);
-                                                            pixel[1] = static_cast<uint8>((static_cast<float>(pngPixel[1]) * alpha) + 0.5f);
-                                                            pixel[2] = static_cast<uint8>((static_cast<float>(pngPixel[2]) * alpha) + 0.5f);
-                                                            break;
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        switch (filterRecord->outColumnBytes)
-                                                        {
-                                                        case 1:
-                                                            pixel[0] = pngPixel[0];
-                                                            break;
-                                                        case 2:
-                                                            pixel[0] = pngPixel[0];
-                                                            pixel[1] = pngPixel[3];
-                                                            break;
-                                                        case 3:
-                                                            pixel[0] = pngPixel[0];
-                                                            pixel[1] = pngPixel[1];
-                                                            pixel[2] = pngPixel[2];
-                                                            break;
-                                                        case 4:
-                                                            pixel[0] = pngPixel[0];
-                                                            pixel[1] = pngPixel[1];
-                                                            pixel[2] = pngPixel[2];
-                                                            pixel[3] = pngPixel[3];
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-
-                                                pngPixel += pngColumnBytes;
-                                                pixel += filterRecord->outColumnBytes;
-                                                if (mask != nullptr)
-                                                {
-                                                    mask++;
-                                                }
-                                            }
+                                            err = CopyDataFromPngSixteenBitsPerChannel(
+                                                buffer,
+                                                pngColumnStep,
+                                                pngRowBytes,
+                                                filterRecord,
+                                                maxWidth,
+                                                maxHeight,
+                                                premultiplyAlpha);
+                                        }
+                                        else
+                                        {
+                                            CopyDataFromPngEightBitsPerChannel(
+                                                buffer,
+                                                pngColumnStep,
+                                                pngRowBytes,
+                                                filterRecord,
+                                                maxWidth,
+                                                maxHeight,
+                                                premultiplyAlpha);
                                         }
                                     }
                                 }

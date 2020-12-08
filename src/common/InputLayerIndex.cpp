@@ -21,7 +21,11 @@ namespace
 {
     struct IndexFileHeader
     {
-        IndexFileHeader(int32 numberOfLayers, int32 activeLayer, bool isGrayScale)
+        IndexFileHeader(
+            int32 numberOfLayers,
+            int32 activeLayer,
+            bool isGrayScale,
+            bool isSixteenBitsPerChannel)
         {
             // G8IX = GMIC 8BF index
             signature[0] = 'G';
@@ -31,18 +35,31 @@ namespace
             version = 2;
             layerCount = numberOfLayers;
             activeLayerIndex = activeLayer;
-            grayScale = isGrayScale ? 1 : 0;
+            documentFlags = 0;
+
+            if (isGrayScale)
+            {
+                documentFlags |= (1 << 0);
+            }
+
+            if (isSixteenBitsPerChannel)
+            {
+                documentFlags |= (1 << 1);
+            }
         }
 
         char signature[4];
         boost::endian::little_int32_t version;
         boost::endian::little_int32_t layerCount;
         boost::endian::little_int32_t activeLayerIndex;
-        boost::endian::little_int32_t grayScale;
+        boost::endian::little_int32_t documentFlags;
     };
 }
 
-InputLayerIndex::InputLayerIndex(int16 imageMode) : inputFiles(), activeLayerIndex(0), grayScale(imageMode == plugInModeGrayScale)
+InputLayerIndex::InputLayerIndex(int16 imageMode)
+    : inputFiles(), activeLayerIndex(0),
+    grayScale(imageMode == plugInModeGrayScale || imageMode == plugInModeGray16),
+    sixteenBitsPerChannel(imageMode == plugInModeGray16 || imageMode == plugInModeRGB48)
 {
 }
 
@@ -100,7 +117,11 @@ OSErr InputLayerIndex::Write(const boost::filesystem::path& path)
 
         if (err == noErr)
         {
-            IndexFileHeader header(static_cast<int32>(inputFiles.size()), activeLayerIndex, grayScale);
+            IndexFileHeader header(
+                static_cast<int32>(inputFiles.size()),
+                activeLayerIndex,
+                grayScale,
+                sixteenBitsPerChannel);
 
             err = WriteFile(file.get(), &header, sizeof(header));
 

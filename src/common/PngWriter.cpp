@@ -13,6 +13,7 @@
 #include "PngWriter.h"
 #include "FileUtil.h"
 #include "InputLayerIndex.h"
+#include <boost/endian.hpp>
 #include <string>
 #include <setjmp.h>
 #include <png.h>
@@ -94,6 +95,23 @@ namespace
         // We let the OS handle flushing any buffered data to disk.
     }
 
+    void ScaleSixteenBitDataToPNG(uint16* data, const size_t dataLength) noexcept
+    {
+        for (size_t i = 0; i < dataLength; i++)
+        {
+            uint32 value = static_cast<uint32>(*data) * 2;
+
+            if (value > 65535)
+            {
+                value = 65535;
+            }
+
+            // PNG always stores 16-bit data in big-endian.
+            *data = boost::endian::native_to_big(static_cast<uint16>(value));
+            data++;
+        }
+    }
+
     OSErr SaveActiveLayerImpl(FilterRecordPtr filterRecord, PngWriterState* writerState)
     {
         OSErr err = noErr;
@@ -139,15 +157,33 @@ namespace
         int32 width = imageSize.h;
         int32 height = imageSize.v;
 
-        constexpr int bitDepth = 8;
+        int bitDepth = 0;
+
+        switch (filterRecord->imageMode)
+        {
+        case plugInModeGrayScale:
+        case plugInModeRGBColor:
+            bitDepth = 8;
+            break;
+        case plugInModeGray16:
+        case plugInModeRGB48:
+            bitDepth = 16;
+            break;
+        default:
+            png_destroy_write_struct(&pngPtr, &infoPtr);
+            return filterBadMode;
+        }
+
         int colorType = 0;
 
         switch (filterRecord->imageMode)
         {
         case plugInModeGrayScale:
+        case plugInModeGray16:
             colorType = hasTransparency ? PNG_COLOR_TYPE_GRAY_ALPHA : PNG_COLOR_TYPE_GRAY;
             break;
         case plugInModeRGBColor:
+        case plugInModeRGB48:
             colorType = hasTransparency ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB;
             break;
         default:
@@ -172,19 +208,33 @@ namespace
 
         if (err == noErr)
         {
+            int32 numberOfChannels;
+
             switch (filterRecord->imageMode)
             {
             case plugInModeGrayScale:
-                filterRecord->inColumnBytes = hasTransparency ? 2 : 1;
+            case plugInModeGray16:
+                numberOfChannels = hasTransparency ? 2 : 1;
                 break;
             case plugInModeRGBColor:
-                filterRecord->inColumnBytes = hasTransparency ? 4 : 3;
+            case plugInModeRGB48:
+                numberOfChannels = hasTransparency ? 4 : 3;
                 break;
             default:
                 png_destroy_write_struct(&pngPtr, &infoPtr);
                 return filterBadMode;
             }
-            filterRecord->inPlaneBytes = 1;
+
+            if (bitDepth == 16)
+            {
+                filterRecord->inColumnBytes = numberOfChannels * 2;
+                filterRecord->inPlaneBytes = 2;
+            }
+            else
+            {
+                filterRecord->inColumnBytes = numberOfChannels;
+                filterRecord->inPlaneBytes = 1;
+            }
             filterRecord->inputRate = int2fixed(1);
 
             if (!TryMultiplyInt32(width, filterRecord->inColumnBytes, filterRecord->inRowBytes))
@@ -195,7 +245,7 @@ namespace
             }
 
             filterRecord->inLoPlane = 0;
-            filterRecord->inHiPlane = static_cast<int16>(filterRecord->inColumnBytes - 1);
+            filterRecord->inHiPlane = static_cast<int16>(numberOfChannels - 1);
 
             const int32 tileHeight = filterRecord->inTileHeight != 0 ? filterRecord->inTileHeight : 256;
             const int32 maxChunkHeight = std::min(tileHeight, height);
@@ -242,6 +292,13 @@ namespace
                             }
 
                             const int32 rowCount = bottom - top;
+
+                            if (bitDepth == 16)
+                            {
+                                size_t length = static_cast<size_t>(rowCount) * width * numberOfChannels;
+
+                                ScaleSixteenBitDataToPNG(static_cast<uint16*>(filterRecord->inData), length);
+                            }
 
                             // AdvanceState will update the filterRecord->inData pointer, so we have to use
                             // png_write_row instead of png_write_rows.
@@ -330,15 +387,33 @@ namespace
         int32 width = imageSize.h;
         int32 height = imageSize.v;
 
-        constexpr int bitDepth = 8;
+        int bitDepth = 0;
+
+        switch (filterRecord->imageMode)
+        {
+        case plugInModeGrayScale:
+        case plugInModeRGBColor:
+            bitDepth = 8;
+            break;
+        case plugInModeGray16:
+        case plugInModeRGB48:
+            bitDepth = 16;
+            break;
+        default:
+            png_destroy_write_struct(&pngPtr, &infoPtr);
+            return filterBadMode;
+        }
+
         int colorType = 0;
 
         switch (filterRecord->imageMode)
         {
         case plugInModeGrayScale:
+        case plugInModeGray16:
             colorType = hasTransparency ? PNG_COLOR_TYPE_GRAY_ALPHA : PNG_COLOR_TYPE_GRAY;
             break;
         case plugInModeRGBColor:
+        case plugInModeRGB48:
             colorType = hasTransparency ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB;
             break;
         default:
@@ -363,19 +438,33 @@ namespace
 
         if (err == noErr)
         {
+            int32 numberOfChannels;
+
             switch (filterRecord->imageMode)
             {
             case plugInModeGrayScale:
-                filterRecord->inColumnBytes = hasTransparency ? 2 : 1;
+            case plugInModeGray16:
+                numberOfChannels = hasTransparency ? 2 : 1;
                 break;
             case plugInModeRGBColor:
-                filterRecord->inColumnBytes = hasTransparency ? 4 : 3;
+            case plugInModeRGB48:
+                numberOfChannels = hasTransparency ? 4 : 3;
                 break;
             default:
                 png_destroy_write_struct(&pngPtr, &infoPtr);
                 return filterBadMode;
             }
-            filterRecord->inPlaneBytes = 1;
+
+            if (bitDepth == 16)
+            {
+                filterRecord->inColumnBytes = numberOfChannels * 2;
+                filterRecord->inPlaneBytes = 2;
+            }
+            else
+            {
+                filterRecord->inColumnBytes = numberOfChannels;
+                filterRecord->inPlaneBytes = 1;
+            }
             filterRecord->inputRate = int2fixed(1);
 
             if (!TryMultiplyInt32(width, filterRecord->inColumnBytes, filterRecord->inRowBytes))
@@ -386,7 +475,7 @@ namespace
             }
 
             filterRecord->inLoPlane = 0;
-            filterRecord->inHiPlane = static_cast<int16>(filterRecord->inColumnBytes - 1);
+            filterRecord->inHiPlane = static_cast<int16>(numberOfChannels - 1);
 
             const int32 tileHeight = filterRecord->inTileHeight != 0 ? filterRecord->inTileHeight : 256;
             const int32 maxChunkHeight = std::min(tileHeight, height);
@@ -407,10 +496,10 @@ namespace
             {
                 void* imageDataBuffer = filterRecord->bufferProcs->lockProc(imageDataBufferID, false);
 
-                BufferID pngRowBuffer;
-                int32 pngRowBufferSize;
+                BufferID pngRowStrideBuffer;
+                int32 pngRowStrideBufferSize;
 
-                if (!TryMultiplyInt32(maxChunkHeight, sizeof(png_bytepp), pngRowBufferSize))
+                if (!TryMultiplyInt32(maxChunkHeight, sizeof(int32), pngRowStrideBufferSize))
                 {
                     // The multiplication would have resulted in an integer overflow / underflow.
                     err = memFullErr;
@@ -418,17 +507,15 @@ namespace
 
                 if (err == noErr)
                 {
-                    err = filterRecord->bufferProcs->allocateProc(pngRowBufferSize, &pngRowBuffer);
+                    err = filterRecord->bufferProcs->allocateProc(pngRowStrideBufferSize, &pngRowStrideBuffer);
 
                     if (err == noErr)
                     {
-                        png_bytepp rowPointers = reinterpret_cast<png_bytepp>(filterRecord->bufferProcs->lockProc(pngRowBuffer, false));
+                        int32* rowStride = reinterpret_cast<int32*>(filterRecord->bufferProcs->lockProc(pngRowStrideBuffer, false));
 
-                        int32 row;
-
-                        for (row = 0; row < maxChunkHeight; row++)
+                        for (int32 y = 0; y < maxChunkHeight; y++)
                         {
-                            rowPointers[row] = static_cast<png_bytep>(imageDataBuffer) + (static_cast<int64>(row) * filterRecord->inRowBytes);
+                            rowStride[y] = y * filterRecord->inRowBytes;
                         }
 
                         PixelMemoryDesc dest{};
@@ -450,10 +537,12 @@ namespace
                             switch (filterRecord->imageMode)
                             {
                             case plugInModeGrayScale:
+                            case plugInModeGray16:
                                 imageChannels[0] = layerDescriptor->compositeChannelsList;
                                 imageChannels[1] = layerDescriptor->transparency;
                                 break;
                             case plugInModeRGBColor:
+                            case plugInModeRGB48:
                                 imageChannels[0] = layerDescriptor->compositeChannelsList;
                                 imageChannels[1] = imageChannels[0]->next;
                                 imageChannels[2] = imageChannels[1]->next;
@@ -467,22 +556,22 @@ namespace
 
                             if (err == noErr)
                             {
-                                for (row = 0; row < height; row += maxChunkHeight)
+                                for (int32 y = 0; y < height; y += maxChunkHeight)
                                 {
                                     VRect writeRect{};
-                                    writeRect.top = row;
+                                    writeRect.top = y;
                                     writeRect.left = 0;
-                                    writeRect.bottom = std::min(row + maxChunkHeight, imageSize.v);
+                                    writeRect.bottom = std::min(y + maxChunkHeight, imageSize.v);
                                     writeRect.right = imageSize.h;
 
                                     PSScaling scaling{};
                                     scaling.sourceRect = scaling.destinationRect = writeRect;
 
-                                    for (int32 i = 0; i < filterRecord->inColumnBytes; i++)
+                                    for (int32 i = 0; i < numberOfChannels; i++)
                                     {
                                         VRect wroteRect;
 
-                                        dest.bitOffset = i * 8;
+                                        dest.bitOffset = i * bitDepth;
 
                                         err = filterRecord->channelPortProcs->readPixelsProc(imageChannels[i]->port, &scaling, &writeRect, &dest, &wroteRect);
 
@@ -501,9 +590,21 @@ namespace
                                         }
                                     }
 
-                                    const png_uint_32 rowCount = static_cast<png_uint_32>(writeRect.bottom - writeRect.top);
+                                    const int32 rowCount = writeRect.bottom - writeRect.top;
 
-                                    png_write_rows(pngPtr, rowPointers, rowCount);
+                                    if (bitDepth == 16)
+                                    {
+                                        size_t length = static_cast<size_t>(rowCount) * width * numberOfChannels;
+
+                                        ScaleSixteenBitDataToPNG(static_cast<uint16*>(filterRecord->inData), length);
+                                    }
+
+                                    for (int32 i = 0; i < rowCount; i++)
+                                    {
+                                        png_bytep row = static_cast<png_bytep>(imageDataBuffer) + rowStride[i];
+
+                                        png_write_row(pngPtr, row);
+                                    }
 
                                     err = writerState->GetWriteErrorCode();
 
@@ -524,8 +625,8 @@ namespace
 
                     readPixelsError:
 
-                        filterRecord->bufferProcs->unlockProc(pngRowBuffer);
-                        filterRecord->bufferProcs->freeProc(pngRowBuffer);
+                        filterRecord->bufferProcs->unlockProc(pngRowStrideBuffer);
+                        filterRecord->bufferProcs->freeProc(pngRowStrideBuffer);
                     }
                 }
 
