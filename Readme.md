@@ -11,6 +11,10 @@ The latest version can be downloaded from the [Releases](https://github.com/0xC0
 3. Restart your host application.
 4. The plug-in will now be available as the G'MIC-Qt menu item in the GMIC category.
 
+### Updating
+
+Follow the installation instructions above and allow any existing files to be replaced. 
+
 ## Usage
 
 To start the plug-in select the G'MIC-Qt item in the filter list of your host application.
