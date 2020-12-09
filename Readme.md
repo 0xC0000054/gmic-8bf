@@ -18,12 +18,21 @@ The following image shows the menu location in Adobe Photoshop.
 
 ![Menu Location](images/MenuLocation.png)
 
-If a filter produces multiple output images the plug-in will prompt the user for a folder to copy them into
-after the G'MIC-Qt dialog has been closed.
+When the G'MIC-Qt menu item is clicked it will start the G'MIC-Qt user interface.
 
-Filters that require multiple layers can only be used if the host supports providing layers to the plug-in.
+![G'MIC-Qt UI](images/GmicQt-UI-Small.png)
+
+You can "layer" multiple G'MIC effects in a single session by clicking the Apply button.
+Note that only the most recently applied effect will be used when the plug-in is invoked
+through the "Last Filter" or "Repeat Filter" commands.
+
+Filters that require multiple input images can only be used if the document has multiple layers and the host supports
+providing layers to the plug-in.
 This feature is supported in Adobe Photoshop CS (8.0) and later (and possibly other Adobe applications), but 3rd-party
 hosts will most likely not support it due to the license restrictions added to the Photoshop SDK after version 6.0.
+
+If a filter produces multiple output images the plug-in will prompt the user for a folder to copy them into
+after the G'MIC-Qt dialog has been closed.
 
 ## License
 
