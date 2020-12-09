@@ -51,7 +51,7 @@ See [License.txt](License.txt) for more information.
 * The `boost-filesystem`, `boost-endian` and `LibPNG` packages from [VCPkg](https://github.com/microsoft/vcpkg).
 * The Adobe Photoshop CS6 SDK, see the read-me in the ext folder for more details.
 
-## Building the plugin
+## Building the plug-in
 
 * Open the solution
 * Update the post build events to copy the build output to the filters folder of your host application
