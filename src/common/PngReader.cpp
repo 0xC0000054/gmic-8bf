@@ -422,7 +422,7 @@ namespace
                 }
 
                 const int32 width = static_cast<int32>(pngWidth);
-                const int32 height = static_cast<int32>(pngWidth);
+                const int32 height = static_cast<int32>(pngHeight);
                 const bool includeTransparency = colorType == PNG_COLOR_TYPE_RGB_ALPHA && filterRecord->outLayerPlanes != 0 && filterRecord->outTransparencyMask != 0;
 
                 const VPoint imageSize = GetImageSize(filterRecord);
