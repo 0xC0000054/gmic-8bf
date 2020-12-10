@@ -209,6 +209,11 @@ namespace
 
         if (err == noErr)
         {
+            // Do not compress or filter the image data when writing it to the file.
+            // This can noticeably speedup launching G'MIC-Qt with large images.
+            png_set_compression_level(pngPtr, 0);
+            png_set_filter(pngPtr, 0, PNG_FILTER_NONE);
+
             int32 numberOfChannels;
 
             switch (filterRecord->imageMode)
@@ -439,6 +444,11 @@ namespace
 
         if (err == noErr)
         {
+            // Do not compress or filter the image data when writing it to the file.
+            // This can noticeably speedup launching G'MIC-Qt with large images.
+            png_set_compression_level(pngPtr, 0);
+            png_set_filter(pngPtr, 0, PNG_FILTER_NONE);
+
             int32 numberOfChannels;
 
             switch (filterRecord->imageMode)
