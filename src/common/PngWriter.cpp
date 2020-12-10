@@ -95,22 +95,21 @@ namespace
         // We let the OS handle flushing any buffered data to disk.
     }
 
+    uint16 ConvertToPng16BitRange(uint16 value)
+    {
+        // The host provides 16-bit data in the range of [0, 32768], convert it to the PNG
+        // 16-bit range of [0, 65535].
+        return value > 32767 ? 65535 : value * 2;
+    }
+
     void ScaleSixteenBitDataToPNG(uint16* data, const size_t dataLength) noexcept
     {
         DebugOut("%s, length=%zu", __FUNCTION__, dataLength);
 
         for (size_t i = 0; i < dataLength; i++)
         {
-            uint32 value = static_cast<uint32>(*data) * 2;
-
-            if (value > 65535)
-            {
-                value = 65535;
-            }
-
             // PNG always stores 16-bit data in big-endian.
-            *data = boost::endian::native_to_big(static_cast<uint16>(value));
-            data++;
+            data[i] = boost::endian::native_to_big(ConvertToPng16BitRange(data[i]));
         }
     }
 
