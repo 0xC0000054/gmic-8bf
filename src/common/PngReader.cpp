@@ -13,6 +13,7 @@
 #include "PngReader.h"
 #include "FileUtil.h"
 #include <algorithm>
+#include <new>
 #include <boost/predef.h>
 #include <setjmp.h>
 #include <png.h>
@@ -518,97 +519,91 @@ namespace
                     {
                         uint8* buffer = reinterpret_cast<uint8*>(filterRecord->bufferProcs->lockProc(pngImageRows, false));
 
-                        BufferID rowStrideBuffer;
-                        int32 rowStrideBufferSize = 0;
+                        // The LibPNG row pointers are allocated using new instead of the Buffer suite
+                        // because some hosts crash when trying to free nested Buffer suite buffers.
+                        //
+                        // We do not use an unique_ptr because LibPNG uses setjmp for error handling, and that
+                        // is not guaranteed to work with the automatic C++ object destruction.
+                        png_bytepp pngRows = new (std::nothrow) png_bytep[maxChunkHeight];
 
-                        if (!TryMultiplyInt32(maxChunkHeight, sizeof(png_bytepp), rowStrideBufferSize))
+                        if (pngRows == nullptr)
                         {
-                            // The multiplication would have resulted in an integer overflow / underflow.
                             err = memFullErr;
                         }
-
-                        if (err == noErr)
+                        else
                         {
-                            err = filterRecord->bufferProcs->allocateProc(rowStrideBufferSize, &rowStrideBuffer);
-
-                            if (err == noErr)
+                            for (int32 y = 0; y < maxChunkHeight; y++)
                             {
-                                png_bytepp pngRows = reinterpret_cast<png_bytepp>(filterRecord->bufferProcs->lockProc(rowStrideBuffer, false));
+                                pngRows[y] = buffer + (static_cast<int64>(y) * pngRowBytes);
+                            }
 
-                                for (int32 y = 0; y < maxChunkHeight; y++)
-                                {
-                                    pngRows[y] = buffer + (static_cast<int64>(y) * pngRowBytes);
-                                }
+                            if (filterRecord->haveMask)
+                            {
+                                filterRecord->maskRate = int2fixed(1);
+                            }
+
+                            const int32 left = 0;
+                            const int32 right = maxWidth;
+
+                            for (int32 y = 0; y < maxHeight; y += maxChunkHeight)
+                            {
+                                const int32 top = y;
+                                const int32 bottom = std::min(top + maxChunkHeight, maxHeight);
+
+                                SetOutputRect(filterRecord, top, left, bottom, right);
 
                                 if (filterRecord->haveMask)
                                 {
-                                    filterRecord->maskRate = int2fixed(1);
+                                    SetMaskRect(filterRecord, top, left, bottom, right);
                                 }
 
-                                const int32 left = 0;
-                                const int32 right = maxWidth;
-
-                                for (int32 y = 0; y < maxHeight; y += maxChunkHeight)
+                                err = filterRecord->advanceState();
+                                if (err != noErr)
                                 {
-                                    const int32 top = y;
-                                    const int32 bottom = std::min(top + maxChunkHeight, maxHeight);
-
-                                    SetOutputRect(filterRecord, top, left, bottom, right);
-
-                                    if (filterRecord->haveMask)
-                                    {
-                                        SetMaskRect(filterRecord, top, left, bottom, right);
-                                    }
-
-                                    err = filterRecord->advanceState();
-                                    if (err != noErr)
-                                    {
-                                        break;
-                                    }
-
-                                    const int32 rowCount = bottom - top;
-
-                                    png_read_rows(pngPtr, pngRows, nullptr, static_cast<png_uint_32>(rowCount));
-
-                                    err = readerState->GetReadErrorCode();
-
-                                    if (err != noErr)
-                                    {
-                                        break;
-                                    }
-
-                                    if (bitDepth == 16)
-                                    {
-                                        err = CopyDataFromPngSixteenBitsPerChannel(
-                                            buffer,
-                                            pngColumnStep,
-                                            pngRowBytes,
-                                            filterRecord,
-                                            maxWidth,
-                                            rowCount,
-                                            premultiplyAlpha);
-
-                                        if (err != noErr)
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        CopyDataFromPngEightBitsPerChannel(
-                                            buffer,
-                                            pngColumnStep,
-                                            pngRowBytes,
-                                            filterRecord,
-                                            maxWidth,
-                                            rowCount,
-                                            premultiplyAlpha);
-                                    }
+                                    break;
                                 }
 
-                                filterRecord->bufferProcs->unlockProc(rowStrideBuffer);
-                                filterRecord->bufferProcs->freeProc(rowStrideBuffer);
+                                const int32 rowCount = bottom - top;
+
+                                png_read_rows(pngPtr, pngRows, nullptr, static_cast<png_uint_32>(rowCount));
+
+                                err = readerState->GetReadErrorCode();
+
+                                if (err != noErr)
+                                {
+                                    break;
+                                }
+
+                                if (bitDepth == 16)
+                                {
+                                    err = CopyDataFromPngSixteenBitsPerChannel(
+                                        buffer,
+                                        pngColumnStep,
+                                        pngRowBytes,
+                                        filterRecord,
+                                        maxWidth,
+                                        rowCount,
+                                        premultiplyAlpha);
+
+                                    if (err != noErr)
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    CopyDataFromPngEightBitsPerChannel(
+                                        buffer,
+                                        pngColumnStep,
+                                        pngRowBytes,
+                                        filterRecord,
+                                        maxWidth,
+                                        rowCount,
+                                        premultiplyAlpha);
+                                }
                             }
+
+                            delete[] pngRows;
                         }
 
                         filterRecord->bufferProcs->unlockProc(pngImageRows);
@@ -634,74 +629,68 @@ namespace
                     {
                         uint8* buffer = reinterpret_cast<uint8*>(filterRecord->bufferProcs->lockProc(pngImageRows, false));
 
-                        int32 pngRowBufferSize = 0;
+                        // The LibPNG row pointers are allocated using new instead of the Buffer suite
+                        // because some hosts crash when trying to free nested Buffer suite buffers.
+                        //
+                        // We do not use an unique_ptr because LibPNG uses setjmp for error handling, and that
+                        // is not guaranteed to work with the automatic C++ object destruction.
+                        png_bytepp pngRows = new (std::nothrow) png_bytep[height];
 
-                        if (!TryMultiplyInt32(height, sizeof(png_bytepp), pngRowBufferSize))
+                        if (pngRows == nullptr)
                         {
-                            // The multiplication would have resulted in an integer overflow / underflow.
                             err = memFullErr;
                         }
-
-                        if (err == noErr)
+                        else
                         {
-                            BufferID pngRowBuffer;
-                            err = filterRecord->bufferProcs->allocateProc(pngRowBufferSize, &pngRowBuffer);
+                            for (int32 y = 0; y < height; y++)
+                            {
+                                pngRows[y] = buffer + (static_cast<int64>(y) * pngRowBytes);
+                            }
+
+                            SetOutputRect(filterRecord, 0, 0, maxHeight, maxWidth);
+
+                            if (filterRecord->haveMask)
+                            {
+                                filterRecord->maskRate = int2fixed(1);
+                                SetMaskRect(filterRecord, 0, 0, maxHeight, maxWidth);
+                            }
+
+                            err = filterRecord->advanceState();
 
                             if (err == noErr)
                             {
-                                png_bytepp pngRows = reinterpret_cast<png_bytepp>(filterRecord->bufferProcs->lockProc(pngRowBuffer, false));
+                                png_read_rows(pngPtr, pngRows, nullptr, static_cast<png_uint_32>(height));
 
-                                for (int32 y = 0; y < height; y++)
-                                {
-                                    pngRows[y] = buffer + (static_cast<int64>(y) * pngRowBytes);
-                                }
-
-                                SetOutputRect(filterRecord, 0, 0, maxHeight, maxWidth);
-
-                                if (filterRecord->haveMask)
-                                {
-                                    filterRecord->maskRate = int2fixed(1);
-                                    SetMaskRect(filterRecord, 0, 0, maxHeight, maxWidth);
-                                }
-
-                                err = filterRecord->advanceState();
+                                err = readerState->GetReadErrorCode();
 
                                 if (err == noErr)
                                 {
-                                    png_read_rows(pngPtr, pngRows, nullptr, static_cast<png_uint_32>(height));
-
-                                    err = readerState->GetReadErrorCode();
-
-                                    if (err == noErr)
+                                    if (bitDepth == 16)
                                     {
-                                        if (bitDepth == 16)
-                                        {
-                                            err = CopyDataFromPngSixteenBitsPerChannel(
-                                                buffer,
-                                                pngColumnStep,
-                                                pngRowBytes,
-                                                filterRecord,
-                                                maxWidth,
-                                                maxHeight,
-                                                premultiplyAlpha);
-                                        }
-                                        else
-                                        {
-                                            CopyDataFromPngEightBitsPerChannel(
-                                                buffer,
-                                                pngColumnStep,
-                                                pngRowBytes,
-                                                filterRecord,
-                                                maxWidth,
-                                                maxHeight,
-                                                premultiplyAlpha);
-                                        }
+                                        err = CopyDataFromPngSixteenBitsPerChannel(
+                                            buffer,
+                                            pngColumnStep,
+                                            pngRowBytes,
+                                            filterRecord,
+                                            maxWidth,
+                                            maxHeight,
+                                            premultiplyAlpha);
+                                    }
+                                    else
+                                    {
+                                        CopyDataFromPngEightBitsPerChannel(
+                                            buffer,
+                                            pngColumnStep,
+                                            pngRowBytes,
+                                            filterRecord,
+                                            maxWidth,
+                                            maxHeight,
+                                            premultiplyAlpha);
                                     }
                                 }
-
-                                filterRecord->bufferProcs->unlockProc(pngRowBuffer);
-                                filterRecord->bufferProcs->freeProc(pngRowBuffer);
                             }
+
+                            delete[] pngRows;
                         }
 
                         filterRecord->bufferProcs->unlockProc(pngImageRows);
