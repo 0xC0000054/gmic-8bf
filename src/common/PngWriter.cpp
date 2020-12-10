@@ -97,6 +97,8 @@ namespace
 
     void ScaleSixteenBitDataToPNG(uint16* data, const size_t dataLength) noexcept
     {
+        DebugOut("%s, length=%zu", __FUNCTION__, dataLength);
+
         for (size_t i = 0; i < dataLength; i++)
         {
             uint32 value = static_cast<uint32>(*data) * 2;
