@@ -67,8 +67,8 @@ namespace
             {
                 if (parameters->lastOutputFolder != nullptr)
                 {
-                    filterRecord->handleProcs->unlockProc(parameters->lastOutputFolder);
-                    filterRecord->handleProcs->disposeProc(parameters->lastOutputFolder);
+                    UnlockPIHandle(filterRecord, parameters->lastOutputFolder);
+                    DisposePIHandle(filterRecord, parameters->lastOutputFolder);
                     parameters->lastOutputFolder = nullptr;
                 }
 
@@ -81,26 +81,22 @@ namespace
 
                 if (err == noErr)
                 {
-                    parameters->lastOutputFolder = filterRecord->handleProcs->newProc(static_cast<int32>(pathSizeInBytes));
+                    err = NewPIHandle(filterRecord, static_cast<int32>(pathSizeInBytes), &parameters->lastOutputFolder);
 
-                    if (parameters->lastOutputFolder == nullptr)
+                    if (err == noErr)
                     {
-                        err = memFullErr;
-                    }
-                    else
-                    {
-                        uint8* destPtr = reinterpret_cast<uint8*>(filterRecord->handleProcs->lockProc(parameters->lastOutputFolder, false));
+                        uint8* destPtr = reinterpret_cast<uint8*>(LockPIHandle(filterRecord, parameters->lastOutputFolder, false));
 
                         std::memcpy(destPtr, outputFolder.c_str(), pathSizeInBytes);
 
-                        filterRecord->handleProcs->unlockProc(parameters->lastOutputFolder);
+                        UnlockPIHandle(filterRecord, parameters->lastOutputFolder);
                     }
                 }
             }
         }
         else
         {
-            Ptr destPtr = filterRecord->handleProcs->lockProc(parameters->lastOutputFolder, false);
+            Ptr destPtr = LockPIHandle(filterRecord, parameters->lastOutputFolder, false);
 
             try
             {
@@ -117,7 +113,7 @@ namespace
                 err = ioErr;
             }
 
-            filterRecord->handleProcs->unlockProc(parameters->lastOutputFolder);
+            UnlockPIHandle(filterRecord, parameters->lastOutputFolder);
         }
 
         UnlockParameters(filterRecord);

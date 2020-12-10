@@ -215,6 +215,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="FileUtilWin.h" />
     <ClInclude Include="FolderBrowserWin.h" />
     <ClInclude Include="..\common\PngReader.h" />
+    <ClInclude Include="MemoryWin.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -225,6 +226,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\common\GmicPlugin.cpp" />
     <ClCompile Include="..\common\InputLayerIndex.cpp" />
     <ClCompile Include="..\common\InputLayerInfo.cpp" />
+    <ClCompile Include="..\common\Memory.cpp" />
     <ClCompile Include="..\common\PngWarningHandler.cpp" />
     <ClCompile Include="..\common\PngWriter.cpp" />
     <ClCompile Include="..\common\Read.cpp" />
@@ -234,6 +236,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="FileUtilWin.cpp" />
     <ClCompile Include="FolderBrowserWin.cpp" />
     <ClCompile Include="..\common\PngReader.cpp" />
+    <ClCompile Include="MemoryWin.cpp" />
     <ClCompile Include="UIWin.cpp" />
   </ItemGroup>
   <ItemGroup>

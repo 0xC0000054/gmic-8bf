@@ -71,6 +71,12 @@ constexpr Fixed int2fixed(int value)
     return value << 16;
 }
 
+OSErr NewPIHandle(const FilterRecordPtr filterRecord, int32 size, Handle* handle);
+void DisposePIHandle(const FilterRecordPtr filterRecord, Handle handle);
+Ptr LockPIHandle(const FilterRecordPtr filterRecord, Handle handle, Boolean moveHigh);
+void UnlockPIHandle(const FilterRecordPtr filterRecord, Handle handle);
+
+bool HandleSuiteIsAvailable(const FilterRecord* filterRecord);
 bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName);
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
 VPoint GetImageSize(const FilterRecordPtr filterRecord);

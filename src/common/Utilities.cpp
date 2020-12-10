@@ -506,6 +506,13 @@ std::string FourCCToString(const uint32 fourCC)
 }
 #endif // DEBUG_BUILD
 
+bool HandleSuiteIsAvailable(const FilterRecord* filterRecord)
+{
+    static bool handleProcsAvailable = HostHandleProcsAvailable(filterRecord);
+
+    return handleProcsAvailable;
+}
+
 bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName)
 {
     bool result = false;
@@ -513,7 +520,7 @@ bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& 
 #if PSSDK_HAS_LAYER_SUPPORT
     int32 targetLayerIndex;
 
-    if (TryGetTargetLayerIndex(filterRecord, targetLayerIndex))
+    if (HandleSuiteIsAvailable(filterRecord) && TryGetTargetLayerIndex(filterRecord, targetLayerIndex))
     {
         Handle complexProperty = nullptr;
 
@@ -546,9 +553,7 @@ bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& 
 
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept
 {
-    if (filterRecord->advanceState != nullptr &&
-        HostBufferProcsAvailable(filterRecord) &&
-        HostHandleProcsAvailable(filterRecord))
+    if (filterRecord->advanceState != nullptr && HostBufferProcsAvailable(filterRecord))
     {
         return true;
     }
