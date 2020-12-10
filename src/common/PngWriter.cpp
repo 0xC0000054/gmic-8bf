@@ -596,7 +596,7 @@ namespace
                                     {
                                         size_t length = static_cast<size_t>(rowCount) * width * numberOfChannels;
 
-                                        ScaleSixteenBitDataToPNG(static_cast<uint16*>(filterRecord->inData), length);
+                                        ScaleSixteenBitDataToPNG(static_cast<uint16*>(dest.data), length);
                                     }
 
                                     for (int32 i = 0; i < rowCount; i++)
