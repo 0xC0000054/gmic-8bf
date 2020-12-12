@@ -50,60 +50,26 @@ namespace
 
             if (LoadStringW(wil::GetModuleInstanceHandle(), VISTA_FOLDER_PICKER_TITLE, titleBuffer, _countof(titleBuffer)) > 0)
             {
-                if (SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
-                {
-                    wil::com_ptr_nothrow<IFileDialog> pfd;
-                    if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd))))
-                    {
-                        DWORD dwOptions;
-                        if (SUCCEEDED(pfd->GetOptions(&dwOptions)))
-                        {
-                            pfd->SetOptions(dwOptions | FOS_PICKFOLDERS | FOS_DONTADDTORECENT | FOS_FORCEFILESYSTEM);
-                            pfd->SetTitle(titleBuffer);
-                            pfd->SetClientGuid(ClientGuid);
+                auto comCleanup = wil::CoInitializeEx(COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-                            HRESULT hr = pfd->Show(owner);
-                            if (SUCCEEDED(hr))
-                            {
-                                wil::com_ptr_nothrow<IShellItem> psi;
-                                if (SUCCEEDED(pfd->GetResult(&psi)))
-                                {
-                                    wil::unique_cotaskmem_string pszPath;
-                                    if (SUCCEEDED(psi->GetDisplayName(SIGDN_FILESYSPATH, &pszPath)))
-                                    {
-                                        outputFolderPath = pszPath.get();
-                                    }
-                                    else
-                                    {
-                                        err = ioErr;
-                                    }
-                                }
-                                else
-                                {
-                                    err = ioErr;
-                                }
-                            }
-                            else
-                            {
-                                err = hr == HRESULT_FROM_WIN32(ERROR_CANCELLED) ? userCanceledErr : ioErr;
-                            }
-                        }
-                        else
-                        {
-                            err = ioErr;
-                        }
-                    }
-                    else
-                    {
-                        err = ioErr;
-                    }
+                auto pfd = wil::CoCreateInstance<IFileOpenDialog>(CLSID_FileOpenDialog);
 
-                    CoUninitialize();
-                }
-                else
-                {
-                    err = ioErr;
-                }
+                DWORD dwOptions;
+                THROW_IF_FAILED(pfd->GetOptions(&dwOptions));
+
+                THROW_IF_FAILED(pfd->SetOptions(dwOptions | FOS_PICKFOLDERS | FOS_DONTADDTORECENT | FOS_FORCEFILESYSTEM));
+                THROW_IF_FAILED(pfd->SetTitle(titleBuffer));
+                THROW_IF_FAILED(pfd->SetClientGuid(ClientGuid));
+
+                THROW_IF_FAILED(pfd->Show(owner));
+
+                wil::com_ptr<IShellItem> psi;
+                THROW_IF_FAILED(pfd->GetResult(&psi));
+
+                wil::unique_cotaskmem_string pszPath;
+                THROW_IF_FAILED(psi->GetDisplayName(SIGDN_FILESYSPATH, &pszPath));
+
+                outputFolderPath = pszPath.get();
             }
             else
             {
@@ -113,6 +79,21 @@ namespace
         catch (const std::bad_alloc&)
         {
             err = memFullErr;
+        }
+        catch (const wil::ResultException& e)
+        {
+            switch (e.GetErrorCode())
+            {
+            case E_OUTOFMEMORY:
+                err = memFullErr;
+                break;
+            case HRESULT_FROM_WIN32(ERROR_CANCELLED):
+                err = userCanceledErr;
+                break;
+            default:
+                err = ioErr;
+                break;
+            }
         }
         catch (...)
         {
