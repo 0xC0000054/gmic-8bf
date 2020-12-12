@@ -127,7 +127,7 @@ namespace
         // The filter uses embedded NUL characters as a separator, with double termination for the last item.
         // The final string will have the following format: "PNG Images\0*.png\0\0".
 
-        const size_t filterStringLength = static_cast<size_t>(filterNameLength) + 1 + fileExtensionFilterLength + 1 + 1;
+        const size_t filterStringLength = filterNameLength + 1 + fileExtensionFilterLength + 1 + 1;
         const size_t filterStringLengthInBytes = filterStringLength * sizeof(wchar_t);
 
         wil::unique_cotaskmem_ptr<wchar_t[]> filter = wil::make_unique_cotaskmem<wchar_t[]>(filterStringLengthInBytes);
