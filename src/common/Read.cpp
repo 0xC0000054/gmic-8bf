@@ -168,12 +168,6 @@ OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* fil
                 {
                     err = ioErr;
                 }
-
-                if (err == noErr)
-                {
-                    // Copy the first image in the list to the canvas.
-                    err = LoadPngImage(filePaths[0], filterRecord);
-                }
             }
         }
     }
