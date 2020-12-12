@@ -19,6 +19,7 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 #include <wil/win32_helpers.h>
+#include <new>
 
 namespace
 {
@@ -103,6 +104,14 @@ namespace
         return err;
     }
 
+    using unique_oleuninitialize_call = wil::unique_call<decltype(&OleUninitialize), OleUninitialize>;
+
+    unique_oleuninitialize_call InitializeOLE()
+    {
+        THROW_IF_FAILED(OleInitialize(nullptr));
+        return unique_oleuninitialize_call();
+    }
+
     OSErr BrowseForFolderClassic(HWND owner, boost::filesystem::path& outputFolderPath)
     {
         OSErr err = noErr;
@@ -111,8 +120,10 @@ namespace
 
         if (LoadStringW(wil::GetModuleInstanceHandle(), CLASSIC_FOLDER_PICKER_DESCRIPTION, titleBuffer, _countof(titleBuffer)) > 0)
         {
-            if (SUCCEEDED(OleInitialize(nullptr)))
+            try
             {
+                auto oleCleanup = InitializeOLE();
+
                 BROWSEINFOW bi = {};
                 bi.hwndOwner = owner;
                 bi.lpszTitle = titleBuffer;
@@ -122,6 +133,11 @@ namespace
 
                 if (pIDL != nullptr)
                 {
+                    auto idlCleanup = wil::scope_exit([&]
+                    {
+                        CoTaskMemFree(pIDL);
+                    });
+
                     wchar_t pathBuffer[MAX_PATH + 1] = {};
 
                     if (SHGetPathFromIDListW(pIDL, pathBuffer))
@@ -132,18 +148,29 @@ namespace
                     {
                         err = ioErr;
                     }
-
-                    CoTaskMemFree(pIDL);
                 }
                 else
                 {
                     err = userCanceledErr;
                 }
-
-
-                OleUninitialize();
             }
-            else
+            catch (const std::bad_alloc&)
+            {
+                err = memFullErr;
+            }
+            catch (const wil::ResultException& e)
+            {
+                switch (e.GetErrorCode())
+                {
+                case E_OUTOFMEMORY:
+                    err = memFullErr;
+                    break;
+                default:
+                    err = ioErr;
+                    break;
+                }
+            }
+            catch (...)
             {
                 err = ioErr;
             }
