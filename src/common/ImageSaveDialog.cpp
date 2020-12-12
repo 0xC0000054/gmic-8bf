@@ -10,18 +10,15 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "ImageSaveDialog.h"
 
-#ifndef PNGREADER_H
-#define PNGREADER_H
+#ifdef __PIWin__
+#include "ImageSaveDialogWin.h"
+#else
+#error "Missing an ImageSaveDialog header for this platform."
+#endif
 
-#include "GmicPlugin.h"
-
-OSErr PngImageSizeMatchesDocument(
-    const boost::filesystem::path& path,
-    const VPoint& documentSize,
-    bool& imageSizeMatchesDocument);
-
-OSErr LoadPngImage(const boost::filesystem::path& path, FilterRecord* filterRecord);
-
-#endif // !PNGREADER_H
+OSErr GetNewImageFileName(const FilterRecordPtr filterRecord, boost::filesystem::path& outputFileName)
+{
+    return GetNewImageFileNameNative(filterRecord, outputFileName);
+}

@@ -347,6 +347,87 @@ namespace
         return noErr;
     }
 
+    OSErr ImageSizeMatchesDocument(const VPoint& documentSize, PngReaderState* readerState, bool& imageSizeMatchesDocument)
+    {
+        imageSizeMatchesDocument = false;
+
+        OSErr err = noErr;
+
+        png_structp pngPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, static_cast<png_voidp>(readerState), PngReadErrorHandler, nullptr);
+
+        if (!pngPtr)
+        {
+            return memFullErr;
+        }
+
+        png_infop infoPtr = png_create_info_struct(pngPtr);
+
+        if (!infoPtr)
+        {
+            png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+
+            return memFullErr;
+        }
+
+        png_set_read_fn(pngPtr, static_cast<png_voidp>(readerState), ReadPngData);
+
+        // Disable "C4611: interaction between '_setjmp' and C++ object destruction is non-portable" on MSVC.
+        // This method does not create any C++ objects.
+#if _MSC_VER
+#pragma warning(disable:4611)
+#endif
+        if (setjmp(png_jmpbuf(pngPtr)))
+        {
+            png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+
+            return ioErr;
+        }
+
+#if _MSC_VER
+#pragma warning(default:4611)
+#endif
+
+        png_read_info(pngPtr, infoPtr);
+
+        err = readerState->GetReadErrorCode();
+        if (err == noErr)
+        {
+            png_uint_32 pngWidth;
+            png_uint_32 pngHeight;
+            int bitDepth;
+            int colorType;
+            int interlaceType;
+            int compressionType;
+            int filterType;
+
+            if (!png_get_IHDR(
+                pngPtr,
+                infoPtr,
+                &pngWidth,
+                &pngHeight,
+                &bitDepth,
+                &colorType,
+                &interlaceType,
+                &compressionType,
+                &filterType))
+            {
+                err = readErr;
+            }
+
+            if (err == noErr)
+            {
+                const png_uint_32 documentWidth = static_cast<const png_uint_32>(documentSize.h);
+                const png_uint_32 documentHeight = static_cast<const png_uint_32>(documentSize.v);
+
+                imageSizeMatchesDocument = pngWidth == documentWidth && pngHeight == documentHeight;
+            }
+        }
+
+        png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+
+        return err;
+    }
+
     OSErr ReadPngImage(FilterRecordPtr filterRecord, PngReaderState* readerState)
     {
         OSErr err = noErr;
@@ -713,6 +794,34 @@ namespace
 
         return err;
     }
+}
+
+OSErr PngImageSizeMatchesDocument(
+    const boost::filesystem::path& path,
+    const VPoint& documentSize,
+    bool& imageSizeMatchesDocument)
+{
+    OSErr err = noErr;
+
+    try
+    {
+        std::unique_ptr<FileHandle> file;
+
+        err = OpenFile(path, FileOpenMode::Read, file);
+
+        if (err == noErr)
+        {
+            std::unique_ptr<PngReaderState> readerState = std::make_unique<PngReaderState>(file.get());
+
+            err = ImageSizeMatchesDocument(documentSize, readerState.get(), imageSizeMatchesDocument);
+        }
+    }
+    catch (const std::bad_alloc&)
+    {
+        err = memFullErr;
+    }
+
+    return err;
 }
 
 OSErr LoadPngImage(const boost::filesystem::path& path, FilterRecord* filterRecord)

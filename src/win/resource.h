@@ -25,6 +25,8 @@
 #define IMAGE_HEIGHT_TOO_LARGE          110
 #define VISTA_FOLDER_PICKER_TITLE       111
 #define CLASSIC_FOLDER_PICKER_DESCRIPTION 112
+#define IMAGE_SAVE_DIALOG_TITLE         113
+#define IMAGE_SAVE_DIALOG_FILTER_NAME   114
 #define IDC_LIBPNGCOPYRIGHTFORMAT       1000
 #define ABOUTFORMAT                     1001
 #define IDC_GMICQT                      1002
@@ -34,7 +36,7 @@
 #define IDC_GMICCORE                    1006
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        101

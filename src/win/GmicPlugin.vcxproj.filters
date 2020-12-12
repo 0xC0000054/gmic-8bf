@@ -60,6 +60,12 @@
     <ClInclude Include="MemoryWin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ImageSaveDialogWin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\ImageSaveDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -111,6 +117,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MemoryWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\ImageSaveDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageSaveDialogWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -207,6 +207,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\common\FileUtil.h" />
     <ClInclude Include="..\common\FolderBrowser.h" />
     <ClInclude Include="..\common\GmicPlugin.h" />
+    <ClInclude Include="..\common\ImageSaveDialog.h" />
     <ClInclude Include="..\common\InputLayerIndex.h" />
     <ClInclude Include="..\common\InputLayerInfo.h" />
     <ClInclude Include="..\common\PngWarningHandler.h" />
@@ -215,6 +216,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="FileUtilWin.h" />
     <ClInclude Include="FolderBrowserWin.h" />
     <ClInclude Include="..\common\PngReader.h" />
+    <ClInclude Include="ImageSaveDialogWin.h" />
     <ClInclude Include="MemoryWin.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -224,6 +226,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\common\FileUtil.cpp" />
     <ClCompile Include="..\common\FolderBrowser.cpp" />
     <ClCompile Include="..\common\GmicPlugin.cpp" />
+    <ClCompile Include="..\common\ImageSaveDialog.cpp" />
     <ClCompile Include="..\common\InputLayerIndex.cpp" />
     <ClCompile Include="..\common\InputLayerInfo.cpp" />
     <ClCompile Include="..\common\Memory.cpp" />
@@ -236,6 +239,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="FileUtilWin.cpp" />
     <ClCompile Include="FolderBrowserWin.cpp" />
     <ClCompile Include="..\common\PngReader.cpp" />
+    <ClCompile Include="ImageSaveDialogWin.cpp" />
     <ClCompile Include="MemoryWin.cpp" />
     <ClCompile Include="UIWin.cpp" />
   </ItemGroup>

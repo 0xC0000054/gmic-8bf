@@ -13,6 +13,7 @@
 #include "stdafx.h"
 #include "GmicPlugin.h"
 #include "FolderBrowser.h"
+#include "ImageSaveDialog.h"
 #include "PngReader.h"
 #include "resource.h"
 #include <algorithm>
@@ -136,7 +137,45 @@ OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* fil
     {
         if (filePaths.size() == 1)
         {
-            err = LoadPngImage(filePaths[0], filterRecord);
+            const boost::filesystem::path& filePath = filePaths[0];
+            const VPoint& documentSize = GetImageSize(filterRecord);
+            bool imageSizeMatchesDocument = false;
+
+            err = PngImageSizeMatchesDocument(filePath, documentSize, imageSizeMatchesDocument);
+
+            if (err == noErr)
+            {
+                if (imageSizeMatchesDocument)
+                {
+                    err = LoadPngImage(filePath, filterRecord);
+                }
+                else
+                {
+                    boost::filesystem::path outputFileName;
+
+                    err = GetNewImageFileName(filterRecord, outputFileName);
+
+                    if (err == noErr)
+                    {
+                        try
+                        {
+                            boost::filesystem::copy_file(filePath, outputFileName, boost::filesystem::copy_options::overwrite_existing);
+                        }
+                        catch (const std::bad_alloc&)
+                        {
+                            err = memFullErr;
+                        }
+                        catch (const boost::filesystem::filesystem_error& e)
+                        {
+                            err = ShowErrorMessage(e.what(), filterRecord, ioErr);
+                        }
+                        catch (...)
+                        {
+                            err = ioErr;
+                        }
+                    }
+                }
+            }
         }
         else
         {

@@ -12,16 +12,11 @@
 
 #pragma once
 
-#ifndef PNGREADER_H
-#define PNGREADER_H
+#ifndef IMAGESAVEDIALOGWIN_H
+#define IMAGESAVEDIALOGWIN_H
 
 #include "GmicPlugin.h"
 
-OSErr PngImageSizeMatchesDocument(
-    const boost::filesystem::path& path,
-    const VPoint& documentSize,
-    bool& imageSizeMatchesDocument);
+OSErr GetNewImageFileNameNative(const FilterRecordPtr filterRecord, boost::filesystem::path& outputFileName);
 
-OSErr LoadPngImage(const boost::filesystem::path& path, FilterRecord* filterRecord);
-
-#endif // !PNGREADER_H
+#endif // !IMAGESAVEDIALOGWIN_H
