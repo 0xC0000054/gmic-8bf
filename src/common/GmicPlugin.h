@@ -38,7 +38,6 @@ struct FilterParameters
 {
     GPBoolean lastSelectorWasParameters;
     GPBoolean showUI;
-    Handle lastOutputFolder;
 };
 
 // Support compiling with the 7.0 and earlier SDKs.

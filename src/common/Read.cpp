@@ -56,70 +56,7 @@ namespace
 
     OSErr GetOutputFolder(FilterRecordPtr filterRecord, boost::filesystem::path& outputFolder)
     {
-        OSErr err = noErr;
-
-        FilterParameters* parameters = LockParameters(filterRecord);
-
-        if (parameters->showUI || parameters->lastOutputFolder == nullptr)
-        {
-            err = GetGmicOutputFolder(filterRecord, outputFolder);
-
-            if (err == noErr)
-            {
-                if (parameters->lastOutputFolder != nullptr)
-                {
-                    UnlockPIHandle(filterRecord, parameters->lastOutputFolder);
-                    DisposePIHandle(filterRecord, parameters->lastOutputFolder);
-                    parameters->lastOutputFolder = nullptr;
-                }
-
-                size_t pathSizeInBytes = outputFolder.size() * sizeof(boost::filesystem::path::value_type);
-
-                if (pathSizeInBytes > static_cast<size_t>(std::numeric_limits<int32>::max()))
-                {
-                    err = memFullErr;
-                }
-
-                if (err == noErr)
-                {
-                    err = NewPIHandle(filterRecord, static_cast<int32>(pathSizeInBytes), &parameters->lastOutputFolder);
-
-                    if (err == noErr)
-                    {
-                        uint8* destPtr = reinterpret_cast<uint8*>(LockPIHandle(filterRecord, parameters->lastOutputFolder, false));
-
-                        std::memcpy(destPtr, outputFolder.c_str(), pathSizeInBytes);
-
-                        UnlockPIHandle(filterRecord, parameters->lastOutputFolder);
-                    }
-                }
-            }
-        }
-        else
-        {
-            Ptr destPtr = LockPIHandle(filterRecord, parameters->lastOutputFolder, false);
-
-            try
-            {
-                const boost::filesystem::path::value_type* str = reinterpret_cast<const boost::filesystem::path::value_type*>(destPtr);
-
-                outputFolder = str;
-            }
-            catch (const std::bad_alloc&)
-            {
-                err = memFullErr;
-            }
-            catch (...)
-            {
-                err = ioErr;
-            }
-
-            UnlockPIHandle(filterRecord, parameters->lastOutputFolder);
-        }
-
-        UnlockParameters(filterRecord);
-
-        return err;
+        return GetGmicOutputFolder(filterRecord, outputFolder);
     }
 }
 
