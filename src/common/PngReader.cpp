@@ -479,7 +479,7 @@ namespace
             int compressionType;
             int filterType;
 
-            png_get_IHDR(
+            if (!png_get_IHDR(
                 pngPtr,
                 infoPtr,
                 &pngWidth,
@@ -488,9 +488,10 @@ namespace
                 &colorType,
                 &interlaceType,
                 &compressionType,
-                &filterType);
-
-            err = readerState->GetReadErrorCode();
+                &filterType))
+            {
+                err = readErr;
+            }
 
             if (err == noErr)
             {
