@@ -140,6 +140,10 @@ OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* fil
                 {
                     err = memFullErr;
                 }
+                catch (const boost::filesystem::filesystem_error& e)
+                {
+                    err = ShowErrorMessage(e.what(), filterRecord, ioErr);
+                }
                 catch (...)
                 {
                     err = ioErr;
