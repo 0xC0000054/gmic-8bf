@@ -70,7 +70,7 @@ OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* fil
 
     err = GetOutputFiles(outputDir, filePaths);
 
-    if (err == noErr)
+    if (err == noErr && !filePaths.empty())
     {
         if (filePaths.size() == 1)
         {
