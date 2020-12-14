@@ -140,7 +140,9 @@ OSErr DoAbout(const AboutRecord* about) noexcept
 {
     PlatformData* platform = static_cast<PlatformData*>(about->platformData);
 
-    DialogBoxParam(wil::GetModuleInstanceHandle(), MAKEINTRESOURCE(IDD_ABOUT), reinterpret_cast<HWND>(platform->hwnd), AboutDlgProc, 0);
+    HWND parent = platform != nullptr ? reinterpret_cast<HWND>(platform->hwnd) : nullptr;
+
+    DialogBoxParam(wil::GetModuleInstanceHandle(), MAKEINTRESOURCE(IDD_ABOUT), parent, AboutDlgProc, 0);
 
     return noErr;
 }
