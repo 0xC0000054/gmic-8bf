@@ -53,7 +53,7 @@ See [License.txt](License.txt) for more information.
 
 ## Building the plug-in
 
-* Open the solution
+* Open the solution in the `vs` folder
 * Update the post build events to copy the build output to the filters folder of your host application
 * Build the solution
 

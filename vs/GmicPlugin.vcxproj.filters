@@ -15,114 +15,114 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="..\src\common\FileUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="..\src\common\FolderBrowser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
+    <ClInclude Include="..\src\common\GmicPlugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileUtilWin.h">
+    <ClInclude Include="..\src\common\ImageSaveDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\FileUtil.h">
+    <ClInclude Include="..\src\common\InputLayerIndex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\GmicPlugin.h">
+    <ClInclude Include="..\src\common\InputLayerInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\InputLayerIndex.h">
+    <ClInclude Include="..\src\common\PngWarningHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\InputLayerInfo.h">
+    <ClInclude Include="..\src\common\PngWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\PngWarningHandler.h">
+    <ClInclude Include="..\src\common\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\PngWriter.h">
+    <ClInclude Include="..\src\win\FileUtilWin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\version.h">
+    <ClInclude Include="..\src\win\FolderBrowserWin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\FolderBrowser.h">
+    <ClInclude Include="..\src\common\PngReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FolderBrowserWin.h">
+    <ClInclude Include="..\src\win\ImageSaveDialogWin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\PngReader.h">
+    <ClInclude Include="..\src\win\MemoryWin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryWin.h">
+    <ClInclude Include="..\src\win\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImageSaveDialogWin.h">
+    <ClInclude Include="..\src\win\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\ImageSaveDialog.h">
+    <ClInclude Include="..\src\win\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp">
+    <ClCompile Include="..\src\common\FileUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileUtilWin.cpp">
+    <ClCompile Include="..\src\common\FolderBrowser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UIWin.cpp">
+    <ClCompile Include="..\src\common\GmicPlugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\FileUtil.cpp">
+    <ClCompile Include="..\src\common\ImageSaveDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\GmicPlugin.cpp">
+    <ClCompile Include="..\src\common\InputLayerIndex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\InputLayerIndex.cpp">
+    <ClCompile Include="..\src\common\InputLayerInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\InputLayerInfo.cpp">
+    <ClCompile Include="..\src\common\Memory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\PngWarningHandler.cpp">
+    <ClCompile Include="..\src\common\PngWarningHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\PngWriter.cpp">
+    <ClCompile Include="..\src\common\PngWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\Read.cpp">
+    <ClCompile Include="..\src\common\Read.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\Utilities.cpp">
+    <ClCompile Include="..\src\common\Utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\Write.cpp">
+    <ClCompile Include="..\src\common\Write.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\FolderBrowser.cpp">
+    <ClCompile Include="..\src\win\dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FolderBrowserWin.cpp">
+    <ClCompile Include="..\src\win\FileUtilWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\PngReader.cpp">
+    <ClCompile Include="..\src\win\FolderBrowserWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\Memory.cpp">
+    <ClCompile Include="..\src\common\PngReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MemoryWin.cpp">
+    <ClCompile Include="..\src\win\ImageSaveDialogWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\ImageSaveDialog.cpp">
+    <ClCompile Include="..\src\win\MemoryWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImageSaveDialogWin.cpp">
+    <ClCompile Include="..\src\win\UIWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -130,18 +130,18 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="GmicPlugin.rc">
+    <ResourceCompile Include="..\src\win\GmicPlugin.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="PiPL.rc">
+    <ResourceCompile Include="..\src\win\PiPL.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="version.rc">
+    <ResourceCompile Include="..\src\win\version.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\common\GmicPlugin.r">
+    <CustomBuild Include="..\src\common\GmicPlugin.r">
       <Filter>Resource Files</Filter>
     </CustomBuild>
   </ItemGroup>

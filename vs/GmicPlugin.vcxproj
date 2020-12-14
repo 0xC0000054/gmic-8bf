@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);..\common;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -122,7 +122,7 @@
       </Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>..\common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -133,7 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);..\common;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -146,7 +146,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>..\common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
       <Command>copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x86\$(TargetFileName)" /y</Command>
@@ -158,7 +158,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_DEBUG;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);..\common;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -172,7 +172,7 @@
       <Command>copy "$(TargetPath)" "D:\Adobe CC Apps\Adobe Photoshop 2020\Plug-ins\Filters" /y</Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>..\common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -183,7 +183,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);..\common;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -196,7 +196,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>..\common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
       <Command>copy "$(TargetPath)" "D:\Adobe CC Apps\Adobe Photoshop 2020\Plug-ins\Filters" /y
@@ -204,47 +204,47 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\FileUtil.h" />
-    <ClInclude Include="..\common\FolderBrowser.h" />
-    <ClInclude Include="..\common\GmicPlugin.h" />
-    <ClInclude Include="..\common\ImageSaveDialog.h" />
-    <ClInclude Include="..\common\InputLayerIndex.h" />
-    <ClInclude Include="..\common\InputLayerInfo.h" />
-    <ClInclude Include="..\common\PngWarningHandler.h" />
-    <ClInclude Include="..\common\PngWriter.h" />
-    <ClInclude Include="..\common\version.h" />
-    <ClInclude Include="FileUtilWin.h" />
-    <ClInclude Include="FolderBrowserWin.h" />
-    <ClInclude Include="..\common\PngReader.h" />
-    <ClInclude Include="ImageSaveDialogWin.h" />
-    <ClInclude Include="MemoryWin.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="..\src\common\FileUtil.h" />
+    <ClInclude Include="..\src\common\FolderBrowser.h" />
+    <ClInclude Include="..\src\common\GmicPlugin.h" />
+    <ClInclude Include="..\src\common\ImageSaveDialog.h" />
+    <ClInclude Include="..\src\common\InputLayerIndex.h" />
+    <ClInclude Include="..\src\common\InputLayerInfo.h" />
+    <ClInclude Include="..\src\common\PngWarningHandler.h" />
+    <ClInclude Include="..\src\common\PngWriter.h" />
+    <ClInclude Include="..\src\common\version.h" />
+    <ClInclude Include="..\src\win\FileUtilWin.h" />
+    <ClInclude Include="..\src\win\FolderBrowserWin.h" />
+    <ClInclude Include="..\src\common\PngReader.h" />
+    <ClInclude Include="..\src\win\ImageSaveDialogWin.h" />
+    <ClInclude Include="..\src\win\MemoryWin.h" />
+    <ClInclude Include="..\src\win\resource.h" />
+    <ClInclude Include="..\src\win\stdafx.h" />
+    <ClInclude Include="..\src\win\targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\common\FileUtil.cpp" />
-    <ClCompile Include="..\common\FolderBrowser.cpp" />
-    <ClCompile Include="..\common\GmicPlugin.cpp" />
-    <ClCompile Include="..\common\ImageSaveDialog.cpp" />
-    <ClCompile Include="..\common\InputLayerIndex.cpp" />
-    <ClCompile Include="..\common\InputLayerInfo.cpp" />
-    <ClCompile Include="..\common\Memory.cpp" />
-    <ClCompile Include="..\common\PngWarningHandler.cpp" />
-    <ClCompile Include="..\common\PngWriter.cpp" />
-    <ClCompile Include="..\common\Read.cpp" />
-    <ClCompile Include="..\common\Utilities.cpp" />
-    <ClCompile Include="..\common\Write.cpp" />
-    <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="FileUtilWin.cpp" />
-    <ClCompile Include="FolderBrowserWin.cpp" />
-    <ClCompile Include="..\common\PngReader.cpp" />
-    <ClCompile Include="ImageSaveDialogWin.cpp" />
-    <ClCompile Include="MemoryWin.cpp" />
-    <ClCompile Include="UIWin.cpp" />
+    <ClCompile Include="..\src\common\FileUtil.cpp" />
+    <ClCompile Include="..\src\common\FolderBrowser.cpp" />
+    <ClCompile Include="..\src\common\GmicPlugin.cpp" />
+    <ClCompile Include="..\src\common\ImageSaveDialog.cpp" />
+    <ClCompile Include="..\src\common\InputLayerIndex.cpp" />
+    <ClCompile Include="..\src\common\InputLayerInfo.cpp" />
+    <ClCompile Include="..\src\common\Memory.cpp" />
+    <ClCompile Include="..\src\common\PngWarningHandler.cpp" />
+    <ClCompile Include="..\src\common\PngWriter.cpp" />
+    <ClCompile Include="..\src\common\Read.cpp" />
+    <ClCompile Include="..\src\common\Utilities.cpp" />
+    <ClCompile Include="..\src\common\Write.cpp" />
+    <ClCompile Include="..\src\win\dllmain.cpp" />
+    <ClCompile Include="..\src\win\FileUtilWin.cpp" />
+    <ClCompile Include="..\src\win\FolderBrowserWin.cpp" />
+    <ClCompile Include="..\src\common\PngReader.cpp" />
+    <ClCompile Include="..\src\win\ImageSaveDialogWin.cpp" />
+    <ClCompile Include="..\src\win\MemoryWin.cpp" />
+    <ClCompile Include="..\src\win\UIWin.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\common\GmicPlugin.r">
+    <CustomBuild Include="..\src\common\GmicPlugin.r">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cl /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Includes /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\Photoshop /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\PICA_SP /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\resources /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
 D:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
@@ -266,14 +266,14 @@ del "$(IntDir)%(Filename).rr"</Command>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="GmicPlugin.rc" />
-    <ResourceCompile Include="PiPL.rc">
+    <ResourceCompile Include="..\src\win\GmicPlugin.rc" />
+    <ResourceCompile Include="..\src\win\PiPL.rc">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <ResourceCompile Include="version.rc" />
+    <ResourceCompile Include="..\src\win\version.rc" />
   </ItemGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
