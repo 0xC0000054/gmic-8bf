@@ -186,7 +186,7 @@ OSErr GetTemporaryFileName(const boost::filesystem::path& dir, boost::filesystem
     try
     {
         path = dir;
-        path /= boost::filesystem::unique_path();
+        path /= boost::filesystem::unique_path("%%%%%%%%");
 
         if (fileExtension)
         {
