@@ -35,7 +35,10 @@ namespace
         return false;
     }
 
-    OSErr GetSaveFileNameVista(HWND owner, boost::filesystem::path& saveFilePath)
+    OSErr GetSaveFileNameVista(
+        HWND owner,
+        const boost::filesystem::path& defaultFileName,
+        boost::filesystem::path& saveFilePath)
     {
         // The client GUID is used to allow this dialog to persist its state independently of the other file dialogs in
         // the host application.
@@ -71,6 +74,10 @@ namespace
                 THROW_IF_FAILED(pfd->SetTitle(titleBuffer));
                 THROW_IF_FAILED(pfd->SetClientGuid(ClientGuid));
                 THROW_IF_FAILED(pfd->SetDefaultExtension(L"png"));
+                if (!defaultFileName.empty())
+                {
+                    THROW_IF_FAILED(pfd->SetFileName(defaultFileName.c_str()));
+                }
 
                 COMDLG_FILTERSPEC filter = { filterNameBuffer, L"*.png" };
 
@@ -151,7 +158,10 @@ namespace
         return filter;
     }
 
-    OSErr GetSaveFileNameClassic(HWND owner, boost::filesystem::path& outputFilePath)
+    OSErr GetSaveFileNameClassic(
+        HWND owner,
+        const boost::filesystem::path& defaultFileName,
+        boost::filesystem::path& outputFilePath)
     {
         OSErr err = noErr;
 
@@ -181,6 +191,10 @@ namespace
 
                 memset(fileNameBuffer.get(), 0, fileNameBufferLength * sizeof(wchar_t));
 
+                if (!defaultFileName.empty())
+                {
+                    wcscpy_s(fileNameBuffer.get(), fileNameBufferLength, defaultFileName.c_str());
+                }
 
                 OPENFILENAMEW ofn = {};
                 ofn.lStructSize = sizeof(ofn);
@@ -224,7 +238,10 @@ namespace
     }
 }
 
-OSErr GetNewImageFileNameNative(const FilterRecordPtr filterRecord, boost::filesystem::path& outputFileName)
+OSErr GetNewImageFileNameNative(
+    const FilterRecordPtr filterRecord,
+    const boost::filesystem::path& defaultFileName,
+    boost::filesystem::path& outputFileName)
 {
     PlatformData* platformData = static_cast<PlatformData*>(filterRecord->platformData);
 
@@ -232,10 +249,10 @@ OSErr GetNewImageFileNameNative(const FilterRecordPtr filterRecord, boost::files
 
     if (UseVistaStyleDialogs())
     {
-        return GetSaveFileNameVista(owner, outputFileName);
+        return GetSaveFileNameVista(owner, defaultFileName, outputFileName);
     }
     else
     {
-        return GetSaveFileNameClassic(owner, outputFileName);
+        return GetSaveFileNameClassic(owner, defaultFileName, outputFileName);
     }
 }

@@ -17,6 +17,9 @@
 
 #include "GmicPlugin.h"
 
-OSErr GetNewImageFileName(const FilterRecordPtr filterRecord, boost::filesystem::path& outputFileName);
+OSErr GetNewImageFileName(
+    const FilterRecordPtr filterRecord,
+    const boost::filesystem::path& defaultFileName,
+    boost::filesystem::path& outputFileName);
 
 #endif // !IMAGESAVEDIALOG_H

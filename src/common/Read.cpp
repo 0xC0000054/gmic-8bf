@@ -106,7 +106,7 @@ namespace
 
     OSErr GetResizedImageOutputPath(
         const FilterRecordPtr filterRecord,
-        const boost::filesystem::path& originalFilePath,
+        const boost::filesystem::path& originalFileName,
         boost::filesystem::path& outputFileName)
     {
         bool haveFilePathFromDefaultFolder = false;
@@ -119,7 +119,7 @@ namespace
             try
             {
                 boost::filesystem::path temp = defaultFolderPath;
-                temp /= originalFilePath.filename();
+                temp /= originalFileName;
 
                 outputFileName = temp;
                 haveFilePathFromDefaultFolder = true;
@@ -136,7 +136,7 @@ namespace
         }
         else
         {
-            return GetNewImageFileName(filterRecord, outputFileName);
+            return GetNewImageFileName(filterRecord, originalFileName, outputFileName);
         }
     }
 }
@@ -169,28 +169,30 @@ OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* fil
                 }
                 else
                 {
-                    boost::filesystem::path outputFileName;
-
-                    err = GetResizedImageOutputPath(filterRecord, filePath, outputFileName);
-
-                    if (err == noErr)
+                    try
                     {
-                        try
+                        boost::filesystem::path outputFileName;
+
+                        err = GetResizedImageOutputPath(filterRecord, filePath.filename(), outputFileName);
+
+                        if (err == noErr)
                         {
+
                             boost::filesystem::copy_file(filePath, outputFileName, boost::filesystem::copy_options::overwrite_existing);
+
                         }
-                        catch (const std::bad_alloc&)
-                        {
-                            err = memFullErr;
-                        }
-                        catch (const boost::filesystem::filesystem_error& e)
-                        {
-                            err = ShowErrorMessage(e.what(), filterRecord, ioErr);
-                        }
-                        catch (...)
-                        {
-                            err = ioErr;
-                        }
+                    }
+                    catch (const std::bad_alloc&)
+                    {
+                        err = memFullErr;
+                    }
+                    catch (const boost::filesystem::filesystem_error& e)
+                    {
+                        err = ShowErrorMessage(e.what(), filterRecord, ioErr);
+                    }
+                    catch (...)
+                    {
+                        err = ioErr;
                     }
                 }
             }

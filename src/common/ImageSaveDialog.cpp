@@ -18,7 +18,10 @@
 #error "Missing an ImageSaveDialog header for this platform."
 #endif
 
-OSErr GetNewImageFileName(const FilterRecordPtr filterRecord, boost::filesystem::path& outputFileName)
+OSErr GetNewImageFileName(
+    const FilterRecordPtr filterRecord,
+    const boost::filesystem::path& defaultFileName,
+    boost::filesystem::path& outputFileName)
 {
-    return GetNewImageFileNameNative(filterRecord, outputFileName);
+    return GetNewImageFileNameNative(filterRecord, defaultFileName, outputFileName);
 }
