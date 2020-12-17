@@ -52,6 +52,8 @@ OSErr GetInputDirectory(boost::filesystem::path& path);
 
 OSErr GetOutputDirectory(boost::filesystem::path& path);
 
+OSErr GetIOSettingsPath(boost::filesystem::path& path);
+
 OSErr GetTemporaryFileName(const boost::filesystem::path& dir, boost::filesystem::path& path, const char* const fileExtension);
 
 OSErr OpenFile(const boost::filesystem::path& path, FileOpenMode mode, std::unique_ptr<FileHandle>& fileHandle);

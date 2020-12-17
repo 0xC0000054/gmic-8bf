@@ -15,25 +15,9 @@
 #ifndef GMICPLUGIN_H
 #define GMICPLUGIN_H
 
-#ifdef _MSC_VER
-// Suppress C4121: 'FilterRecord': alignment of a member was sensitive to packing
-#pragma warning(push)
-#pragma warning(disable: 4121)
-#endif // _MSC_VER
-
-#include "PIDefines.h"
-#include "PITypes.h"
+#include "Common.h" // Common definitions that are shared between plug-ins
 #include "PIAbout.h"
-#include "PIFilter.h"
-#include "PIUSuites.h"
 #include "PIProperties.h"
-#include <stdlib.h>
-#include <string>
-#include <boost/filesystem.hpp>
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 // A 4-byte Boolean used in the FilterParameters structure for alignment purposes.
 typedef int32 GPBoolean;
@@ -42,6 +26,7 @@ struct FilterParameters
 {
     GPBoolean lastSelectorWasParameters;
     GPBoolean showUI;
+    Handle defaultOutputFolder;
 };
 
 // Support compiling with the 7.0 and earlier SDKs.
@@ -49,12 +34,6 @@ struct FilterParameters
 #define PSSDK_HAS_LAYER_SUPPORT 1
 #else
 #define PSSDK_HAS_LAYER_SUPPORT 0
-#endif
-
-#if defined(DEBUG) || defined(_DEBUG)
-#define DEBUG_BUILD 1
-#else
-#define DEBUG_BUILD 0
 #endif
 
 FilterParameters* LockParameters(FilterRecordPtr filterRecord);
@@ -94,16 +73,5 @@ bool DocumentHasMultipleLayers(const FilterRecord* filterRecord);
 bool HostSupportsReadingFromMultipleLayers(const FilterRecord* filterRecord);
 bool TryGetTargetLayerIndex(const FilterRecord* filterRecord, int32& targetLayerIndex);
 #endif // PSSDK_HAS_LAYER_SUPPORT
-
-
-#if DEBUG_BUILD
-void DebugOut(const char* fmt, ...) noexcept;
-std::string FourCCToString(const uint32 fourCC);
-#else
-#define DebugOut(fmt, ...)
-#define FourCCToString(fourCC)
-#endif // DEBUG_BUILD
-
-#define PrintFunctionName() DebugOut("%s", __FUNCTION__)
 
 #endif // !GMICPLUGIN_H

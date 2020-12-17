@@ -10,15 +10,22 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "GmicIOSettings.h"
 
-#ifndef FOLDERBROWSER_H
-#define FOLDERBROWSER_H
+GmicIOSettings::GmicIOSettings() : defaultOutputPath()
+{
+}
 
-#include "GmicPlugin.h"
+GmicIOSettings::~GmicIOSettings()
+{
+}
 
-OSErr GetGmicOutputFolder(FilterRecordPtr filterRecord, boost::filesystem::path& outputFolderPath);
+boost::filesystem::path GmicIOSettings::GetDefaultOutputPath() const
+{
+    return defaultOutputPath;
+}
 
-OSErr GetDefaultGmicOutputFolder(intptr_t parentWindowHandle, boost::filesystem::path& outputFolderPath);
-
-#endif // !FOLDERBROWSER_H
+void GmicIOSettings::SetDefaultOutputPath(const boost::filesystem::path& path)
+{
+    defaultOutputPath = path;
+}

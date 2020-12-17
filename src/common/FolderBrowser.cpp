@@ -22,3 +22,8 @@ OSErr GetGmicOutputFolder(FilterRecordPtr filterRecord, boost::filesystem::path&
 {
     return GetGmicOutputFolderNative(filterRecord, outputFolderPath);
 }
+
+OSErr GetDefaultGmicOutputFolder(intptr_t parentWindowHandle, boost::filesystem::path& outputFolderPath)
+{
+    return GetDefaultGmicOutputFolderNative(parentWindowHandle, outputFolderPath);
+}

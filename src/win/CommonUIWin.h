@@ -12,13 +12,13 @@
 
 #pragma once
 
-#ifndef FOLDERBROWSER_H
-#define FOLDERBROWSER_H
+#ifndef COMMONUIWIN_H
+#define COMMONUIWIN_H
 
-#include "GmicPlugin.h"
+#include <Common.h>
 
-OSErr GetGmicOutputFolder(FilterRecordPtr filterRecord, boost::filesystem::path& outputFolderPath);
+void CenterDialog(HWND hDlg);
 
-OSErr GetDefaultGmicOutputFolder(intptr_t parentWindowHandle, boost::filesystem::path& outputFolderPath);
+OSErr ShowErrorMessageNative(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode);
 
-#endif // !FOLDERBROWSER_H
+#endif // !COMMONUIWIN_H

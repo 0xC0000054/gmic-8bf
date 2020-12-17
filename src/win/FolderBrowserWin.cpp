@@ -36,20 +36,19 @@ namespace
         return false;
     }
 
-    OSErr BrowseForFolderVista(HWND owner, boost::filesystem::path& outputFolderPath)
+    OSErr BrowseForFolderVista(
+        HWND owner,
+        UINT titleResourceId,
+        const GUID& ClientGuid,
+        boost::filesystem::path& outputFolderPath)
     {
-        // The client GUID is used to allow this dialog to persist its state independently of the other file dialogs in
-        // the host application.
-        // {1F3E21BC-4678-404A-83FC-9442259DCF16}
-        static const GUID ClientGuid = { 0x1f3e21bc, 0x4678, 0x404a, { 0x83, 0xfc, 0x94, 0x42, 0x25, 0x9d, 0xcf, 0x16 } };
-
         OSErr err = noErr;
 
         try
         {
             wchar_t titleBuffer[256] = {};
 
-            if (LoadStringW(wil::GetModuleInstanceHandle(), VISTA_FOLDER_PICKER_TITLE, titleBuffer, _countof(titleBuffer)) > 0)
+            if (LoadStringW(wil::GetModuleInstanceHandle(), titleResourceId, titleBuffer, _countof(titleBuffer)) > 0)
             {
                 auto comCleanup = wil::CoInitializeEx(COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
@@ -112,13 +111,13 @@ namespace
         return unique_oleuninitialize_call();
     }
 
-    OSErr BrowseForFolderClassic(HWND owner, boost::filesystem::path& outputFolderPath)
+    OSErr BrowseForFolderClassic(HWND owner, UINT descriptionResourceId, boost::filesystem::path& outputFolderPath)
     {
         OSErr err = noErr;
 
         wchar_t titleBuffer[256] = {};
 
-        if (LoadStringW(wil::GetModuleInstanceHandle(), CLASSIC_FOLDER_PICKER_DESCRIPTION, titleBuffer, _countof(titleBuffer)) > 0)
+        if (LoadStringW(wil::GetModuleInstanceHandle(), descriptionResourceId, titleBuffer, _countof(titleBuffer)) > 0)
         {
             try
             {
@@ -192,10 +191,34 @@ OSErr GetGmicOutputFolderNative(FilterRecordPtr filterRecord, boost::filesystem:
 
     if (UseVistaStyleDialogs())
     {
-        return BrowseForFolderVista(owner, outputFolderPath);
+        // The client GUID is used to allow this dialog to persist its state independently of the other file dialogs in
+        // the host application.
+        // {1F3E21BC-4678-404A-83FC-9442259DCF16}
+        static const GUID ClientGuid = { 0x1f3e21bc, 0x4678, 0x404a, { 0x83, 0xfc, 0x94, 0x42, 0x25, 0x9d, 0xcf, 0x16 } };
+
+        return BrowseForFolderVista(owner, OUTPUT_FOLDER_PICKER_TITLE, ClientGuid, outputFolderPath);
     }
     else
     {
-        return BrowseForFolderClassic(owner, outputFolderPath);
+        return BrowseForFolderClassic(owner, OUTPUT_FOLDER_PICKER_DESCRIPTION, outputFolderPath);
+    }
+}
+
+OSErr GetDefaultGmicOutputFolderNative(intptr_t parentWindowHandle, boost::filesystem::path& outputFolderPath)
+{
+    HWND owner = reinterpret_cast<HWND>(parentWindowHandle);
+
+    if (UseVistaStyleDialogs())
+    {
+        // The client GUID is used to allow this dialog to persist its state independently of the other file dialogs in
+        // the host application.
+        // {FE2705B8-0D02-45CF-A3FB-C227E0328C00}
+        static const GUID ClientGuid = { 0xfe2705b8, 0xd02, 0x45cf, { 0xa3, 0xfb, 0xc2, 0x27, 0xe0, 0x32, 0x8c, 0x0 } };
+
+        return BrowseForFolderVista(owner, DEFAULT_OUTPUT_FOLDER_PICKER_TITLE, ClientGuid, outputFolderPath);
+    }
+    else
+    {
+        return BrowseForFolderClassic(owner, DEFAULT_OUTPUT_FOLDER_PICKER_DESCRIPTION, outputFolderPath);
     }
 }

@@ -105,7 +105,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -131,7 +131,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -156,7 +156,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_DEBUG;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -181,7 +181,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -206,6 +206,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
   <ItemGroup>
     <ClInclude Include="..\src\common\FileUtil.h" />
     <ClInclude Include="..\src\common\FolderBrowser.h" />
+    <ClInclude Include="..\src\common\GmicIOSettingsPlugin.h" />
     <ClInclude Include="..\src\common\GmicPlugin.h" />
     <ClInclude Include="..\src\common\ImageSaveDialog.h" />
     <ClInclude Include="..\src\common\InputLayerIndex.h" />
@@ -213,6 +214,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\common\PngWarningHandler.h" />
     <ClInclude Include="..\src\common\PngWriter.h" />
     <ClInclude Include="..\src\common\version.h" />
+    <ClInclude Include="..\src\win\CommonUIWin.h" />
     <ClInclude Include="..\src\win\FileUtilWin.h" />
     <ClInclude Include="..\src\win\FolderBrowserWin.h" />
     <ClInclude Include="..\src\common\PngReader.h" />
@@ -221,10 +223,14 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\win\resource.h" />
     <ClInclude Include="..\src\win\stdafx.h" />
     <ClInclude Include="..\src\win\targetver.h" />
+    <ClInclude Include="..\src\common\Common.h" />
+    <ClInclude Include="..\src\common\GmicIOSettings.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\common\Common.cpp" />
     <ClCompile Include="..\src\common\FileUtil.cpp" />
     <ClCompile Include="..\src\common\FolderBrowser.cpp" />
+    <ClCompile Include="..\src\common\GmicIOSettingsPlugin.cpp" />
     <ClCompile Include="..\src\common\GmicPlugin.cpp" />
     <ClCompile Include="..\src\common\ImageSaveDialog.cpp" />
     <ClCompile Include="..\src\common\InputLayerIndex.cpp" />
@@ -235,13 +241,16 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\src\common\Read.cpp" />
     <ClCompile Include="..\src\common\Utilities.cpp" />
     <ClCompile Include="..\src\common\Write.cpp" />
+    <ClCompile Include="..\src\win\CommonUIWin.cpp" />
     <ClCompile Include="..\src\win\dllmain.cpp" />
     <ClCompile Include="..\src\win\FileUtilWin.cpp" />
     <ClCompile Include="..\src\win\FolderBrowserWin.cpp" />
     <ClCompile Include="..\src\common\PngReader.cpp" />
+    <ClCompile Include="..\src\win\GmicIOSettingsUIWin.cpp" />
+    <ClCompile Include="..\src\win\GmicPluginUIWin.cpp" />
     <ClCompile Include="..\src\win\ImageSaveDialogWin.cpp" />
     <ClCompile Include="..\src\win\MemoryWin.cpp" />
-    <ClCompile Include="..\src\win\UIWin.cpp" />
+    <ClCompile Include="..\src\common\GmicIOSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\src\common\GmicPlugin.r">

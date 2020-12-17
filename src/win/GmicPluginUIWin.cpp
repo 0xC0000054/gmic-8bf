@@ -12,6 +12,7 @@
 
 #include "stdafx.h"
 #include "GmicPlugin.h"
+#include "CommonUIWin.h"
 #include <stdio.h>
 #include "resource.h"
 #include "version.h"
@@ -23,39 +24,6 @@
 
 namespace
 {
-    // From the PS6 SDK: Centers a dialog on the parent window
-    void CenterDialog(HWND hDlg) noexcept
-    {
-        int  nHeight;
-        int  nWidth;
-        RECT rcDialog;
-        RECT rcParent;
-        POINT point{};
-
-        HWND hParent = GetParent(hDlg);
-
-        if (hParent == nullptr)
-        {
-            hParent = GetDesktopWindow();
-        }
-        GetClientRect(hParent, &rcParent);
-
-        GetWindowRect(hDlg, &rcDialog);
-        nWidth = rcDialog.right - rcDialog.left;
-        nHeight = rcDialog.bottom - rcDialog.top;
-
-        point.x = (rcParent.right - rcParent.left) / 2;
-        point.y = (rcParent.bottom - rcParent.top) / 2;
-
-        ClientToScreen(hParent, &point);
-
-        point.x -= nWidth / 2;
-        point.y -= nHeight / 2;
-
-        SetWindowPos(hDlg, HWND_TOP, point.x, point.y, nWidth, nHeight, SWP_NOSIZE | SWP_NOZORDER);
-    }
-
-
     void InitAboutDialog(HWND dp) noexcept
     {
         char s[384]{}, format[384]{};
@@ -145,21 +113,4 @@ OSErr DoAbout(const AboutRecord* about) noexcept
     DialogBoxParam(wil::GetModuleInstanceHandle(), MAKEINTRESOURCE(IDD_ABOUT), parent, AboutDlgProc, 0);
 
     return noErr;
-}
-
-OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode)
-{
-    PlatformData* platformData = static_cast<PlatformData*>(filterRecord->platformData);
-
-    HWND parent = platformData != nullptr ? reinterpret_cast<HWND>(platformData->hwnd) : nullptr;
-
-    if (MessageBoxA(parent, message, "G'MIC-Qt filter", MB_OK | MB_ICONERROR) == IDOK)
-    {
-        // Any positive number is a plug-in handled error message.
-        return 1;
-    }
-    else
-    {
-        return fallbackErrorCode;
-    }
 }

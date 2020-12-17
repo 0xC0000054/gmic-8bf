@@ -83,7 +83,7 @@ private:
     wil::unique_hfile hFile;
 };
 
-boost::filesystem::path GetSessionDirectoriesRootNative()
+boost::filesystem::path GetPluginDataDirectoryNative()
 {
     boost::filesystem::path path;
 

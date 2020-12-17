@@ -12,13 +12,12 @@
 
 #pragma once
 
-#ifndef FOLDERBROWSER_H
-#define FOLDERBROWSER_H
+#ifndef GMICIOSETTINGSPLUGIN_H
+#define GMICIOSETTINGSPLUGIN_H
 
-#include "GmicPlugin.h"
+#include "Common.h" // Common definitions that are shared between plug-ins
+#include "GmicIOSettings.h"
 
-OSErr GetGmicOutputFolder(FilterRecordPtr filterRecord, boost::filesystem::path& outputFolderPath);
+OSErr DoIOSettingsUI(const FilterRecordPtr filterRecord, GmicIOSettings& settings);
 
-OSErr GetDefaultGmicOutputFolder(intptr_t parentWindowHandle, boost::filesystem::path& outputFolderPath);
-
-#endif // !FOLDERBROWSER_H
+#endif // !GMICIOSETTINGSPLUGIN_H

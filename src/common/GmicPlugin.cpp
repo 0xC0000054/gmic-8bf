@@ -120,10 +120,61 @@ namespace
 #pragma warning(default: 4366)
 #endif
     }
+
+    OSErr InitalizeDefaultOutputFolderHandle(
+        const FilterRecordPtr filterRecord,
+        const GmicIOSettings& settings,
+        Handle* defaultOutputFolderHandle)
+    {
+        if (!defaultOutputFolderHandle)
+        {
+            return nilHandleErr;
+        }
+
+        if (*defaultOutputFolderHandle != nullptr)
+        {
+            UnlockPIHandle(filterRecord, *defaultOutputFolderHandle);
+            DisposePIHandle(filterRecord, *defaultOutputFolderHandle);
+        }
+
+        *defaultOutputFolderHandle = nullptr;
+
+        const boost::filesystem::path& defaultOutputPath = settings.GetDefaultOutputPath();
+
+        OSErr err = noErr;
+
+        if (!defaultOutputPath.empty())
+        {
+            uint64 bufferSizeInBytes = static_cast<uint64>(defaultOutputPath.size()) * sizeof(boost::filesystem::path::value_type);
+
+            if (bufferSizeInBytes > static_cast<uint64>(std::numeric_limits<int32>::max()))
+            {
+                err = memFullErr;
+            }
+            else
+            {
+                err = NewPIHandle(filterRecord, static_cast<int32>(bufferSizeInBytes), defaultOutputFolderHandle);
+
+                if (err == noErr)
+                {
+                    Ptr dest = LockPIHandle(filterRecord, *defaultOutputFolderHandle, false);
+
+                    if (dest != nullptr)
+                    {
+                        memcpy(dest, defaultOutputPath.c_str(), static_cast<size_t>(bufferSizeInBytes));
+
+                        UnlockPIHandle(filterRecord, *defaultOutputFolderHandle);
+                    }
+                }
+            }
+        }
+
+        return err;
+    }
 }
 
 //-------------------------------------------------------------------------------
-DLLExport MACPASCAL void PluginMain(
+DLLExport MACPASCAL void Gmic_Entry_Point(
     const int16 selector,
     FilterRecordPtr filterRecord,
     intptr_t * data,
@@ -206,6 +257,7 @@ OSErr DoParameters(FilterRecord* filterRecord)
                FilterParameters* parameters = LockParameters(filterRecord);
                parameters->lastSelectorWasParameters = true;
                parameters->showUI = true;
+               parameters->defaultOutputFolder = nullptr;
 
                UnlockParameters(filterRecord);
             }
@@ -247,6 +299,7 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
                 FilterParameters* parameters = LockParameters(filterRecord);
                 parameters->lastSelectorWasParameters = false;
                 parameters->showUI = false;
+                parameters->defaultOutputFolder = nullptr;
 
                 UnlockParameters(filterRecord);
             }
@@ -271,6 +324,26 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
         }
 
         UnlockParameters(filterRecord);
+    }
+
+    boost::filesystem::path settingsPath;
+
+    err = GetIOSettingsPath(settingsPath);
+
+    if (err == noErr)
+    {
+        GmicIOSettings settings;
+
+        err = LoadIOSettings(filterRecord, settingsPath, settings);
+
+        if (err == noErr)
+        {
+            FilterParameters* parameters = LockParameters(filterRecord);
+
+            err = InitalizeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
+
+            UnlockParameters(filterRecord);
+        }
     }
 
     return err;

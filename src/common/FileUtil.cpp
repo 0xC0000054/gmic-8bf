@@ -69,6 +69,25 @@ namespace
         bool isValid;
     };
 
+    boost::filesystem::path GetPluginDataDirectory()
+    {
+        static boost::filesystem::path pluginDataDir = GetPluginDataDirectoryNative();
+
+        return pluginDataDir;
+    }
+
+    boost::filesystem::path GetSessionDirectoriesRoot()
+    {
+        boost::filesystem::path path = GetPluginDataDirectory();
+
+        if (!path.empty())
+        {
+            path /= "SessionData";
+        }
+
+        return path;
+    }
+
     OSErr GetSessionDirectory(boost::filesystem::path& path)
     {
 
@@ -76,11 +95,45 @@ namespace
 
         try
         {
-            static std::unique_ptr<TempDirectory> sessionDir = std::make_unique<TempDirectory>(GetSessionDirectoriesRootNative());
+            static std::unique_ptr<TempDirectory> sessionDir = std::make_unique<TempDirectory>(GetSessionDirectoriesRoot());
 
             if (sessionDir->IsValid())
             {
                 path = sessionDir->Get();
+            }
+            else
+            {
+                err = ioErr;
+            }
+        }
+        catch (const std::bad_alloc&)
+        {
+            err = memFullErr;
+        }
+        catch (const std::length_error&)
+        {
+            err = memFullErr;
+        }
+        catch (...)
+        {
+            err = ioErr;
+        }
+
+        return err;
+    }
+
+    OSErr GetSettingsDirectory(boost::filesystem::path& path)
+    {
+        OSErr err = noErr;
+
+        try
+        {
+            path = GetPluginDataDirectory();
+
+            if (!path.empty())
+            {
+                path /= "settings";
+                boost::filesystem::create_directories(path);
             }
             else
             {
@@ -165,6 +218,34 @@ OSErr GetOutputDirectory(boost::filesystem::path& path)
             path /= "out";
 
             boost::filesystem::create_directory(path);
+        }
+    }
+    catch (const std::bad_alloc&)
+    {
+        err = memFullErr;
+    }
+    catch (...)
+    {
+        err = ioErr;
+    }
+
+    return err;
+}
+
+OSErr GetIOSettingsPath(boost::filesystem::path& path)
+{
+    OSErr err = noErr;
+
+    try
+    {
+        err = GetSettingsDirectory(path);
+        if (err == noErr)
+        {
+            path /= "IOSettings.dat";
+        }
+        else
+        {
+            err = ioErr;
         }
     }
     catch (const std::bad_alloc&)

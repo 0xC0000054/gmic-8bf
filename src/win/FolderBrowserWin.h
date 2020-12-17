@@ -19,4 +19,6 @@
 
 OSErr GetGmicOutputFolderNative(FilterRecordPtr filterRecord, boost::filesystem::path& outputFolderPath);
 
+OSErr GetDefaultGmicOutputFolderNative(intptr_t parentWindowHandle, boost::filesystem::path& outputFolderPath);
+
 #endif // !FOLDERBROWSERWIN_H

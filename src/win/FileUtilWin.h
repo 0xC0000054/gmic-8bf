@@ -19,7 +19,7 @@
 
 constexpr inline const char ExecutableName[] = "gmic_8bf_qt.exe";
 
-boost::filesystem::path GetSessionDirectoriesRootNative();
+boost::filesystem::path GetPluginDataDirectoryNative();
 
 OSErr GetPluginInstallDirectoryNative(boost::filesystem::path& path);
 

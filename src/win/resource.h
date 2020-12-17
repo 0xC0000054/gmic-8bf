@@ -14,6 +14,10 @@
 // Microsoft Visual C++ generated include file.
 // Used by GmicPlugin.rc
 //
+#define IDC_DEFAULTOUTFOLDERBROWSE      3
+#define IDD_DIALOG1                     101
+#define IDD_OUTPUTSETTINGS              101
+#define IDD_IOSETTINGS                  101
 #define IDD_ABOUT                       102
 #define IMAGE_SIZE_MISMATCH             103
 #define EXE_REGISTRY_ERROR              104
@@ -23,10 +27,12 @@
 #define IMAGE_SIZE_TOO_LARGE            108
 #define IMAGE_WIDTH_TOO_LARGE           109
 #define IMAGE_HEIGHT_TOO_LARGE          110
-#define VISTA_FOLDER_PICKER_TITLE       111
-#define CLASSIC_FOLDER_PICKER_DESCRIPTION 112
+#define OUTPUT_FOLDER_PICKER_TITLE      111
+#define OUTPUT_FOLDER_PICKER_DESCRIPTION 112
 #define IMAGE_SAVE_DIALOG_TITLE         113
 #define IMAGE_SAVE_DIALOG_FILTER_NAME   114
+#define DEFAULT_OUTPUT_FOLDER_PICKER_TITLE 115
+#define DEFAULT_OUTPUT_FOLDER_PICKER_DESCRIPTION 116
 #define IDC_LIBPNGCOPYRIGHTFORMAT       1000
 #define ABOUTFORMAT                     1001
 #define IDC_GMICQT                      1002
@@ -34,14 +40,17 @@
 #define IDC_ZLIB                        1004
 #define IDC_ABOUTOK                     1005
 #define IDC_GMICCORE                    1006
+#define IDC_OUTPUTGB                    1007
+#define IDC_DEFAULTOUTDIRCB             1008
+#define IDC_DEFAULTOUTDIREDIT           1009
 
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        101
+#define _APS_NEXT_RESOURCE_VALUE        104
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1007
+#define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

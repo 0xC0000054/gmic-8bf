@@ -54,9 +54,90 @@ namespace
         return err;
     }
 
+    bool TryGetDefaultOutputFolder(const FilterRecordPtr filterRecord, boost::filesystem::path& defaultOutputFolder)
+    {
+        bool result = false;
+
+        if (filterRecord->parameters != nullptr)
+        {
+            FilterParameters* parameters = LockParameters(filterRecord);
+
+            if (parameters != nullptr)
+            {
+                if (parameters->defaultOutputFolder != nullptr)
+                {
+                    Ptr src = LockPIHandle(filterRecord, parameters->defaultOutputFolder, false);
+
+                    if (src != nullptr)
+                    {
+                        try
+                        {
+                            defaultOutputFolder = reinterpret_cast<const boost::filesystem::path::value_type*>(src);
+                            boost::filesystem::create_directories(defaultOutputFolder);
+                            result = true;
+                        }
+                        catch (...)
+                        {
+                            // Ignore any errors, the folder picker or save dialog will be shown.
+                        }
+
+                        UnlockPIHandle(filterRecord, parameters->defaultOutputFolder);
+                    }
+                }
+
+                UnlockParameters(filterRecord);
+            }
+        }
+
+        return result;
+    }
+
     OSErr GetOutputFolder(FilterRecordPtr filterRecord, boost::filesystem::path& outputFolder)
     {
-        return GetGmicOutputFolder(filterRecord, outputFolder);
+        if (TryGetDefaultOutputFolder(filterRecord, outputFolder))
+        {
+            return noErr;
+        }
+        else
+        {
+            return GetGmicOutputFolder(filterRecord, outputFolder);
+        }
+    }
+
+    OSErr GetResizedImageOutputPath(
+        const FilterRecordPtr filterRecord,
+        const boost::filesystem::path& originalFilePath,
+        boost::filesystem::path& outputFileName)
+    {
+        bool haveFilePathFromDefaultFolder = false;
+
+        boost::filesystem::path defaultFolderPath;
+
+        if (TryGetDefaultOutputFolder(filterRecord, defaultFolderPath))
+        {
+
+            try
+            {
+                boost::filesystem::path temp = defaultFolderPath;
+                temp /= originalFilePath.filename();
+
+                outputFileName = temp;
+                haveFilePathFromDefaultFolder = true;
+            }
+            catch (...)
+            {
+                // Ignore any errors, the save dialog will be shown.
+            }
+        }
+
+        if(haveFilePathFromDefaultFolder)
+        {
+            return noErr;
+        }
+        else
+        {
+            return GetNewImageFileName(filterRecord, outputFileName);
+        }
     }
 }
 
@@ -90,7 +171,7 @@ OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* fil
                 {
                     boost::filesystem::path outputFileName;
 
-                    err = GetNewImageFileName(filterRecord, outputFileName);
+                    err = GetResizedImageOutputPath(filterRecord, filePath, outputFileName);
 
                     if (err == noErr)
                     {
