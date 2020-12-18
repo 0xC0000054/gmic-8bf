@@ -35,12 +35,6 @@ namespace
             {
                 filePaths.push_back(file.path());
             }
-
-            if (filePaths.size() > 1)
-            {
-                // Sort the returned file names.
-                std::sort(filePaths.begin(), filePaths.end());
-            }
         }
         catch (const std::bad_alloc&)
         {
