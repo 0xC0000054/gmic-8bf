@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "GmicIOSettingsPlugin.h"
+#include "GmicIOSettings.h"
 #include "FileUtil.h"
 
 OSErr GmicIOSettingsDoParameters(FilterRecord* filterRecord);
@@ -91,32 +92,19 @@ OSErr GmicIOSettingsDoParameters(FilterRecord* filterRecord)
 
     OSErr err = noErr;
 
-    try
-    {
-        boost::filesystem::path settingsPath;
+    boost::filesystem::path settingsPath;
 
-        err = GetIOSettingsPath(settingsPath);
+    if (GetIOSettingsPath(settingsPath) == noErr)
+    {
+        GmicIOSettings settings;
+        settings.Load(settingsPath);
+
+        err = DoIOSettingsUI(filterRecord, settings);
 
         if (err == noErr)
         {
-            GmicIOSettings settings;
-
-            err = LoadIOSettings(filterRecord, settingsPath, settings);
-
-            if (err == noErr)
-            {
-                err = DoIOSettingsUI(filterRecord, settings);
-
-                if (err == noErr)
-                {
-                    err = SaveIOSettings(filterRecord, settingsPath, settings);
-                }
-            }
+            err = settings.Save(settingsPath);
         }
-    }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
     }
 
     return err;

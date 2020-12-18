@@ -15,16 +15,12 @@
 #ifndef GMICIOSETTINGS_H
 #define GMICIOSETTINGS_H
 
+#include "Common.h"
 #include <string>
 #include <boost/filesystem.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/utility.hpp>
 
 class GmicIOSettings
 {
-    friend class boost::serialization::access;
-
 public:
     GmicIOSettings();
 
@@ -34,35 +30,11 @@ public:
 
     void SetDefaultOutputPath(const boost::filesystem::path& path);
 
+    OSErr Load(const boost::filesystem::path& path);
+
+    OSErr Save(const boost::filesystem::path& path);
+
 private:
-
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version)
-    {
-        (void)version;
-
-#if BOOST_OS_WINDOWS
-        std::wstring path;
-#else
-        std::string path;
-#endif // BOOST_OS_WINDOWS
-
-        if (Archive::is_saving::value)
-        {
-#if BOOST_OS_WINDOWS
-            path = defaultOutputPath.wstring();
-#else
-            path = defaultOutputPath.string();
-#endif // BOOST_OS_WINDOWS
-        }
-
-        ar& path;
-
-        if (Archive::is_loading::value)
-        {
-            defaultOutputPath = path;
-        }
-    }
 
     boost::filesystem::path defaultOutputPath;
 };

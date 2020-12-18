@@ -12,6 +12,7 @@
 
 #include "stdafx.h"
 #include "GmicPlugin.h"
+#include "GmicIOSettings.h"
 #include <vector>
 #include "FileUtil.h"
 #include "resource.h"
@@ -343,25 +344,19 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
 
     boost::filesystem::path settingsPath;
 
-    err = GetIOSettingsPath(settingsPath);
-
-    if (err == noErr)
+    if (GetIOSettingsPath(settingsPath) == noErr)
     {
         GmicIOSettings settings;
+        settings.Load(settingsPath);
 
-        err = LoadIOSettings(filterRecord, settingsPath, settings);
+        FilterParameters* parameters = LockParameters(filterRecord);
 
-        if (err == noErr)
+        if (parameters != nullptr)
         {
-            FilterParameters* parameters = LockParameters(filterRecord);
-
-            if (parameters != nullptr)
-            {
-                err = InitalizeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
-            }
-
-            UnlockParameters(filterRecord);
+            err = InitalizeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
         }
+
+        UnlockParameters(filterRecord);
     }
 
     return err;

@@ -32,8 +32,6 @@
 #pragma warning(pop)
 #endif
 
-#include "GmicIOSettings.h"
-
 #if defined(DEBUG) || defined(_DEBUG)
 #define DEBUG_BUILD 1
 #else
@@ -49,16 +47,6 @@ std::string FourCCToString(const uint32 fourCC);
 #endif // DEBUG_BUILD
 
 #define PrintFunctionName() DebugOut("%s", __FUNCTION__)
-
-OSErr LoadIOSettings(
-    const FilterRecordPtr filterRecord,
-    const boost::filesystem::path& path,
-    GmicIOSettings& settings);
-
-OSErr SaveIOSettings(
-    const FilterRecordPtr filterRecord,
-    const boost::filesystem::path& path,
-    const GmicIOSettings& settings);
 
 OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode);
 

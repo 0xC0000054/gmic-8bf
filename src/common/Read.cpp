@@ -12,6 +12,7 @@
 
 #include "stdafx.h"
 #include "GmicPlugin.h"
+#include "GmicIOSettings.h"
 #include "FolderBrowser.h"
 #include "ImageSaveDialog.h"
 #include "PngReader.h"
