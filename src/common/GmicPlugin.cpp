@@ -125,7 +125,7 @@ namespace
 #endif
     }
 
-    OSErr InitalizeDefaultOutputFolderHandle(
+    OSErr InitializeDefaultOutputFolderHandle(
         const FilterRecordPtr filterRecord,
         const GmicIOSettings& settings,
         Handle* defaultOutputFolderHandle)
@@ -353,7 +353,7 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
 
         if (parameters != nullptr)
         {
-            InitalizeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
+            InitializeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
         }
 
         UnlockParameters(filterRecord);
