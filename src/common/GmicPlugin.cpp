@@ -353,7 +353,7 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
 
         if (parameters != nullptr)
         {
-            err = InitalizeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
+            InitalizeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
         }
 
         UnlockParameters(filterRecord);
