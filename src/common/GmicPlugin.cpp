@@ -34,9 +34,12 @@ namespace
 
         FilterParameters* parameters = LockParameters(filterRecord);
 
-        showUI = parameters->showUI;
+        if (parameters != nullptr)
+        {
+            showUI = parameters->showUI;
 
-        UnlockParameters(filterRecord);
+            UnlockParameters(filterRecord);
+        }
 
         return showUI;
     }
@@ -255,20 +258,26 @@ OSErr DoParameters(FilterRecord* filterRecord)
             if (err == noErr)
             {
                FilterParameters* parameters = LockParameters(filterRecord);
-               parameters->lastSelectorWasParameters = true;
-               parameters->showUI = true;
-               parameters->defaultOutputFolder = nullptr;
+               if (parameters != nullptr)
+               {
+                   parameters->lastSelectorWasParameters = true;
+                   parameters->showUI = true;
+                   parameters->defaultOutputFolder = nullptr;
 
-               UnlockParameters(filterRecord);
+                   UnlockParameters(filterRecord);
+               }
             }
         }
         else
         {
             FilterParameters* parameters = LockParameters(filterRecord);
-            parameters->lastSelectorWasParameters = true;
-            parameters->showUI = true;
+            if (parameters != nullptr)
+            {
+                parameters->lastSelectorWasParameters = true;
+                parameters->showUI = true;
 
-            UnlockParameters(filterRecord);
+                UnlockParameters(filterRecord);
+            }
         }
     }
     else
@@ -297,11 +306,14 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
             if (err == noErr)
             {
                 FilterParameters* parameters = LockParameters(filterRecord);
-                parameters->lastSelectorWasParameters = false;
-                parameters->showUI = false;
-                parameters->defaultOutputFolder = nullptr;
+                if (parameters != nullptr)
+                {
+                    parameters->lastSelectorWasParameters = false;
+                    parameters->showUI = false;
+                    parameters->defaultOutputFolder = nullptr;
 
-                UnlockParameters(filterRecord);
+                    UnlockParameters(filterRecord);
+                }
             }
         }
         else
@@ -313,17 +325,20 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
     {
         FilterParameters* parameters = LockParameters(filterRecord);
 
-        if (parameters->lastSelectorWasParameters)
+        if (parameters != nullptr)
         {
-            parameters->showUI = true;
-            parameters->lastSelectorWasParameters = false;
-        }
-        else
-        {
-            parameters->showUI = false;
-        }
+            if (parameters->lastSelectorWasParameters)
+            {
+                parameters->showUI = true;
+                parameters->lastSelectorWasParameters = false;
+            }
+            else
+            {
+                parameters->showUI = false;
+            }
 
-        UnlockParameters(filterRecord);
+            UnlockParameters(filterRecord);
+        }
     }
 
     boost::filesystem::path settingsPath;
@@ -340,7 +355,10 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
         {
             FilterParameters* parameters = LockParameters(filterRecord);
 
-            err = InitalizeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
+            if (parameters != nullptr)
+            {
+                err = InitalizeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
+            }
 
             UnlockParameters(filterRecord);
         }
