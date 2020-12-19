@@ -263,7 +263,6 @@ OSErr DoParameters(FilterRecord* filterRecord)
                {
                    parameters->lastSelectorWasParameters = true;
                    parameters->showUI = true;
-                   parameters->defaultOutputFolder = nullptr;
 
                    UnlockParameters(filterRecord);
                }
@@ -311,7 +310,6 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
                 {
                     parameters->lastSelectorWasParameters = false;
                     parameters->showUI = false;
-                    parameters->defaultOutputFolder = nullptr;
 
                     UnlockParameters(filterRecord);
                 }
@@ -342,23 +340,6 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
         }
     }
 
-    boost::filesystem::path settingsPath;
-
-    if (GetIOSettingsPath(settingsPath) == noErr)
-    {
-        GmicIOSettings settings;
-        settings.Load(settingsPath);
-
-        FilterParameters* parameters = LockParameters(filterRecord);
-
-        if (parameters != nullptr)
-        {
-            InitializeDefaultOutputFolderHandle(filterRecord, settings, &parameters->defaultOutputFolder);
-        }
-
-        UnlockParameters(filterRecord);
-    }
-
     return err;
 }
 
@@ -376,6 +357,16 @@ OSErr DoStart(FilterRecord* filterRecord)
 
     if (err == noErr)
     {
+        GmicIOSettings settings;
+        boost::filesystem::path settingsPath;
+
+        // Try to load the settings file, if present.
+        // If the settings file cannot be loaded the plug-in will still be launched.
+        if (GetIOSettingsPath(settingsPath) == noErr)
+        {
+            settings.Load(settingsPath);
+        }
+
         boost::filesystem::path inputDir;
         boost::filesystem::path outputDir;
 
@@ -399,7 +390,7 @@ OSErr DoStart(FilterRecord* filterRecord)
 
                     if (err == noErr)
                     {
-                        err = ReadGmicOutput(outputDir, filterRecord);
+                        err = ReadGmicOutput(outputDir, filterRecord, settings);
                         DebugOut("After ReadGmicOutput err=%d", err);
                     }
                 }

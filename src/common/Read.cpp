@@ -49,47 +49,35 @@ namespace
         return err;
     }
 
-    bool TryGetDefaultOutputFolder(const FilterRecordPtr filterRecord, boost::filesystem::path& defaultOutputFolder)
+    bool TryGetDefaultOutputFolder(const GmicIOSettings& settings, boost::filesystem::path& defaultOutputFolder)
     {
         bool result = false;
 
-        if (filterRecord->parameters != nullptr)
+        const boost::filesystem::path& savedOutputPath = settings.GetDefaultOutputPath();
+
+        if (!savedOutputPath.empty())
         {
-            FilterParameters* parameters = LockParameters(filterRecord);
-
-            if (parameters != nullptr)
+            try
             {
-                if (parameters->defaultOutputFolder != nullptr)
-                {
-                    Ptr src = LockPIHandle(filterRecord, parameters->defaultOutputFolder, false);
-
-                    if (src != nullptr)
-                    {
-                        try
-                        {
-                            defaultOutputFolder = reinterpret_cast<const boost::filesystem::path::value_type*>(src);
-                            boost::filesystem::create_directories(defaultOutputFolder);
-                            result = true;
-                        }
-                        catch (...)
-                        {
-                            // Ignore any errors, the folder picker or save dialog will be shown.
-                        }
-
-                        UnlockPIHandle(filterRecord, parameters->defaultOutputFolder);
-                    }
-                }
-
-                UnlockParameters(filterRecord);
+                defaultOutputFolder = savedOutputPath;
+                boost::filesystem::create_directories(defaultOutputFolder);
+                result = true;
+            }
+            catch (...)
+            {
+                // Ignore any errors, the folder picker or save dialog will be shown.
             }
         }
 
         return result;
     }
 
-    OSErr GetOutputFolder(FilterRecordPtr filterRecord, boost::filesystem::path& outputFolder)
+    OSErr GetOutputFolder(
+        FilterRecordPtr filterRecord,
+        const GmicIOSettings& settings,
+        boost::filesystem::path& outputFolder)
     {
-        if (TryGetDefaultOutputFolder(filterRecord, outputFolder))
+        if (TryGetDefaultOutputFolder(settings, outputFolder))
         {
             return noErr;
         }
@@ -101,6 +89,7 @@ namespace
 
     OSErr GetResizedImageOutputPath(
         const FilterRecordPtr filterRecord,
+        const GmicIOSettings& settings,
         const boost::filesystem::path& originalFileName,
         boost::filesystem::path& outputFileName)
     {
@@ -108,7 +97,7 @@ namespace
 
         boost::filesystem::path defaultFolderPath;
 
-        if (TryGetDefaultOutputFolder(filterRecord, defaultFolderPath))
+        if (TryGetDefaultOutputFolder(settings, defaultFolderPath))
         {
 
             try
@@ -136,7 +125,10 @@ namespace
     }
 }
 
-OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* filterRecord)
+OSErr ReadGmicOutput(
+    const boost::filesystem::path& outputDir,
+    FilterRecord* filterRecord,
+    const GmicIOSettings& settings)
 {
     PrintFunctionName();
 
@@ -168,13 +160,11 @@ OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* fil
                     {
                         boost::filesystem::path outputFileName;
 
-                        err = GetResizedImageOutputPath(filterRecord, filePath.filename(), outputFileName);
+                        err = GetResizedImageOutputPath(filterRecord, settings, filePath.filename(), outputFileName);
 
                         if (err == noErr)
                         {
-
                             boost::filesystem::copy_file(filePath, outputFileName, boost::filesystem::copy_options::overwrite_existing);
-
                         }
                     }
                     catch (const std::bad_alloc&)
@@ -196,7 +186,7 @@ OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* fil
         {
             boost::filesystem::path outputFolder;
 
-            err = GetOutputFolder(filterRecord, outputFolder);
+            err = GetOutputFolder(filterRecord, settings, outputFolder);
 
             if (err == noErr)
             {

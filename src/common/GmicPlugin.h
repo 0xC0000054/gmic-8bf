@@ -18,6 +18,7 @@
 #include "Common.h" // Common definitions that are shared between plug-ins
 #include "PIAbout.h"
 #include "PIProperties.h"
+#include "GmicIOSettings.h"
 
 // A 4-byte Boolean used in the FilterParameters structure for alignment purposes.
 typedef int32 GPBoolean;
@@ -26,7 +27,6 @@ struct FilterParameters
 {
     GPBoolean lastSelectorWasParameters;
     GPBoolean showUI;
-    Handle defaultOutputFolder;
 };
 
 // Support compiling with the 7.0 and earlier SDKs.
@@ -42,7 +42,10 @@ void UnlockParameters(FilterRecordPtr filterRecord);
 OSErr DoAbout(const AboutRecord* aboutRecord) noexcept;
 OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode);
 
-OSErr ReadGmicOutput(const boost::filesystem::path& outputDir, FilterRecord* filterRecord);
+OSErr ReadGmicOutput(
+    const boost::filesystem::path& outputDir,
+    FilterRecord* filterRecord,
+    const GmicIOSettings& settings);
 OSErr WriteGmicFiles(
     const boost::filesystem::path& inputDir,
     boost::filesystem::path& indexFilePath,
