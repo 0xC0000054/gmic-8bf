@@ -41,12 +41,12 @@ public:
         case FileOpenMode::Write:
             dwDesiredAccess = GENERIC_WRITE;
             dwShareMode = 0;
-            dwCreationDisposition = CREATE_NEW;
+            dwCreationDisposition = CREATE_ALWAYS;
             break;
         case FileOpenMode::ReadWrite:
             dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
             dwShareMode = 0;
-            dwCreationDisposition = CREATE_NEW;
+            dwCreationDisposition = CREATE_ALWAYS;
             break;
         default:
             throw std::invalid_argument("Unknown FileOpenMode");
