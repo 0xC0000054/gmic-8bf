@@ -658,22 +658,47 @@ namespace
 }
 
 OSErr SaveActiveLayer(
-    const boost::filesystem::path& path,
+    const boost::filesystem::path& outputDir,
+    InputLayerIndex* index,
     FilterRecordPtr filterRecord)
 {
     OSErr err = noErr;
 
     try
     {
-        std::unique_ptr<FileHandle> file;
+        boost::filesystem::path activeLayerPath;
 
-        err = OpenFile(path, FileOpenMode::Write, file);
+        err = GetTemporaryFileName(outputDir, activeLayerPath, ".png");
 
         if (err == noErr)
         {
-            std::unique_ptr<PngWriterState> writerState = std::make_unique<PngWriterState>(file.get());
+            std::unique_ptr<FileHandle> file;
 
-            err = SaveActiveLayerImpl(filterRecord, writerState.get());
+            err = OpenFile(activeLayerPath, FileOpenMode::Write, file);
+
+            if (err == noErr)
+            {
+                std::unique_ptr<PngWriterState> writerState = std::make_unique<PngWriterState>(file.get());
+
+                err = SaveActiveLayerImpl(filterRecord, writerState.get());
+
+                if (err == noErr)
+                {
+                    const VPoint imageSize = GetImageSize(filterRecord);
+
+                    int32 layerWidth = imageSize.h;
+                    int32 layerHeight = imageSize.v;
+                    bool layerIsVisible = true;
+                    std::string layerName;
+
+                    if (!TryGetLayerNameAsUTF8String(filterRecord, layerName))
+                    {
+                        layerName = "Layer 0";
+                    }
+
+                    err = index->AddFile(activeLayerPath, layerWidth, layerHeight, layerIsVisible, layerName);
+                }
+            }
         }
     }
     catch (const std::bad_alloc&)

@@ -46,31 +46,7 @@ OSErr WriteGmicFiles(
 #endif
 
         {
-            boost::filesystem::path activeLayerPath;
-
-            err = GetTemporaryFileName(inputDir, activeLayerPath, ".png");
-
-            if (err == noErr)
-            {
-                err = SaveActiveLayer(activeLayerPath, filterRecord);
-
-                if (err == noErr)
-                {
-                    const VPoint imageSize = GetImageSize(filterRecord);
-
-                    int32 layerWidth = imageSize.h;
-                    int32 layerHeight = imageSize.v;
-                    bool layerIsVisible = true;
-                    std::string layerName;
-
-                    if (!TryGetLayerNameAsUTF8String(filterRecord, layerName))
-                    {
-                        layerName = "Layer 0";
-                    }
-
-                    err = inputLayerIndex->AddFile(activeLayerPath, layerWidth, layerHeight, layerIsVisible, layerName);
-                }
-            }
+            err = SaveActiveLayer(inputDir, inputLayerIndex.get(), filterRecord);
         }
 
         if (err == noErr)

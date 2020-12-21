@@ -19,7 +19,10 @@
 #include "InputLayerIndex.h"
 #include <boost/filesystem.hpp>
 
-OSErr SaveActiveLayer(const boost::filesystem::path& path, FilterRecordPtr filterRecord);
+OSErr SaveActiveLayer(
+    const boost::filesystem::path& outputDir,
+    InputLayerIndex* index,
+    FilterRecordPtr filterRecord);
 
 #if PSSDK_HAS_LAYER_SUPPORT
 OSErr SaveAllLayers(
