@@ -588,7 +588,7 @@ namespace
 
                                         if (err != noErr)
                                         {
-                                            goto readPixelsError;
+                                            break;
                                         }
 
                                         if (wroteRect.top != writeRect.top ||
@@ -597,8 +597,13 @@ namespace
                                             wroteRect.right != writeRect.right)
                                         {
                                             err = readErr;
-                                            goto readPixelsError;
+                                            break;
                                         }
+                                    }
+
+                                    if (err != noErr)
+                                    {
+                                        break;
                                     }
 
                                     const int32 rowCount = writeRect.bottom - writeRect.top;
@@ -633,8 +638,6 @@ namespace
                                 }
                             }
                         }
-
-                    readPixelsError:
 
                         filterRecord->bufferProcs->unlockProc(pngRowStrideBuffer);
                         filterRecord->bufferProcs->freeProc(pngRowStrideBuffer);
