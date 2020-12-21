@@ -14,7 +14,6 @@
 #include "GmicPlugin.h"
 #include "FileUtil.h"
 #include "InputLayerIndex.h"
-#include "PngWarningHandler.h"
 #include "GmicInputWriter.h"
 #include "resource.h"
 #include <string>
