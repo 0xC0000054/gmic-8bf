@@ -32,7 +32,7 @@ namespace
             signature[1] = '8';
             signature[2] = 'I';
             signature[3] = 'X';
-            version = 2;
+            version = 3;
             layerCount = numberOfLayers;
             activeLayerIndex = activeLayer;
             documentFlags = 0;
