@@ -15,7 +15,7 @@
 #include "FileUtil.h"
 #include "InputLayerIndex.h"
 #include "PngWarningHandler.h"
-#include "PngWriter.h"
+#include "GmicInputWriter.h"
 #include "resource.h"
 #include <string>
 #include <wil\result.h>

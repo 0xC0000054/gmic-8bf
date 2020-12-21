@@ -10,7 +10,7 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "PngWriter.h"
+#include "GmicInputWriter.h"
 #include "FileUtil.h"
 #include "InputLayerIndex.h"
 #include <boost/endian.hpp>
