@@ -78,6 +78,27 @@
     <ClInclude Include="..\src\common\GmicInputWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\common\ImageLoadDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win\ImageLoadDialogWin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\ClipboardUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win\ClipboardUtilWin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win\ImageConversionWin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\ImageConversion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win\ReadOnlyMemoryStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\common\FileUtil.cpp">
@@ -150,6 +171,27 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\common\GmicInputWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\ImageLoadDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win\ImageLoadDialogWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\ClipboardUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win\ClipboardUtilWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win\ImageConversionWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\common\ImageConversion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\win\ReadOnlyMemoryStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

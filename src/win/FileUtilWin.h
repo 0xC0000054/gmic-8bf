@@ -27,6 +27,8 @@ OSErr OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode, std
 
 OSErr ReadFileNative(const FileHandle* fileHandle, void* data, size_t dataSize);
 
+OSErr SetFileLengthNative(const FileHandle* fileHandle, int64 length);
+
 OSErr SetFilePositionNative(const FileHandle* fileHandle, int16 posMode, int64 posOffset);
 
 OSErr WriteFileNative(const FileHandle* fileHandle, const void* data, size_t dataSize);

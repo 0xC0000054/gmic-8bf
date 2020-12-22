@@ -13,6 +13,7 @@
 #include "GmicIOSettingsPlugin.h"
 #include "CommonUIWin.h"
 #include "FolderBrowser.h"
+#include "ImageLoadDialog.h"
 #include "resource.h"
 #include <objbase.h>
 #include <ShlObj.h>
@@ -27,20 +28,41 @@ namespace
     struct DialogData
     {
         boost::filesystem::path defaultOutputFolder;
-        OSErr dialogError;
+        SecondInputImageSource secondImageSource;
+        boost::filesystem::path secondImageFilePath;
 
-        DialogData(const boost::filesystem::path& path) : defaultOutputFolder(path), dialogError(noErr)
+        OSErr GetDialogError() const
+        {
+            return dialogError;
+        }
+
+        void SetDialogError(OSErr err)
+        {
+            if (err != noErr)
+            {
+                dialogError = err;
+            }
+        }
+
+        DialogData(const GmicIOSettings& settings)
+            : defaultOutputFolder(settings.GetDefaultOutputPath()),
+              secondImageSource(settings.GetSecondInputImageSource()),
+              secondImageFilePath(settings.GetSecondInputImagePath()),
+              dialogError(noErr)
         {
         }
+    private:
+
+        OSErr dialogError;
     };
 
-    void InitIOSettingsDialog(HWND hDlg, const boost::filesystem::path& defaultOutputFolder)
+    void InitIOSettingsDialog(HWND hDlg, const DialogData* const data)
     {
         const HWND defaultOutputFolderCheckBox = GetDlgItem(hDlg, IDC_DEFAULTOUTDIRCB);
         const HWND editBoxHWnd = GetDlgItem(hDlg, IDC_DEFAULTOUTDIREDIT);
         const HWND browseButtonHWnd = GetDlgItem(hDlg, IDC_DEFAULTOUTFOLDERBROWSE);
 
-        if (defaultOutputFolder.empty())
+        if (data->defaultOutputFolder.empty())
         {
             Button_SetCheck(defaultOutputFolderCheckBox, BST_UNCHECKED);
             EnableWindow(editBoxHWnd, FALSE);
@@ -67,8 +89,78 @@ namespace
             Button_SetCheck(defaultOutputFolderCheckBox, BST_CHECKED);
             EnableWindow(editBoxHWnd, TRUE);
             EnableWindow(browseButtonHWnd, TRUE);
-            SetWindowTextW(editBoxHWnd, defaultOutputFolder.c_str());
+            SetWindowTextW(editBoxHWnd, data->defaultOutputFolder.c_str());
         }
+
+        int checkedRadioButtonId;
+
+        switch (data->secondImageSource)
+        {
+        case SecondInputImageSource::Clipboard:
+            checkedRadioButtonId = IDC_SECONDIMAGESOURCE_CLIPBOARD_RADIO;
+            break;
+        case SecondInputImageSource::File:
+            checkedRadioButtonId = IDC_SECONDIMAGESOURCE_FILE_RADIO;
+        break;
+        case SecondInputImageSource::None:
+        default:
+            checkedRadioButtonId = IDC_SECONDIMAGESOURCE_NONE_RADIO;
+            break;
+        }
+
+        CheckRadioButton(
+            hDlg,
+            IDC_SECONDIMAGESOURCE_NONE_RADIO,
+            IDC_SECONDIMAGESOURCE_FILE_RADIO,
+            checkedRadioButtonId);
+    }
+
+    OSErr GetPathFromTextBox(const HWND editBoxHWnd, boost::filesystem::path& path)
+    {
+        OSErr err = noErr;
+
+        try
+        {
+            path = boost::filesystem::path();
+
+            const int pathLength = GetWindowTextLengthW(editBoxHWnd);
+
+            if (pathLength == 0)
+            {
+                return noErr;
+            }
+
+            // Ensure that adding the NUL terminator will not cause an integer overflow.
+            if (pathLength < std::numeric_limits<int>::max())
+            {
+                const int lengthWithTerminator = pathLength + 1;
+
+                std::vector<wchar_t> temp(lengthWithTerminator);
+
+                if (GetWindowTextW(editBoxHWnd, &temp[0], lengthWithTerminator) > 0)
+                {
+                    path = temp.data();
+                }
+                else
+                {
+                    err = ioErr;
+                }
+            }
+            else
+            {
+                err = memFullErr;
+            }
+        }
+        catch (const std::bad_alloc&)
+        {
+            err = memFullErr;
+        }
+        catch (...)
+        {
+            err = ioErr;
+        }
+
+        return err;
     }
 
     void WriteSettings(HWND hDlg, DialogData* data)
@@ -79,40 +171,7 @@ namespace
         {
             const HWND editBoxHWnd = GetDlgItem(hDlg, IDC_DEFAULTOUTDIREDIT);
 
-            const int pathLength = GetWindowTextLengthW(editBoxHWnd);
-
-            if (pathLength == 0)
-            {
-                return;
-            }
-
-            try
-            {
-                // Ensure that adding the NUL terminator will not cause an integer overflow.
-                if (pathLength < std::numeric_limits<int>::max())
-                {
-                    const int lengthWithTerminator = pathLength + 1;
-
-                    std::vector<wchar_t> temp(lengthWithTerminator);
-
-                    if (GetWindowTextW(editBoxHWnd, &temp[0], lengthWithTerminator) > 0)
-                    {
-                        data->defaultOutputFolder = temp.data();
-                    }
-                }
-                else
-                {
-                    data->dialogError = memFullErr;
-                }
-            }
-            catch (const std::bad_alloc&)
-            {
-                data->dialogError = memFullErr;
-            }
-            catch (...)
-            {
-                data->dialogError = ioErr;
-            }
+            data->SetDialogError(GetPathFromTextBox(editBoxHWnd, data->defaultOutputFolder));
         }
     }
 
@@ -142,7 +201,7 @@ namespace
         {
         case WM_INITDIALOG:
             CenterDialog(hDlg);
-            InitIOSettingsDialog(hDlg, dialogParams->defaultOutputFolder);
+            InitIOSettingsDialog(hDlg, dialogParams);
             break;
         case WM_COMMAND:
             item = LOWORD(wParam);
@@ -150,7 +209,7 @@ namespace
 
             if (cmd == BN_CLICKED)
             {
-                boost::filesystem::path newFolderPath;
+                boost::filesystem::path newPath;
 
                 switch (item)
                 {
@@ -166,15 +225,87 @@ namespace
                     break;
                 case IDC_DEFAULTOUTFOLDERBROWSE:
 
-                    if (GetDefaultGmicOutputFolder(reinterpret_cast<intptr_t>(hDlg), newFolderPath) == noErr)
+                    if (GetDefaultGmicOutputFolder(reinterpret_cast<intptr_t>(hDlg), newPath) == noErr)
                     {
-                        SetWindowTextW(GetDlgItem(hDlg, IDC_DEFAULTOUTDIREDIT), newFolderPath.c_str());
+                        SetWindowTextW(GetDlgItem(hDlg, IDC_DEFAULTOUTDIREDIT), newPath.c_str());
+                    }
+
+                    break;
+                case IDC_SECONDIMAGESOURCE_NONE_RADIO:
+
+                    if (Button_GetCheck(GetDlgItem(hDlg, IDC_SECONDIMAGESOURCE_NONE_RADIO)) == BST_CHECKED)
+                    {
+                        CheckRadioButton(
+                            hDlg,
+                            IDC_SECONDIMAGESOURCE_NONE_RADIO,
+                            IDC_SECONDIMAGESOURCE_FILE_RADIO,
+                            item);
+                        dialogParams->secondImageSource = SecondInputImageSource::None;
+                    }
+
+                    break;
+                case IDC_SECONDIMAGESOURCE_CLIPBOARD_RADIO:
+
+                    if (Button_GetCheck(GetDlgItem(hDlg, IDC_SECONDIMAGESOURCE_CLIPBOARD_RADIO)) == BST_CHECKED)
+                    {
+                        CheckRadioButton(
+                            hDlg,
+                            IDC_SECONDIMAGESOURCE_NONE_RADIO,
+                            IDC_SECONDIMAGESOURCE_FILE_RADIO,
+                            item);
+                        dialogParams->secondImageSource = SecondInputImageSource::Clipboard;
+                    }
+
+                    break;
+                case IDC_SECONDIMAGESOURCE_FILE_RADIO:
+
+                    if (Button_GetCheck(GetDlgItem(hDlg, IDC_SECONDIMAGESOURCE_FILE_RADIO)) == BST_CHECKED)
+                    {
+                        CheckRadioButton(
+                            hDlg,
+                            IDC_SECONDIMAGESOURCE_NONE_RADIO,
+                            IDC_SECONDIMAGESOURCE_FILE_RADIO,
+                            item);
+                        dialogParams->secondImageSource = SecondInputImageSource::File;
                     }
 
                     break;
 
+                case IDC_SECONDIMAGEPATHBROWSE:
+
+                    if (GetImageFileName(reinterpret_cast<intptr_t>(hDlg), newPath) == noErr)
+                    {
+                        SetWindowTextW(GetDlgItem(hDlg, IDC_SECONDIMAGEPATHEDIT), newPath.c_str());
+                    }
+
+                    break;
                 default:
                     return FALSE;
+                }
+            }
+            else if (item == IDC_SECONDIMAGEPATHEDIT)
+            {
+                if (cmd == EN_CHANGE)
+                {
+                    const HWND editBoxHwnd = reinterpret_cast<HWND>(lParam);
+
+                    if (GetWindowTextLengthW(editBoxHwnd) > 0)
+                    {
+                        dialogParams->SetDialogError(GetPathFromTextBox(editBoxHwnd, dialogParams->secondImageFilePath));
+
+                        if (Button_GetCheck(GetDlgItem(hDlg, IDC_SECONDIMAGESOURCE_FILE_RADIO)) == BST_UNCHECKED)
+                        {
+                            CheckRadioButton(
+                                hDlg,
+                                IDC_SECONDIMAGESOURCE_NONE_RADIO,
+                                IDC_SECONDIMAGESOURCE_FILE_RADIO,
+                                IDC_SECONDIMAGESOURCE_FILE_RADIO);
+                        }
+                    }
+                    else
+                    {
+                        dialogParams->secondImageFilePath.clear();
+                    }
                 }
             }
             break;
@@ -194,25 +325,28 @@ OSErr DoIOSettingsUI(const FilterRecordPtr filterRecord, GmicIOSettings& setting
 
     HWND parent = platform != nullptr ? reinterpret_cast<HWND>(platform->hwnd) : nullptr;
 
-    DialogData dialogData(settings.GetDefaultOutputPath());
+    DialogData dialogData(settings);
 
     try
     {
-        LPARAM lParams = reinterpret_cast<LPARAM>(&dialogData);
         if (DialogBoxParam(
             wil::GetModuleInstanceHandle(),
             MAKEINTRESOURCE(IDD_OUTPUTSETTINGS),
             parent,
             IOSettingsDlgProc,
-            lParams) == IDOK)
+            reinterpret_cast<LPARAM>(&dialogData)) == IDOK)
         {
-            if (dialogData.dialogError == noErr)
+            OSErr dialogError = dialogData.GetDialogError();
+
+            if (dialogError == noErr)
             {
                 settings.SetDefaultOutputPath(dialogData.defaultOutputFolder);
+                settings.SetSecondInputImageSource(dialogData.secondImageSource);
+                settings.SetSecondInputImagePath(dialogData.secondImageFilePath);
             }
             else
             {
-                err = dialogData.dialogError;
+                err = dialogError;
             }
         }
         else

@@ -19,6 +19,13 @@
 #include <string>
 #include <boost/filesystem.hpp>
 
+enum class SecondInputImageSource : uint32_t
+{
+    None = 0,
+    Clipboard = 1,
+    File = 2
+};
+
 class GmicIOSettings
 {
 public:
@@ -28,7 +35,15 @@ public:
 
     boost::filesystem::path GetDefaultOutputPath() const;
 
+    SecondInputImageSource GetSecondInputImageSource() const;
+
+    boost::filesystem::path GetSecondInputImagePath() const;
+
     void SetDefaultOutputPath(const boost::filesystem::path& path);
+
+    void SetSecondInputImageSource(SecondInputImageSource source);
+
+    void SetSecondInputImagePath(const boost::filesystem::path& filePath);
 
     OSErr Load(const boost::filesystem::path& path);
 
@@ -37,6 +52,8 @@ public:
 private:
 
     boost::filesystem::path defaultOutputPath;
+    SecondInputImageSource secondInputImageSource;
+    boost::filesystem::path secondInputImagePath;
 };
 
 #endif // !GMICOUTPUTSETTINGS_H

@@ -296,6 +296,11 @@ OSErr ReadFile(const FileHandle* fileHandle, void* data, size_t dataSize)
     return ReadFileNative(fileHandle, data, dataSize);
 }
 
+OSErr SetFileLength(const FileHandle* fileHandle, int64 length)
+{
+    return SetFileLengthNative(fileHandle, length);
+}
+
 OSErr SetFilePosition(const FileHandle* fileHandle, int16 posMode, int64 posOffset)
 {
     return SetFilePositionNative(fileHandle, posMode, posOffset);

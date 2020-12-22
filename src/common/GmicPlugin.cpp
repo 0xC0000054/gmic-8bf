@@ -380,7 +380,7 @@ OSErr DoStart(FilterRecord* filterRecord)
             {
                 boost::filesystem::path indexFilePath;
 
-                err = WriteGmicFiles(inputDir, indexFilePath, filterRecord);
+                err = WriteGmicFiles(inputDir, indexFilePath, filterRecord, settings);
                 DebugOut("After WriteGmicFiles err=%d", err);
 
                 if (err == noErr)

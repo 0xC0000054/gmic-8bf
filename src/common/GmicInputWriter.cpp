@@ -153,7 +153,7 @@ namespace
                         break;
                     }
 
-                    const size_t rowCount = static_cast<size_t>(bottom - top);
+                    const size_t rowCount = static_cast<size_t>(bottom) - top;
 
                     if (bitDepth == 16)
                     {
@@ -343,7 +343,7 @@ namespace
                                 break;
                             }
 
-                            const size_t rowCount = static_cast<size_t>(writeRect.bottom - writeRect.top);
+                            const size_t rowCount = static_cast<size_t>(writeRect.bottom) - writeRect.top;
 
                             if (bitDepth == 16)
                             {
@@ -372,6 +372,58 @@ namespace
 
         return err;
     }
+}
+
+OSErr CopyFromPixelBuffer(
+    int32 width,
+    int32 height,
+    int32 numberOfChannels,
+    int32 bitsPerChannel,
+    const void* scan0,
+    size_t stride,
+    const boost::filesystem::path& outputPath)
+{
+    if (scan0 == nullptr)
+    {
+        return nilHandleErr;
+    }
+
+    OSErr err = noErr;
+
+    std::unique_ptr<FileHandle> file;
+
+    err = OpenFile(outputPath, FileOpenMode::Write, file);
+
+    if (err == noErr)
+    {
+        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel);
+
+        err = WriteFile(file.get(), &fileHeader, sizeof(fileHeader));
+
+        if (err == noErr)
+        {
+            size_t numberOfBytesToWrite = static_cast<size_t>(width) * numberOfChannels;
+
+            if (bitsPerChannel == 16)
+            {
+                numberOfBytesToWrite *= 2;
+            }
+
+            for (int32_t y = 0; y < height; y++)
+            {
+                const uint8* src = static_cast<const uint8*>(scan0) + (static_cast<size_t>(y) * stride);
+
+                err = WriteFile(file.get(), src, numberOfBytesToWrite);
+
+                if (err != noErr)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    return err;
 }
 
 OSErr SaveActiveLayer(

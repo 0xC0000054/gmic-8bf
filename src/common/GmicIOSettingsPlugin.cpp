@@ -90,11 +90,11 @@ OSErr GmicIOSettingsDoParameters(FilterRecord* filterRecord)
     DebugOut("Host signature: 0x%X (%s)", filterRecord->hostSig, sig.c_str());
 #endif // DEBUG_BUILD
 
-    OSErr err = noErr;
-
     boost::filesystem::path settingsPath;
 
-    if (GetIOSettingsPath(settingsPath) == noErr)
+    OSErr err = GetIOSettingsPath(settingsPath);
+
+    if (err == noErr)
     {
         GmicIOSettings settings;
         settings.Load(settingsPath);
@@ -104,6 +104,12 @@ OSErr GmicIOSettingsDoParameters(FilterRecord* filterRecord)
         if (err == noErr)
         {
             err = settings.Save(settingsPath);
+
+            if (err == noErr)
+            {
+                // Prevent the settings plug-in from appearing in the "Last Filter" menu.
+                err = userCanceledErr;
+            }
         }
     }
 

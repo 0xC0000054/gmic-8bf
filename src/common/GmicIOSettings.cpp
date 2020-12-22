@@ -45,23 +45,30 @@ namespace
 
             if (err == noErr)
             {
-                constexpr size_t pathCharSize = sizeof(boost::filesystem::path::value_type);
-
-                // Check that the required byte buffer size can fit in a size_t.
-                if (stringLength > (std::numeric_limits<size_t>::max() / pathCharSize))
+                if (stringLength == 0)
                 {
-                    return ioErr;
+                    value = boost::filesystem::path();
                 }
-
-                std::vector<boost::filesystem::path::value_type> stringChars(stringLength);
-
-                const size_t stringLengthInBytes = stringLength * pathCharSize;
-
-                err = ReadFile(fileHandle, &stringChars[0], stringLengthInBytes);
-
-                if (err == noErr)
+                else
                 {
-                    value.assign(stringChars.begin(), stringChars.end());
+                    constexpr size_t pathCharSize = sizeof(boost::filesystem::path::value_type);
+
+                    // Check that the required byte buffer size can fit in a size_t.
+                    if (stringLength > (std::numeric_limits<size_t>::max() / pathCharSize))
+                    {
+                        return ioErr;
+                    }
+
+                    std::vector<boost::filesystem::path::value_type> stringChars(stringLength);
+
+                    const size_t stringLengthInBytes = stringLength * pathCharSize;
+
+                    err = ReadFile(fileHandle, &stringChars[0], stringLengthInBytes);
+
+                    if (err == noErr)
+                    {
+                        value.assign(stringChars.begin(), stringChars.end());
+                    }
                 }
             }
         }
@@ -95,7 +102,7 @@ namespace
 
             err = WriteFile(fileHandle, &stringLength, sizeof(stringLength));
 
-            if (err == noErr)
+            if (err == noErr && value.size() > 0)
             {
                 const size_t stringLengthInBytes = value.size() * pathCharSize;
 
@@ -113,9 +120,41 @@ namespace
 
         return err;
     }
+
+    OSErr ReadSecondInputImageSourceValue(const FileHandle* fileHandle, SecondInputImageSource& value)
+    {
+        value = SecondInputImageSource::None;
+
+        boost::endian::little_uint32_t source{};
+
+        OSErr err = ReadFile(fileHandle, &source, sizeof(source));
+
+        if (err == noErr)
+        {
+            constexpr uint32_t firstValue = static_cast<uint32_t>(SecondInputImageSource::None);
+            constexpr uint32_t lastValue = static_cast<uint32_t>(SecondInputImageSource::File);
+
+            if (source >= firstValue && source <= lastValue)
+            {
+                value = static_cast<SecondInputImageSource>(static_cast<uint32_t>(source));
+            }
+        }
+
+        return err;
+    }
+
+
+    OSErr WriteSecondInputImageSourceValue(const FileHandle* fileHandle, SecondInputImageSource value)
+    {
+        uint32_t integerValue = static_cast<uint32_t>(value);
+        boost::endian::little_uint32_t source = static_cast<boost::endian::little_uint32_t>(integerValue);
+
+        return WriteFile(fileHandle, &source, sizeof(source));
+    }
 }
 
-GmicIOSettings::GmicIOSettings() : defaultOutputPath()
+GmicIOSettings::GmicIOSettings()
+    : defaultOutputPath(), secondInputImageSource(SecondInputImageSource::None), secondInputImagePath()
 {
 }
 
@@ -128,9 +167,29 @@ boost::filesystem::path GmicIOSettings::GetDefaultOutputPath() const
     return defaultOutputPath;
 }
 
+SecondInputImageSource GmicIOSettings::GetSecondInputImageSource() const
+{
+    return secondInputImageSource;
+}
+
+boost::filesystem::path GmicIOSettings::GetSecondInputImagePath() const
+{
+    return secondInputImagePath;
+}
+
 void GmicIOSettings::SetDefaultOutputPath(const boost::filesystem::path& path)
 {
     defaultOutputPath = path;
+}
+
+void GmicIOSettings::SetSecondInputImageSource(SecondInputImageSource source)
+{
+    secondInputImageSource = source;
+}
+
+void GmicIOSettings::SetSecondInputImagePath(const boost::filesystem::path& path)
+{
+    secondInputImagePath = path;
 }
 
 OSErr GmicIOSettings::Load(const boost::filesystem::path& path)
@@ -164,6 +223,16 @@ OSErr GmicIOSettings::Load(const boost::filesystem::path& path)
                 }
 
                 err = ReadFilePath(file.get(), defaultOutputPath);
+
+                if (err == noErr)
+                {
+                    err = ReadSecondInputImageSourceValue(file.get(), secondInputImageSource);
+
+                    if (err == noErr)
+                    {
+                        err = ReadFilePath(file.get(), secondInputImagePath);
+                    }
+                }
             }
         }
     }
@@ -190,6 +259,16 @@ OSErr GmicIOSettings::Save(const boost::filesystem::path& path)
             if (err == noErr)
             {
                 err = WriteFilePath(file.get(), defaultOutputPath);
+
+                if (err == noErr)
+                {
+                    err = WriteSecondInputImageSourceValue(file.get(), secondInputImageSource);
+
+                    if (err == noErr)
+                    {
+                        err = WriteFilePath(file.get(), secondInputImagePath);
+                    }
+                }
             }
         }
     }

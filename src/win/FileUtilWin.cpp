@@ -187,6 +187,25 @@ OSErr ReadFileNative(const FileHandle* fileHandle, void* data, size_t dataSize)
     return noErr;
 }
 
+OSErr SetFileLengthNative(const FileHandle* fileHandle, int64 length)
+{
+    OSErr err = SetFilePositionNative(fileHandle, FILE_BEGIN, length);
+
+    if (err == noErr)
+    {
+        if (SetEndOfFile(static_cast<const FileHandleWin*>(fileHandle)->get()))
+        {
+            err = SetFilePositionNative(fileHandle, FILE_BEGIN, 0);
+        }
+        else
+        {
+            err = ioErr;
+        }
+    }
+
+    return err;
+}
+
 OSErr SetFilePositionNative(const FileHandle* fileHandle, int16 posMode, int64 posOffset)
 {
     if (!fileHandle)

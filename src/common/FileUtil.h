@@ -60,6 +60,8 @@ OSErr OpenFile(const boost::filesystem::path& path, FileOpenMode mode, std::uniq
 
 OSErr ReadFile(const FileHandle* fileHandle, void* data, size_t dataSize);
 
+OSErr SetFileLength(const FileHandle* fileHandle, int64 length);
+
 OSErr SetFilePosition(const FileHandle* fileHandle, int16 posMode, int64 posOffset);
 
 OSErr WriteFile(const FileHandle* fileHandle, const void* data, size_t dataSize);

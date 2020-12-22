@@ -103,7 +103,7 @@ resource 'PiPL' ( 16001, "GmicOutputSettingsPlugin", purgeable )
 {
 	{
 		Kind { Filter },
-		Name { "Output Settings for G'MIC-Qt..." },
+		Name { "Input/Output Settings for G'MIC-Qt..." },
 		Category { "GMIC" },
 		Version { (latestFilterVersion << 16 ) | latestFilterSubVersion },
 

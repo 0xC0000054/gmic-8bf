@@ -115,7 +115,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;Windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -143,7 +143,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;Windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
@@ -166,7 +166,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;Windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(TargetPath)" "D:\Adobe CC Apps\Adobe Photoshop 2020\Plug-ins\Filters" /y</Command>
@@ -193,7 +193,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;Windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
@@ -204,22 +204,29 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\common\ClipboardUtil.h" />
     <ClInclude Include="..\src\common\FileUtil.h" />
     <ClInclude Include="..\src\common\FolderBrowser.h" />
     <ClInclude Include="..\src\common\GmicInputWriter.h" />
     <ClInclude Include="..\src\common\GmicIOSettingsPlugin.h" />
     <ClInclude Include="..\src\common\GmicPlugin.h" />
+    <ClInclude Include="..\src\common\ImageConversion.h" />
+    <ClInclude Include="..\src\common\ImageLoadDialog.h" />
     <ClInclude Include="..\src\common\ImageSaveDialog.h" />
     <ClInclude Include="..\src\common\InputLayerIndex.h" />
     <ClInclude Include="..\src\common\InputLayerInfo.h" />
     <ClInclude Include="..\src\common\PngWarningHandler.h" />
     <ClInclude Include="..\src\common\version.h" />
+    <ClInclude Include="..\src\win\ClipboardUtilWin.h" />
     <ClInclude Include="..\src\win\CommonUIWin.h" />
     <ClInclude Include="..\src\win\FileUtilWin.h" />
     <ClInclude Include="..\src\win\FolderBrowserWin.h" />
     <ClInclude Include="..\src\common\PngReader.h" />
+    <ClInclude Include="..\src\win\ImageConversionWin.h" />
+    <ClInclude Include="..\src\win\ImageLoadDialogWin.h" />
     <ClInclude Include="..\src\win\ImageSaveDialogWin.h" />
     <ClInclude Include="..\src\win\MemoryWin.h" />
+    <ClInclude Include="..\src\win\ReadOnlyMemoryStream.h" />
     <ClInclude Include="..\src\win\resource.h" />
     <ClInclude Include="..\src\win\stdafx.h" />
     <ClInclude Include="..\src\win\targetver.h" />
@@ -227,12 +234,15 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\common\GmicIOSettings.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\common\ClipboardUtil.cpp" />
     <ClCompile Include="..\src\common\Common.cpp" />
     <ClCompile Include="..\src\common\FileUtil.cpp" />
     <ClCompile Include="..\src\common\FolderBrowser.cpp" />
     <ClCompile Include="..\src\common\GmicInputWriter.cpp" />
     <ClCompile Include="..\src\common\GmicIOSettingsPlugin.cpp" />
     <ClCompile Include="..\src\common\GmicPlugin.cpp" />
+    <ClCompile Include="..\src\common\ImageConversion.cpp" />
+    <ClCompile Include="..\src\common\ImageLoadDialog.cpp" />
     <ClCompile Include="..\src\common\ImageSaveDialog.cpp" />
     <ClCompile Include="..\src\common\InputLayerIndex.cpp" />
     <ClCompile Include="..\src\common\InputLayerInfo.cpp" />
@@ -241,6 +251,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\src\common\Read.cpp" />
     <ClCompile Include="..\src\common\Utilities.cpp" />
     <ClCompile Include="..\src\common\Write.cpp" />
+    <ClCompile Include="..\src\win\ClipboardUtilWin.cpp" />
     <ClCompile Include="..\src\win\CommonUIWin.cpp" />
     <ClCompile Include="..\src\win\dllmain.cpp" />
     <ClCompile Include="..\src\win\FileUtilWin.cpp" />
@@ -248,9 +259,12 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\src\common\PngReader.cpp" />
     <ClCompile Include="..\src\win\GmicIOSettingsUIWin.cpp" />
     <ClCompile Include="..\src\win\GmicPluginUIWin.cpp" />
+    <ClCompile Include="..\src\win\ImageConversionWin.cpp" />
+    <ClCompile Include="..\src\win\ImageLoadDialogWin.cpp" />
     <ClCompile Include="..\src\win\ImageSaveDialogWin.cpp" />
     <ClCompile Include="..\src\win\MemoryWin.cpp" />
     <ClCompile Include="..\src\common\GmicIOSettings.cpp" />
+    <ClCompile Include="..\src\win\ReadOnlyMemoryStream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\src\common\GmicPlugin.r">

@@ -19,6 +19,15 @@
 #include "InputLayerIndex.h"
 #include <boost/filesystem.hpp>
 
+OSErr CopyFromPixelBuffer(
+    int32 width,
+    int32 height,
+    int32 numberOfChannels,
+    int32 bitsPerChannel,
+    const void* scan0,
+    size_t stride,
+    const boost::filesystem::path& outputPath);
+
 OSErr SaveActiveLayer(
     const boost::filesystem::path& outputDir,
     InputLayerIndex* index,

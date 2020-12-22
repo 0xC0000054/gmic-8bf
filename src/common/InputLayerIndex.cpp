@@ -12,6 +12,8 @@
 
 #include "InputLayerIndex.h"
 #include "InputLayerInfo.h"
+#include "ClipboardUtil.h"
+#include "ImageConversion.h"
 #include "FileUtil.h"
 #include <codecvt>
 #include <locale>
@@ -54,6 +56,70 @@ namespace
         boost::endian::little_int32_t activeLayerIndex;
         boost::endian::little_int32_t documentFlags;
     };
+
+    OSErr WriteAlternateInputImagePath(const FileHandle* fileHandle, const boost::filesystem::path& path)
+    {
+        // The file path will be converted from UTF-16 to UTF-8.
+        const std::string& value = path.string();
+
+        if (value.size() > static_cast<size_t>(std::numeric_limits<int32>::max()))
+        {
+            return ioErr;
+        }
+
+        boost::endian::little_int32_t stringLength = static_cast<int32>(value.size());
+
+        OSErr err = WriteFile(fileHandle, &stringLength, sizeof(stringLength));
+
+        if (err == noErr)
+        {
+            err = WriteFile(fileHandle, value.data(), value.size());
+        }
+
+        return err;
+    }
+
+    OSErr WriteAlternateInputImageData(
+        const FileHandle* fileHandle,
+        const FilterRecordPtr filterRecord,
+        const GmicIOSettings& settings)
+    {
+        const SecondInputImageSource source = settings.GetSecondInputImageSource();
+
+        OSErr err = noErr;
+
+        boost::filesystem::path inputDir;
+
+        err = GetInputDirectory(inputDir);
+
+        if (err == noErr)
+        {
+            boost::filesystem::path secondGmicInputImage;
+            err = GetTemporaryFileName(inputDir, secondGmicInputImage, ".g8i");
+
+            if (err == noErr)
+            {
+                if (source == SecondInputImageSource::Clipboard)
+                {
+                    err = ConvertClipboardImageToGmicInput(filterRecord, secondGmicInputImage);
+                }
+                else if (source == SecondInputImageSource::File)
+                {
+                    err = ConvertImageToGmicInputFormat(
+                        filterRecord,
+                        settings.GetSecondInputImagePath(),
+                        secondGmicInputImage);
+                }
+
+                if (err == noErr)
+                {
+                    err = WriteAlternateInputImagePath(fileHandle, secondGmicInputImage);
+                }
+            }
+        }
+
+        return err;
+    }
 }
 
 InputLayerIndex::InputLayerIndex(int16 imageMode)
@@ -95,7 +161,10 @@ void InputLayerIndex::SetActiveLayerIndex(int32 index)
     activeLayerIndex = index;
 }
 
-OSErr InputLayerIndex::Write(const boost::filesystem::path& path)
+OSErr InputLayerIndex::Write(
+    const boost::filesystem::path& path,
+    const FilterRecordPtr filterRecord,
+    const GmicIOSettings& settings)
 {
     if (inputFiles.size() > static_cast<size_t>(std::numeric_limits<int32>().max()))
     {
@@ -134,6 +203,11 @@ OSErr InputLayerIndex::Write(const boost::filesystem::path& path)
                     {
                         break;
                     }
+                }
+
+                if (inputFiles.size() == 1 && err == noErr)
+                {
+                    err = WriteAlternateInputImageData(file.get(), filterRecord, settings);
                 }
             }
         }

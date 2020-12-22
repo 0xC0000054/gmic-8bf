@@ -49,7 +49,8 @@ OSErr ReadGmicOutput(
 OSErr WriteGmicFiles(
     const boost::filesystem::path& inputDir,
     boost::filesystem::path& indexFilePath,
-    FilterRecord* filterRecord);
+    FilterRecord* filterRecord,
+    const GmicIOSettings& settings);
 
 constexpr Fixed int2fixed(int value)
 {

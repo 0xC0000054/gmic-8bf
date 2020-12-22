@@ -22,7 +22,8 @@
 OSErr WriteGmicFiles(
     const boost::filesystem::path& inputDir,
     boost::filesystem::path& indexFilePath,
-    FilterRecord* filterRecord)
+    FilterRecord* filterRecord,
+    const GmicIOSettings& settings)
 {
     PrintFunctionName();
 
@@ -54,7 +55,7 @@ OSErr WriteGmicFiles(
 
             if (err == noErr)
             {
-                err = inputLayerIndex->Write(indexFilePath);
+                err = inputLayerIndex->Write(indexFilePath, filterRecord, settings);
             }
         }
 

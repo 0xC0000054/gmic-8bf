@@ -38,7 +38,10 @@ public:
 
     void SetActiveLayerIndex(int32 index);
 
-    OSErr Write(const boost::filesystem::path& path);
+    OSErr Write(
+        const boost::filesystem::path& path,
+        const FilterRecordPtr filterRecord,
+        const GmicIOSettings& settings);
 
 private:
 
