@@ -19,6 +19,12 @@
 #include "InputLayerIndex.h"
 #include <boost/filesystem.hpp>
 
+// Copies the pixel data from an existing buffer.
+// The buffer must use one of the following layouts:
+// Grayscale
+// Grayscale, Alpha
+// Red, Green, Blue
+// Red, Green, Blue, Alpha
 OSErr CopyFromPixelBuffer(
     int32 width,
     int32 height,
