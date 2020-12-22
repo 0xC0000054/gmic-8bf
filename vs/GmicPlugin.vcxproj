@@ -269,21 +269,21 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
   <ItemGroup>
     <CustomBuild Include="..\src\common\GmicPlugin.r">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cl /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Includes /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\Photoshop /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\PICA_SP /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\resources /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
-D:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cl /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
+..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
 del "$(IntDir)%(Filename).rr"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).pipl;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cl /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Includes /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\Photoshop /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\PICA_SP /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\resources /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
-D:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cl /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
+..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
 del "$(IntDir)%(Filename).rr"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename).pipl;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).pipl;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).pipl;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cl /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Includes /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\Photoshop /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\PICA_SP /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\resources /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
-D:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cl /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
+..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
 del "$(IntDir)%(Filename).rr"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cl /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Includes /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\Photoshop /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\PICA_SP /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\PhotoshopAPI\resources /ID:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
-D:\Adobe_sdks\Adobe_Photoshop_CS4_SDK\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cl /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
+..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
 del "$(IntDir)%(Filename).rr"</Command>
     </CustomBuild>
     <None Include="packages.config" />
