@@ -163,7 +163,7 @@ namespace
         return err;
     }
 
-    void WriteSettings(HWND hDlg, DialogData* data)
+    void WriteOutputFolderSettings(HWND hDlg, DialogData* data)
     {
         bool defaultFolderChecked = Button_GetCheck(GetDlgItem(hDlg, IDC_DEFAULTOUTDIRCB)) == BST_CHECKED;
 
@@ -214,7 +214,7 @@ namespace
                 switch (item)
                 {
                 case IDOK:
-                    WriteSettings(hDlg, dialogParams);
+                    WriteOutputFolderSettings(hDlg, dialogParams);
                     EndDialog(hDlg, item);
                     break;
                 case IDCANCEL:
