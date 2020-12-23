@@ -186,7 +186,7 @@ DLLExport MACPASCAL void Gmic_Entry_Point(
 {
     UNREFERENCED_PARAMETER(data);
 
-    DebugOut("selector: %d", selector);
+    DebugOut("%s selector: %d", __FUNCTION__, selector);
 
     try
     {
@@ -234,7 +234,7 @@ DLLExport MACPASCAL void Gmic_Entry_Point(
         *result = paramErr;
     }
 
-    DebugOut("selector: %d, result: %d", selector, *result);
+    DebugOut("%s selector: %d, result: %d", __FUNCTION__, selector, *result);
 }
 
 

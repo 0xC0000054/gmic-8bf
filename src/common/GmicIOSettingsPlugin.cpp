@@ -28,7 +28,7 @@ DLLExport MACPASCAL void Gmic_IO_Settings_Entry_Point(
 {
     (void)data;
 
-    DebugOut("selector: %d", selector);
+    DebugOut("%s selector: %d", __FUNCTION__, selector);
 
     try
     {
@@ -77,7 +77,7 @@ DLLExport MACPASCAL void Gmic_IO_Settings_Entry_Point(
         *result = paramErr;
     }
 
-    DebugOut("selector: %d, result: %d", selector, *result);
+    DebugOut("%s selector: %d, result: %d", __FUNCTION__, selector, *result);
 }
 
 OSErr GmicIOSettingsDoParameters(FilterRecord* filterRecord)
