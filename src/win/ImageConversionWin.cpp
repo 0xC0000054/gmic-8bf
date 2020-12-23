@@ -118,16 +118,20 @@ namespace
     void DoGmicInputFormatConversion(
         const boost::filesystem::path& output,
         IWICImagingFactory* factory,
-        IWICBitmapSource* input)
+        IWICBitmapDecoder* decoder)
     {
+        wil::com_ptr<IWICBitmapFrameDecode> decoderFrame;
+
+        THROW_IF_FAILED(decoder->GetFrame(0, &decoderFrame));
+
         UINT uiWidth;
         UINT uiHeight;
 
-        THROW_IF_FAILED(input->GetSize(&uiWidth, &uiHeight));
+        THROW_IF_FAILED(decoderFrame->GetSize(&uiWidth, &uiHeight));
 
         WICPixelFormatGUID format;
 
-        THROW_IF_FAILED(input->GetPixelFormat(&format));
+        THROW_IF_FAILED(decoderFrame->GetPixelFormat(&format));
 
         wil::com_ptr<IWICBitmap> bitmap;
 
@@ -138,7 +142,7 @@ namespace
 
         if (IsEqualGUID(format, targetFormat))
         {
-            THROW_IF_FAILED(factory->CreateBitmapFromSource(input, WICBitmapCacheOnLoad, &bitmap));
+            THROW_IF_FAILED(factory->CreateBitmapFromSource(decoderFrame.get(), WICBitmapCacheOnLoad, &bitmap));
         }
         else
         {
@@ -146,7 +150,7 @@ namespace
 
             THROW_IF_FAILED(factory->CreateFormatConverter(&formatConverter));
             THROW_IF_FAILED(formatConverter->Initialize(
-                input,
+                decoderFrame.get(),
                 targetFormat,
                 WICBitmapDitherTypeNone,
                 nullptr,
@@ -203,11 +207,7 @@ OSErr ConvertImageToGmicInputFormatNative(
             WICDecodeMetadataCacheOnDemand,
             &decoder));
 
-        wil::com_ptr<IWICBitmapFrameDecode> decoderFrame;
-
-        THROW_IF_FAILED(decoder->GetFrame(0, &decoderFrame));
-
-        DoGmicInputFormatConversion(output, factory.get(), decoderFrame.get());
+        DoGmicInputFormatConversion(output, factory.get(), decoder.get());
     }
     catch (const std::bad_alloc&)
     {
@@ -267,11 +267,7 @@ OSErr ConvertImageToGmicInputFormatNative(
             WICDecodeMetadataCacheOnDemand,
             &decoder));
 
-        wil::com_ptr<IWICBitmapFrameDecode> decoderFrame;
-
-        THROW_IF_FAILED(decoder->GetFrame(0, &decoderFrame));
-
-        DoGmicInputFormatConversion(output, factory.get(), decoderFrame.get());
+        DoGmicInputFormatConversion(output, factory.get(), decoder.get());
     }
     catch (const std::bad_alloc&)
     {
