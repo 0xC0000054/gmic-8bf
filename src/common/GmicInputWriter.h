@@ -17,21 +17,30 @@
 
 #include "GmicPlugin.h"
 #include "InputLayerIndex.h"
+#include "FileUtil.h"
 #include <boost/filesystem.hpp>
 
-// Copies the pixel data from an existing buffer.
-// The buffer must use one of the following layouts:
+typedef OSErr(*WritePixelsCallback)(
+    const FileHandle* file,
+    int32 imageWidth,
+    int32 imageHeight,
+    int32 numberOfChannels,
+    int32 bitsPerChannel,
+    void* userState);
+
+// Writes the pixel data from an existing source using a write callback.
+// The pixel data must be written using one of the following layouts:
 // Grayscale
 // Grayscale, Alpha
 // Red, Green, Blue
 // Red, Green, Blue, Alpha
-OSErr CopyFromPixelBuffer(
+OSErr WritePixelsFromCallback(
     int32 width,
     int32 height,
     int32 numberOfChannels,
     int32 bitsPerChannel,
-    const void* scan0,
-    size_t stride,
+    WritePixelsCallback writeCallback,
+    void* writeCallbackUserState,
     const boost::filesystem::path& outputPath);
 
 OSErr SaveActiveLayer(

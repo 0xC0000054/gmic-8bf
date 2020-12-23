@@ -17,6 +17,7 @@
 #include <wincodec.h>
 #include <wil/com.h>
 #include <wil/resource.h>
+#include <new>
 #include <stdexcept>
 
 namespace
@@ -115,6 +116,163 @@ namespace
         return targetFormat;
     }
 
+    struct GmicOutputWriter
+    {
+        GmicOutputWriter(IWICBitmapSource* source) : image(source)
+        {
+        }
+
+        static OSErr WriteCallback(
+            const FileHandle* file,
+            int32 imageWidth,
+            int32 imageHeight,
+            int32 numberOfChannels,
+            int32 bitsPerChannel,
+            void* callbackState)
+        {
+            if (file == nullptr || callbackState == nullptr)
+            {
+                return nilHandleErr;
+            }
+
+            GmicOutputWriter* instance = static_cast<GmicOutputWriter*>(callbackState);
+
+            return instance->WritePixels(file, imageWidth, imageHeight, numberOfChannels, bitsPerChannel);
+        }
+
+    private:
+
+        OSErr WritePixels(
+            const FileHandle* file,
+            int32 imageWidth,
+            int32 imageHeight,
+            int32 numberOfChannels,
+            int32 bitsPerChannel)
+        {
+            UINT wicStride;
+
+            if (!TryCalculateWICStride(imageWidth, numberOfChannels, bitsPerChannel, wicStride))
+            {
+                return memFullErr;
+            }
+
+            int32 chunkHeight = std::min(imageHeight, 256);
+            UINT copyBufferSize;
+
+            if (!TryCalculateCopyBufferSize(chunkHeight, wicStride, copyBufferSize))
+            {
+                return memFullErr;
+            }
+
+            std::unique_ptr<BYTE[]> buffer(new (std::nothrow) BYTE[static_cast<size_t>(copyBufferSize)]);
+
+            if (buffer == nullptr)
+            {
+                return memFullErr;
+            }
+
+            const int32 bytesPerChannel = bitsPerChannel / 8;
+            const size_t outputStride = static_cast<size_t>(imageWidth) * numberOfChannels * bytesPerChannel;
+
+            WICRect copyRect{};
+            copyRect.X = 0;
+            copyRect.Width = imageWidth;
+
+            BYTE* bufferStart = buffer.get();
+
+            for (int32 y = 0; y < imageHeight; y += chunkHeight)
+            {
+                copyRect.Y = y;
+                copyRect.Height = std::min(chunkHeight, imageHeight - y);
+
+                if (FAILED(image->CopyPixels(&copyRect, wicStride, copyBufferSize, bufferStart)))
+                {
+                    return ioErr;
+                }
+
+                INT rowCount = copyRect.Height;
+
+                if (wicStride == outputStride)
+                {
+                    // If the WIC image stride matches the output image stride
+                    // we can write the buffer directly.
+
+                    const size_t imageDataLength = static_cast<size_t>(rowCount) * wicStride;
+
+                    OSErr err = WriteFile(file, bufferStart, imageDataLength);
+
+                    if (err != noErr)
+                    {
+                        return err;
+                    }
+                }
+                else
+                {
+                    for (INT i = 0; i < rowCount; i++)
+                    {
+                        BYTE* row = bufferStart + (static_cast<size_t>(i) * wicStride);
+
+                        OSErr err = WriteFile(file, row, outputStride);
+
+                        if (err != noErr)
+                        {
+                            return err;
+                        }
+                    }
+                }
+            }
+
+            return noErr;
+        }
+
+        bool TryCalculateCopyBufferSize(
+            int32& chunkHeight,
+            const UINT& wicStride,
+            UINT& copyBufferSize)
+        {
+            uint64 bufferSize = static_cast<uint64>(chunkHeight) * wicStride;
+
+            // WIC can only copy up to 4 GB at a time.
+            while (bufferSize > std::numeric_limits<UINT>::max())
+            {
+                chunkHeight /= 2;
+                bufferSize = static_cast<uint64>(chunkHeight) * wicStride;
+            }
+
+            if (bufferSize > 0 && bufferSize <= std::numeric_limits<UINT>::max())
+            {
+                copyBufferSize = static_cast<UINT>(bufferSize);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        bool TryCalculateWICStride(
+            const int32& imageWidth,
+            const int32& numberOfChannels,
+            const int32& bitsPerChannel,
+            UINT& wicStride)
+        {
+            const uint64 bitsPerPixel = static_cast<uint64>(numberOfChannels) * bitsPerChannel;
+            const uint64 imageStride = ((static_cast<int64>(imageWidth) * bitsPerPixel) + 7) / 8;
+
+            if (imageStride <= std::numeric_limits<UINT>::max())
+            {
+                wicStride = static_cast<UINT>(imageStride);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        IWICBitmapSource* image;
+    };
+
     void DoGmicInputFormatConversion(
         const boost::filesystem::path& output,
         IWICImagingFactory* factory,
@@ -133,8 +291,6 @@ namespace
 
         THROW_IF_FAILED(decoderFrame->GetPixelFormat(&format));
 
-        wil::com_ptr<IWICBitmap> bitmap;
-
         int bitsPerChannel;
         int numberOfChannels;
 
@@ -142,7 +298,16 @@ namespace
 
         if (IsEqualGUID(format, targetFormat))
         {
-            THROW_IF_FAILED(factory->CreateBitmapFromSource(decoderFrame.get(), WICBitmapCacheOnLoad, &bitmap));
+            GmicOutputWriter writer(decoderFrame.get());
+
+            OSErrException::ThrowIfError(WritePixelsFromCallback(
+                static_cast<int32>(uiWidth),
+                static_cast<int32>(uiHeight),
+                numberOfChannels,
+                bitsPerChannel,
+                &GmicOutputWriter::WriteCallback,
+                &writer,
+                output));
         }
         else
         {
@@ -157,30 +322,17 @@ namespace
                 0.f,
                 WICBitmapPaletteTypeCustom));
 
-            THROW_IF_FAILED(factory->CreateBitmapFromSource(formatConverter.get(), WICBitmapCacheOnLoad, &bitmap));
+            GmicOutputWriter writer(formatConverter.get());
+
+            OSErrException::ThrowIfError(WritePixelsFromCallback(
+                static_cast<int32>(uiWidth),
+                static_cast<int32>(uiHeight),
+                numberOfChannels,
+                bitsPerChannel,
+                &GmicOutputWriter::WriteCallback,
+                &writer,
+                output));
         }
-
-        wil::com_ptr<IWICBitmapLock> bitmapLock;
-
-        WICRect rcLock = { 0, 0, static_cast<INT>(uiWidth), static_cast<INT>(uiHeight) };
-
-        THROW_IF_FAILED(bitmap->Lock(&rcLock, WICBitmapLockRead, &bitmapLock));
-
-        UINT cbStride;
-        UINT cbScan0;
-        WICInProcPointer scan0 = nullptr;
-
-        THROW_IF_FAILED(bitmapLock->GetStride(&cbStride));
-        THROW_IF_FAILED(bitmapLock->GetDataPointer(&cbScan0, &scan0));
-
-        OSErrException::ThrowIfError(CopyFromPixelBuffer(
-            static_cast<int32>(uiWidth),
-            static_cast<int32>(uiHeight),
-            numberOfChannels,
-            bitsPerChannel,
-            scan0,
-            static_cast<size_t>(cbStride),
-            output));
     }
 }
 

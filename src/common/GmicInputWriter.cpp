@@ -374,16 +374,16 @@ namespace
     }
 }
 
-OSErr CopyFromPixelBuffer(
+OSErr WritePixelsFromCallback(
     int32 width,
     int32 height,
     int32 numberOfChannels,
     int32 bitsPerChannel,
-    const void* scan0,
-    size_t stride,
+    WritePixelsCallback writeCallback,
+    void* writeCallbackUserState,
     const boost::filesystem::path& outputPath)
 {
-    if (scan0 == nullptr)
+    if (writeCallback == nullptr)
     {
         return nilHandleErr;
     }
@@ -402,24 +402,13 @@ OSErr CopyFromPixelBuffer(
 
         if (err == noErr)
         {
-            size_t numberOfBytesToWrite = static_cast<size_t>(width) * numberOfChannels;
-
-            if (bitsPerChannel == 16)
-            {
-                numberOfBytesToWrite *= 2;
-            }
-
-            for (int32_t y = 0; y < height; y++)
-            {
-                const uint8* src = static_cast<const uint8*>(scan0) + (static_cast<size_t>(y) * stride);
-
-                err = WriteFile(file.get(), src, numberOfBytesToWrite);
-
-                if (err != noErr)
-                {
-                    break;
-                }
-            }
+            err = writeCallback(
+                file.get(),
+                width,
+                height,
+                numberOfChannels,
+                bitsPerChannel,
+                writeCallbackUserState);
         }
     }
 
