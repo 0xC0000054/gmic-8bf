@@ -19,6 +19,9 @@
 #define signatureSize	4
 static char cSig[signatureSize] = { 'O', 'T', 'O', 'F' };
 
+#pragma warning(disable: 6387)
+#pragma warning(disable: 28183)
+
 Handle NewHandle(int32 size)
 {
     Handle mHand;
@@ -57,3 +60,6 @@ void DisposeHandle(Handle handle)
         GlobalFreePtr((Ptr)handle);
     }
 }
+
+#pragma warning(default: 6387)
+#pragma warning(default: 28183)
