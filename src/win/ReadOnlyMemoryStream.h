@@ -27,7 +27,7 @@ class ReadOnlyMemoryStream
     : public IStream
 {
 public:
-    ReadOnlyMemoryStream(const void *pBuffer, UINT nSize);
+    ReadOnlyMemoryStream(const void *pBuffer, size_t nSize);
     ~ReadOnlyMemoryStream();
 
     // IUnknown methods
@@ -78,8 +78,8 @@ protected:
 
 private:
     const BYTE *m_pbBuffer;
-    const LONGLONG m_nSize;
-    LONGLONG m_nPos;
+    const ULONGLONG m_nSize;
+    ULONGLONG m_nPos;
     FILETIME m_ftCreation;
     FILETIME m_ftModified;
     FILETIME m_ftAccessed;

@@ -394,12 +394,6 @@ OSErr ConvertImageToGmicInputFormatNative(
     size_t inputLength,
     const boost::filesystem::path& output)
 {
-    if (inputLength > std::numeric_limits<UINT>::max())
-    {
-        // The IWICBitmapLock interface can only handle up to 4 GB of memory.
-        return memFullErr;
-    }
-
     OSErr err = noErr;
 
     try
@@ -409,7 +403,7 @@ OSErr ConvertImageToGmicInputFormatNative(
         auto factory = wil::CoCreateInstance<IWICImagingFactory>(CLSID_WICImagingFactory1);
         wil::com_ptr<IWICBitmapDecoder> decoder;
 
-        wil::com_ptr<ReadOnlyMemoryStream> stream(new ReadOnlyMemoryStream(input, static_cast<UINT>(inputLength)));
+        wil::com_ptr<ReadOnlyMemoryStream> stream(new ReadOnlyMemoryStream(input, inputLength));
 
         const GUID* vendor = &GUID_VendorMicrosoftBuiltIn;
 

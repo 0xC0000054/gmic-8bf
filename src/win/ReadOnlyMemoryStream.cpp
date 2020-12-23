@@ -26,7 +26,7 @@
 
 #pragma warning(disable: 4100)
 
-ReadOnlyMemoryStream::ReadOnlyMemoryStream(const void* pBuffer, UINT nSize)
+ReadOnlyMemoryStream::ReadOnlyMemoryStream(const void* pBuffer, size_t nSize)
     : m_pbBuffer(static_cast<const BYTE*>(pBuffer)),
     m_nSize(nSize),
     m_nPos(0)
@@ -158,7 +158,7 @@ STDMETHODIMP ReadOnlyMemoryStream::Seek(LARGE_INTEGER dlibMove,
     switch (dwOrigin)
     {
     case STREAM_SEEK_SET:
-        if (nMove >= 0 && nMove < m_nSize)
+        if (nMove >= 0 && static_cast<ULONGLONG>(nMove) < m_nSize)
         {
             m_nPos = nMove;
 
@@ -177,7 +177,7 @@ STDMETHODIMP ReadOnlyMemoryStream::Seek(LARGE_INTEGER dlibMove,
     case STREAM_SEEK_CUR:
         nNewPos = m_nPos + nMove;
 
-        if (nNewPos >= 0 && nNewPos < m_nSize)
+        if (nNewPos >= 0 && static_cast<ULONGLONG>(nNewPos) < m_nSize)
         {
             m_nPos = nNewPos;
 
@@ -196,7 +196,7 @@ STDMETHODIMP ReadOnlyMemoryStream::Seek(LARGE_INTEGER dlibMove,
     case STREAM_SEEK_END:
         nNewPos = m_nSize - 1 + nMove;
 
-        if (nNewPos >= 0 && nNewPos < m_nSize)
+        if (nNewPos >= 0 && static_cast<ULONGLONG>(nNewPos) < m_nSize)
         {
             m_nPos = nNewPos;
 
