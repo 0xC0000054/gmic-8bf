@@ -59,7 +59,17 @@ namespace
             IsEqualGUID(format, GUID_WICPixelFormat24bppRGB) ||
             IsEqualGUID(format, GUID_WICPixelFormat32bppBGR) ||
             IsEqualGUID(format, GUID_WICPixelFormat16bppBGR555) ||
-            IsEqualGUID(format, GUID_WICPixelFormat16bppBGR565))
+            IsEqualGUID(format, GUID_WICPixelFormat16bppBGR565) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppRGB) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppBGR) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppBGRFixedPoint) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppRGBFixedPoint) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppRGBHalf) ||
+            IsEqualGUID(format, GUID_WICPixelFormat64bppRGB) ||
+            IsEqualGUID(format, GUID_WICPixelFormat64bppRGBFixedPoint) ||
+            IsEqualGUID(format, GUID_WICPixelFormat64bppRGBHalf) ||
+            IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFloat) ||
+            IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFixedPoint))
         {
             targetFormat = GUID_WICPixelFormat24bppRGB;
             bitsPerChannel = 8;
@@ -69,50 +79,16 @@ namespace
                  IsEqualGUID(format, GUID_WICPixelFormatBlackWhite) ||
                  IsEqualGUID(format, GUID_WICPixelFormat2bppGray) ||
                  IsEqualGUID(format, GUID_WICPixelFormat4bppGray) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat8bppAlpha))
-        {
-            targetFormat = GUID_WICPixelFormat8bppGray;
-            bitsPerChannel = 8;
-            numberOfChannels = 1;
-        }
-        else if (IsEqualGUID(format, GUID_WICPixelFormat16bppGray) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat8bppAlpha) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat16bppGray) ||
                  IsEqualGUID(format, GUID_WICPixelFormat16bppGrayHalf) ||
                  IsEqualGUID(format, GUID_WICPixelFormat16bppGrayFixedPoint) ||
                  IsEqualGUID(format, GUID_WICPixelFormat32bppGrayFloat) ||
                  IsEqualGUID(format, GUID_WICPixelFormat32bppGrayFixedPoint))
         {
-            targetFormat = GUID_WICPixelFormat16bppGray;
-            bitsPerChannel = 16;
+            targetFormat = GUID_WICPixelFormat8bppGray;
+            bitsPerChannel = 8;
             numberOfChannels = 1;
-        }
-        else if (IsEqualGUID(format, GUID_WICPixelFormat48bppRGB) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat48bppBGR) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat48bppBGRFixedPoint) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat48bppRGBFixedPoint) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat48bppRGBHalf) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGB) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGBFixedPoint) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGBHalf) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFloat) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFixedPoint))
-        {
-            targetFormat = GUID_WICPixelFormat48bppRGB;
-            bitsPerChannel = 16;
-            numberOfChannels = 3;
-        }
-        else if (IsEqualGUID(format, GUID_WICPixelFormat64bppRGBA) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppBGRA) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppBGRAFixedPoint) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppPBGRA) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGBAFixedPoint) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppPRGBA) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGBAHalf) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat128bppRGBAFloat) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat128bppRGBAFixedPoint))
-        {
-            targetFormat = GUID_WICPixelFormat64bppRGBA;
-            bitsPerChannel = 16;
-            numberOfChannels = 4;
         }
 
         return targetFormat;
