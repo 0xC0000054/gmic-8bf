@@ -300,6 +300,7 @@ namespace
                                 IDC_SECONDIMAGESOURCE_NONE_RADIO,
                                 IDC_SECONDIMAGESOURCE_FILE_RADIO,
                                 IDC_SECONDIMAGESOURCE_FILE_RADIO);
+                            dialogParams->secondImageSource = SecondInputImageSource::File;
                         }
                     }
                     else
