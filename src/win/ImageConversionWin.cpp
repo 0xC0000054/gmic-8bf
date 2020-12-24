@@ -156,10 +156,10 @@ namespace
                 return memFullErr;
             }
 
-            int32 chunkHeight = std::min(imageHeight, 256);
+            int32 chunkHeight;
             UINT copyBufferSize;
 
-            if (!TryCalculateCopyBufferSize(chunkHeight, wicStride, copyBufferSize))
+            if (!TryCalculateCopyBufferSize(imageHeight, wicStride, chunkHeight, copyBufferSize))
             {
                 return memFullErr;
             }
@@ -226,10 +226,12 @@ namespace
         }
 
         bool TryCalculateCopyBufferSize(
-            int32& chunkHeight,
+            const int32& imageHeight,
             const UINT& wicStride,
+            int32& chunkHeight,
             UINT& copyBufferSize)
         {
+            chunkHeight = std::min(imageHeight, 256);
             uint64 bufferSize = static_cast<uint64>(chunkHeight) * wicStride;
 
             // WIC can only copy up to 4 GB at a time.
