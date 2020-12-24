@@ -49,31 +49,52 @@ namespace
     WICPixelFormatGUID GetTargetFormat(
         const WICPixelFormatGUID& format,
         int& bitsPerChannel,
-        int& numberOfChannels)
+        int& numberOfChannels,
+        bool& swapBGRToRGB)
     {
         WICPixelFormatGUID targetFormat = GUID_WICPixelFormat32bppRGBA;
         bitsPerChannel = 8;
         numberOfChannels = 4;
+        swapBGRToRGB = false;
 
-        if (IsEqualGUID(format, GUID_WICPixelFormat24bppBGR) ||
-            IsEqualGUID(format, GUID_WICPixelFormat24bppRGB) ||
-            IsEqualGUID(format, GUID_WICPixelFormat32bppBGR) ||
-            IsEqualGUID(format, GUID_WICPixelFormat16bppBGR555) ||
-            IsEqualGUID(format, GUID_WICPixelFormat16bppBGR565) ||
-            IsEqualGUID(format, GUID_WICPixelFormat48bppRGB) ||
-            IsEqualGUID(format, GUID_WICPixelFormat48bppBGR) ||
-            IsEqualGUID(format, GUID_WICPixelFormat48bppBGRFixedPoint) ||
-            IsEqualGUID(format, GUID_WICPixelFormat48bppRGBFixedPoint) ||
-            IsEqualGUID(format, GUID_WICPixelFormat48bppRGBHalf) ||
-            IsEqualGUID(format, GUID_WICPixelFormat64bppRGB) ||
-            IsEqualGUID(format, GUID_WICPixelFormat64bppRGBFixedPoint) ||
-            IsEqualGUID(format, GUID_WICPixelFormat64bppRGBHalf) ||
-            IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFloat) ||
-            IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFixedPoint))
+        // GUID_WICPixelFormat24bppBGR and GUID_WICPixelFormat32bppBGRA are two
+        // of the most common formats that WIC will use when it loads an image.
+        //
+        // Manually swapping the color channels when reading the image data should
+        // be faster and require less memory than creating a format converter.
+        if (IsEqualGUID(format, GUID_WICPixelFormat24bppBGR))
+        {
+            targetFormat = format;
+            bitsPerChannel = 8;
+            numberOfChannels = 3;
+            swapBGRToRGB = true;
+        }
+        else if (IsEqualGUID(format, GUID_WICPixelFormat32bppBGRA))
+        {
+            targetFormat = format;
+            bitsPerChannel = 8;
+            numberOfChannels = 4;
+            swapBGRToRGB = true;
+        }
+        else if (IsEqualGUID(format, GUID_WICPixelFormat24bppRGB) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat32bppBGR) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat16bppBGR555) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat16bppBGR565) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat48bppRGB) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat48bppBGR) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat48bppBGRFixedPoint) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat48bppRGBFixedPoint) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat48bppRGBHalf) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGB) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGBFixedPoint) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGBHalf) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFloat) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFixedPoint))
         {
             targetFormat = GUID_WICPixelFormat24bppRGB;
             bitsPerChannel = 8;
             numberOfChannels = 3;
+            swapBGRToRGB = false;
         }
         else if (IsEqualGUID(format, GUID_WICPixelFormat8bppGray) ||
                  IsEqualGUID(format, GUID_WICPixelFormatBlackWhite) ||
@@ -89,6 +110,7 @@ namespace
             targetFormat = GUID_WICPixelFormat8bppGray;
             bitsPerChannel = 8;
             numberOfChannels = 1;
+            swapBGRToRGB = false;
         }
 
         return targetFormat;
@@ -96,7 +118,7 @@ namespace
 
     struct GmicOutputWriter
     {
-        GmicOutputWriter(IWICBitmapSource* source) : image(source)
+        GmicOutputWriter(IWICBitmapSource* source, bool swapBGR) : image(source), swapBGRToRGB(swapBGR)
         {
         }
 
@@ -170,6 +192,26 @@ namespace
 
                 INT rowCount = copyRect.Height;
 
+                if (swapBGRToRGB)
+                {
+                    switch (bitsPerChannel)
+                    {
+                    case 8:
+                        SwapBGRToRGB<BYTE>(bufferStart, imageWidth, rowCount, wicStride, numberOfChannels);
+                        break;
+                    case 16:
+                        SwapBGRToRGB<USHORT>(
+                            reinterpret_cast<USHORT*>(bufferStart),
+                            imageWidth,
+                            rowCount,
+                            wicStride / 2,
+                            numberOfChannels);
+                        break;
+                    default:
+                        return paramErr;
+                    }
+                }
+
                 if (wicStride == outputStride)
                 {
                     // If the WIC image stride matches the output image stride
@@ -201,6 +243,29 @@ namespace
             }
 
             return noErr;
+        }
+
+        template <typename T>
+        void SwapBGRToRGB(
+            T* scan0,
+            const int32& width,
+            const int32& height,
+            const UINT& stride,
+            const int32& numberOfChannels)
+        {
+            for (int32 y = 0; y < height; y++)
+            {
+                T* row = scan0 + (static_cast<size_t>(y) * stride);
+
+                for (int32 x = 0; x < width; x++)
+                {
+                    T temp = row[0];
+                    row[0] = row[2];
+                    row[2] = temp;
+
+                    row += numberOfChannels;
+                }
+            }
         }
 
         bool TryCalculateCopyBufferSize(
@@ -251,6 +316,7 @@ namespace
         }
 
         IWICBitmapSource* image;
+        const bool swapBGRToRGB;
     };
 
     void DoGmicInputFormatConversion(
@@ -273,12 +339,17 @@ namespace
 
         int bitsPerChannel;
         int numberOfChannels;
+        bool swapBGRToRGB;
 
-        WICPixelFormatGUID targetFormat = GetTargetFormat(format, bitsPerChannel, numberOfChannels);
+        WICPixelFormatGUID targetFormat = GetTargetFormat(
+                                            format,
+                                            bitsPerChannel,
+                                            numberOfChannels,
+                                            swapBGRToRGB);
 
         if (IsEqualGUID(format, targetFormat))
         {
-            GmicOutputWriter writer(decoderFrame.get());
+            GmicOutputWriter writer(decoderFrame.get(), swapBGRToRGB);
 
             OSErrException::ThrowIfError(WritePixelsFromCallback(
                 static_cast<int32>(uiWidth),
@@ -302,7 +373,7 @@ namespace
                 0.f,
                 WICBitmapPaletteTypeCustom));
 
-            GmicOutputWriter writer(formatConverter.get());
+            GmicOutputWriter writer(formatConverter.get(), swapBGRToRGB);
 
             OSErrException::ThrowIfError(WritePixelsFromCallback(
                 static_cast<int32>(uiWidth),
