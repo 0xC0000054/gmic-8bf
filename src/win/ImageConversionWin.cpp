@@ -77,7 +77,9 @@ namespace
         }
         else if (IsEqualGUID(format, GUID_WICPixelFormat16bppGray) ||
                  IsEqualGUID(format, GUID_WICPixelFormat16bppGrayHalf) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat32bppGrayFloat))
+                 IsEqualGUID(format, GUID_WICPixelFormat16bppGrayFixedPoint) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat32bppGrayFloat) ||
+                 IsEqualGUID(format, GUID_WICPixelFormat32bppGrayFixedPoint))
         {
             targetFormat = GUID_WICPixelFormat16bppGray;
             bitsPerChannel = 16;
