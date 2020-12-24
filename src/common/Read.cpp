@@ -60,7 +60,6 @@ namespace
             try
             {
                 defaultOutputFolder = savedOutputPath;
-                boost::filesystem::create_directories(defaultOutputFolder);
                 result = true;
             }
             catch (...)
