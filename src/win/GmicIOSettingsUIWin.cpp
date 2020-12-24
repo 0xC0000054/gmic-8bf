@@ -108,6 +108,15 @@ namespace
             break;
         }
 
+        if (checkedRadioButtonId == IDC_SECONDIMAGESOURCE_FILE_RADIO)
+        {
+            if (data->secondImageFilePath.empty() ||
+                !SetWindowTextW(GetDlgItem(hDlg, IDC_SECONDIMAGEPATHEDIT), data->secondImageFilePath.c_str()))
+            {
+                checkedRadioButtonId = IDC_SECONDIMAGESOURCE_NONE_RADIO;
+            }
+        }
+
         CheckRadioButton(
             hDlg,
             IDC_SECONDIMAGESOURCE_NONE_RADIO,
