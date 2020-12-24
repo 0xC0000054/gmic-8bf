@@ -59,14 +59,14 @@ namespace
     void InitIOSettingsDialog(HWND hDlg, const DialogData* const data)
     {
         const HWND defaultOutputFolderCheckBox = GetDlgItem(hDlg, IDC_DEFAULTOUTDIRCB);
-        const HWND editBoxHWnd = GetDlgItem(hDlg, IDC_DEFAULTOUTDIREDIT);
-        const HWND browseButtonHWnd = GetDlgItem(hDlg, IDC_DEFAULTOUTFOLDERBROWSE);
+        const HWND outputFolderEditBox = GetDlgItem(hDlg, IDC_DEFAULTOUTDIREDIT);
+        const HWND outputFolderBrowseButton = GetDlgItem(hDlg, IDC_DEFAULTOUTFOLDERBROWSE);
 
         if (data->defaultOutputFolder.empty())
         {
             Button_SetCheck(defaultOutputFolderCheckBox, BST_UNCHECKED);
-            EnableWindow(editBoxHWnd, FALSE);
-            EnableWindow(browseButtonHWnd, FALSE);
+            EnableWindow(outputFolderEditBox, FALSE);
+            EnableWindow(outputFolderBrowseButton, FALSE);
 
             try
             {
@@ -77,7 +77,7 @@ namespace
                 boost::filesystem::path defaultPath(picturesFolderPath.get());
                 defaultPath /= "G'MIC-Qt";
 
-                SetWindowTextW(editBoxHWnd, defaultPath.c_str());
+                SetWindowTextW(outputFolderEditBox, defaultPath.c_str());
             }
             catch (...)
             {
@@ -87,9 +87,9 @@ namespace
         else
         {
             Button_SetCheck(defaultOutputFolderCheckBox, BST_CHECKED);
-            EnableWindow(editBoxHWnd, TRUE);
-            EnableWindow(browseButtonHWnd, TRUE);
-            SetWindowTextW(editBoxHWnd, data->defaultOutputFolder.c_str());
+            EnableWindow(outputFolderEditBox, TRUE);
+            EnableWindow(outputFolderBrowseButton, TRUE);
+            SetWindowTextW(outputFolderEditBox, data->defaultOutputFolder.c_str());
         }
 
         int checkedRadioButtonId;
