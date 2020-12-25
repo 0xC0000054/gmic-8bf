@@ -22,7 +22,9 @@ The following image shows the menu location in Adobe Photoshop.
 
 ![Menu Location](images/MenuLocation.png)
 
-When the G'MIC-Qt menu item is clicked it will start the G'MIC-Qt user interface.
+### G'MIC-Qt
+
+When the *G'MIC-Qt* menu item is clicked it will start the G'MIC-Qt user interface.
 
 ![G'MIC-Qt UI](images/GmicQt-UI-Small.png)
 
@@ -30,13 +32,43 @@ You can "layer" multiple G'MIC effects in a single session by clicking the Apply
 Note that only the most recently applied effect will be used when the plug-in is invoked
 through the "Last Filter" or "Repeat Filter" commands.
 
-Filters that require multiple input images can only be used if the document has multiple layers and the host supports
-providing layers to the plug-in.
-This feature is supported in Adobe Photoshop CS (8.0) and later (and possibly other Adobe applications), but 3rd-party
-hosts will most likely not support it due to the license restrictions added to the Photoshop SDK after version 6.0.
+Filters that require multiple input images can only be used if the input settings have been configured to provide a
+second input image or the document has multiple layers and the host supports providing layers to the plug-in.
+Document layers are provided to plug-ins by Adobe Photoshop CS (8.0) and later (and possibly other Adobe applications), but 3rd-party
+hosts will most likely not support this feature due to the license restrictions added to the Photoshop SDK after version 6.0.
 
-If a filter produces multiple output images the plug-in will prompt the user for a folder to copy them into
-after the G'MIC-Qt dialog has been closed.
+If the user has not configured a default output folder the plug-in will prompt the user to save the modified images after the
+G'MIC-Qt dialog has been closed in the following cases:
+
+1. When a filter produces multiple output images the plug-in will prompt the user for a folder to copy them into.
+2. When a filter changes the image size the plug-in will prompt the user to save the resized image.
+
+### Input/Output Settings for G'MIC-Qt
+
+When the *Input/Output Settings for G'MIC-Qt* menu item is clicked it will start the Input/Output Settings for G'MIC-Qt user interface.
+
+![G'MIC-Qt Input/Output settings UI](images/GmicQtIOSettings-UI.png)
+
+#### Input Settings
+
+This section allows a second input image to be sent to G'MIC-Qt for the filters that require one.
+The settings in this section will be ignored if the document has multiple layers and the host supports providing layers to plug-ins.
+
+You can choose from one of the following options:
+
+* None (default)
+  * The plug-in will only use the document layers for additional input images.
+* Clipboard
+  * The plug-in will look for a second input image on the operating system clipboard.
+* File
+  * The plug-in will use the specified image as the second input image.
+
+#### Output Settings
+
+This section allows users to set a default output folder for filters that produce multiple output images or resizes the output image.
+The output folder should default to a G'MIC-Qt folder in your Pictures folder, but it can be changed to any folder.   
+When this option is configured the plug-in will copy the output image(s) to the specified folder without prompting the user.
+A prompt will still be shown if there was an error loading the default folder setting.
 
 ## License
 
