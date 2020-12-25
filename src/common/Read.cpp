@@ -115,6 +115,7 @@ namespace
 
         if(haveFilePathFromDefaultFolder)
         {
+            boost::filesystem::create_directories(defaultFolderPath);
             return noErr;
         }
         else
