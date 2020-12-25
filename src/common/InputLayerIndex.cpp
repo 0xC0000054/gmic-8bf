@@ -88,32 +88,41 @@ namespace
 
         OSErr err = noErr;
 
-        boost::filesystem::path inputDir;
-
-        err = GetInputDirectory(inputDir);
-
-        if (err == noErr)
+        if (source == SecondInputImageSource::None)
         {
-            boost::filesystem::path secondGmicInputImage;
-            err = GetTemporaryFileName(inputDir, secondGmicInputImage, ".g8i");
+            // Write an empty path if document layers are the only input source.
+            // This avoids some overhead from creating a file path and trying to open a nonexistent file.
+            err = WriteAlternateInputImagePath(fileHandle, boost::filesystem::path());
+        }
+        else
+        {
+            boost::filesystem::path inputDir;
+
+            err = GetInputDirectory(inputDir);
 
             if (err == noErr)
             {
-                if (source == SecondInputImageSource::Clipboard)
-                {
-                    err = ConvertClipboardImageToGmicInput(filterRecord, secondGmicInputImage);
-                }
-                else if (source == SecondInputImageSource::File)
-                {
-                    err = ConvertImageToGmicInputFormat(
-                        filterRecord,
-                        settings.GetSecondInputImagePath(),
-                        secondGmicInputImage);
-                }
+                boost::filesystem::path secondGmicInputImage;
+                err = GetTemporaryFileName(inputDir, secondGmicInputImage, ".g8i");
 
                 if (err == noErr)
                 {
-                    err = WriteAlternateInputImagePath(fileHandle, secondGmicInputImage);
+                    if (source == SecondInputImageSource::Clipboard)
+                    {
+                        err = ConvertClipboardImageToGmicInput(filterRecord, secondGmicInputImage);
+                    }
+                    else if (source == SecondInputImageSource::File)
+                    {
+                        err = ConvertImageToGmicInputFormat(
+                            filterRecord,
+                            settings.GetSecondInputImagePath(),
+                            secondGmicInputImage);
+                    }
+
+                    if (err == noErr)
+                    {
+                        err = WriteAlternateInputImagePath(fileHandle, secondGmicInputImage);
+                    }
                 }
             }
         }
