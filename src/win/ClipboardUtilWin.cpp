@@ -408,13 +408,24 @@ OSErr ConvertClipboardImageToGmicInputNative(
     // The same thing that would happen if the clipboard does not contain an image.
     if (OpenClipboard(nullptr))
     {
-        const std::vector<UINT>& availableFormats = GetAvailableClipboardFormats();
+        try
+        {
+            const std::vector<UINT>& availableFormats = GetAvailableClipboardFormats();
 
 #if DEBUG_BUILD
-        DumpClipboardFormats(availableFormats);
+            DumpClipboardFormats(availableFormats);
 #endif // DEBUG_BUILD
 
-        err = TryProcessClipboardImage(filterRecord, availableFormats, gmicInputPath);
+            err = TryProcessClipboardImage(filterRecord, availableFormats, gmicInputPath);
+        }
+        catch (const std::bad_alloc&)
+        {
+            err = memFullErr;
+        }
+        catch (...)
+        {
+            err = ioErr;
+        }
 
         CloseClipboard();
     }
