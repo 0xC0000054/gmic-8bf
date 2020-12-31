@@ -13,8 +13,6 @@
 #include "Common.h"
 #include <string>
 #include <boost/predef.h>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 
 #if __PIWin__
 #include "CommonUIWin.h"
