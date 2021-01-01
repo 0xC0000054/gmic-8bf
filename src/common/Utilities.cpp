@@ -517,6 +517,23 @@ bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept
     return false;
 }
 
+int32 GetImagePlaneCount(int32 nonLayerPlanes, int32 layerPlanes, int32 transparencyPlanes)
+{
+    int32 planes = nonLayerPlanes;
+
+    if (layerPlanes != 0)
+    {
+        planes = layerPlanes;
+
+        if (transparencyPlanes != 0)
+        {
+            planes++;
+        }
+    }
+
+    return planes;
+}
+
 VPoint GetImageSize(const FilterRecordPtr filterRecord)
 {
     if (filterRecord->bigDocumentData != nullptr && filterRecord->bigDocumentData->PluginUsing32BitCoordinates)

@@ -65,6 +65,7 @@ void UnlockPIHandle(const FilterRecordPtr filterRecord, Handle handle);
 bool HandleSuiteIsAvailable(const FilterRecord* filterRecord);
 bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName);
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
+int32 GetImagePlaneCount(int32 nonLayerPlanes, int32 layerPlanes, int32 transparencyPlanes);
 VPoint GetImageSize(const FilterRecordPtr filterRecord);
 int32 GetTileHeight(int16 suggestedTileHeight);
 void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
