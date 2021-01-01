@@ -272,8 +272,8 @@ namespace
                 dest.bitOffset = 0;
                 dest.depth = filterRecord->depth;
 
-                if (!TryMultiplyInt32(filterRecord->inColumnBytes, 8, dest.colBits) ||
-                    !TryMultiplyInt32(filterRecord->inRowBytes, 8, dest.rowBits))
+                if (!TryMultiplyInt32(filterRecord->inColumnBytes, dest.depth, dest.colBits) ||
+                    !TryMultiplyInt32(filterRecord->inRowBytes, dest.depth, dest.rowBits))
                 {
                     // The multiplication would have resulted in an integer overflow / underflow.
                     err = memFullErr;
@@ -319,7 +319,7 @@ namespace
                             {
                                 VRect wroteRect;
 
-                                dest.bitOffset = i * bitDepth;
+                                dest.bitOffset = i * dest.depth;
 
                                 err = filterRecord->channelPortProcs->readPixelsProc(imageChannels[i]->port, &scaling, &writeRect, &dest, &wroteRect);
 
