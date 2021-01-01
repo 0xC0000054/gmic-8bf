@@ -66,6 +66,7 @@ bool HandleSuiteIsAvailable(const FilterRecord* filterRecord);
 bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName);
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
 VPoint GetImageSize(const FilterRecordPtr filterRecord);
+int32 GetTileHeight(int16 suggestedTileHeight);
 void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
 void SetOutputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
 void SetMaskRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);

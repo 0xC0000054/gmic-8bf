@@ -534,6 +534,14 @@ VPoint GetImageSize(const FilterRecordPtr filterRecord)
     }
 }
 
+int32 GetTileHeight(int16 suggestedTileHeight)
+{
+    // Some hosts may use an unsigned value for the tile height
+    // so we have to check if it is a positive number.
+
+    return suggestedTileHeight > 0 ? suggestedTileHeight : 256;
+}
+
 void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right)
 {
     if (filterRecord->bigDocumentData != nullptr && filterRecord->bigDocumentData->PluginUsing32BitCoordinates)

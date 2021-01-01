@@ -132,7 +132,7 @@ namespace
             filterRecord->inLoPlane = 0;
             filterRecord->inHiPlane = static_cast<int16>(numberOfChannels - 1);
 
-            const int32 tileHeight = filterRecord->inTileHeight != 0 ? filterRecord->inTileHeight : 256;
+            const int32 tileHeight = GetTileHeight(filterRecord->inTileHeight);
             const int32 maxChunkHeight = std::min(tileHeight, height);
 
             if (err == noErr)
@@ -249,7 +249,7 @@ namespace
             filterRecord->inLoPlane = 0;
             filterRecord->inHiPlane = static_cast<int16>(numberOfChannels - 1);
 
-            const int32 tileHeight = filterRecord->inTileHeight != 0 ? filterRecord->inTileHeight : 256;
+            const int32 tileHeight = GetTileHeight(filterRecord->inTileHeight);
             const int32 maxChunkHeight = std::min(tileHeight, height);
 
             BufferID imageDataBufferID;
