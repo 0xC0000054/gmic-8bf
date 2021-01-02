@@ -4,6 +4,11 @@ A filter plug-in for Adobe® Photoshop®* and other compatible software that int
 
 The latest version can be downloaded from the [Releases](https://github.com/0xC0000054/gmic-8bf/releases) tab.
 
+### System Requirements
+
+* Windows* 7, 8 or 10.
+* A compatible 32-bit or 64-bit host application.
+
 ## Installation
 
 1. Close your host application.
@@ -91,5 +96,6 @@ See [License.txt](License.txt) for more information.
 
 ```
 * Adobe and Photoshop are either registered trademarks or trademarks of Adobe Systems Incorporated in the United States and/or other countries.
+ Windows is a registered trademark of Microsoft Corporation in the United States and other countries.
 ```
 
