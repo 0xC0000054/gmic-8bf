@@ -356,6 +356,7 @@ namespace
                 static_cast<int32>(uiHeight),
                 numberOfChannels,
                 bitsPerChannel,
+                /* planar */ false,
                 &GmicOutputWriter::WriteCallback,
                 &writer,
                 output));
@@ -380,6 +381,7 @@ namespace
                 static_cast<int32>(uiHeight),
                 numberOfChannels,
                 bitsPerChannel,
+                /* planar */ false,
                 &GmicOutputWriter::WriteCallback,
                 &writer,
                 output));
