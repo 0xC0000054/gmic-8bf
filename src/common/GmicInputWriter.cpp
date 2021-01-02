@@ -123,7 +123,8 @@ namespace
             }
             filterRecord->inputRate = int2fixed(1);
 
-            if (!TryMultiplyInt32(width, filterRecord->inColumnBytes, filterRecord->inRowBytes))
+            int32 outputStride;
+            if (!TryMultiplyInt32(width, filterRecord->inColumnBytes, outputStride))
             {
                 // The multiplication would have resulted in an integer overflow / underflow.
                 return memFullErr;
@@ -162,15 +163,36 @@ namespace
                         ScaleSixteenBitDataToOutputRange(static_cast<uint16*>(filterRecord->inData), length);
                     }
 
-                    err = WriteFile(fileHandle, filterRecord->inData, rowCount * filterRecord->inRowBytes);
-
-                    if (err != noErr)
+                    if (outputStride == filterRecord->inRowBytes)
                     {
-                        break;
+                        // If the host's buffer stride matches the output image stride
+                        // we can write the buffer directly.
+
+                        err = WriteFile(fileHandle, filterRecord->inData, rowCount * outputStride);
+
+                        if (err != noErr)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        for (size_t j = 0; j < rowCount; j++)
+                        {
+                            const uint8* row = static_cast<const uint8*>(filterRecord->inData) + (j * filterRecord->inRowBytes);
+
+                            err = WriteFile(fileHandle, row, outputStride);
+
+                            if (err != noErr)
+                            {
+                                goto error;
+                            }
+                        }
                     }
                 }
             }
         }
+        error:
 
         // Do not set the FilterRecord data pointers to NULL, some hosts
         // (e.g. XnView) will crash if they are set to NULL by a plug-in.
