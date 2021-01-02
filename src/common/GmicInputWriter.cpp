@@ -53,14 +53,44 @@ namespace
         return value > 32767 ? 65535 : value * 2;
     }
 
-    void ScaleSixteenBitDataToOutputRange(uint16* data, const size_t dataLength) noexcept
+    void ScaleSixteenBitDataToOutputRange(void* data, int32 width, int32 height, int32 numberOfChannels, int32 rowBytes) noexcept
     {
-        DebugOut("%s, length=%zu", __FUNCTION__, dataLength);
+        DebugOut("%s, width=%d height=%d", __FUNCTION__, width, height);
 
-        for (size_t i = 0; i < dataLength; i++)
+        uint8* scan0 = static_cast<uint8*>(data);
+
+        for (int32 y = 0; y < height; y++)
         {
-            // We always store 16-bit data in little-endian.
-            data[i] = boost::endian::native_to_little(Normalize16BitRange(data[i]));
+            uint16* row = reinterpret_cast<uint16*>(scan0 + (static_cast<int64>(y) * rowBytes));
+
+            for (int32 x = 0; x < width; x++)
+            {
+                // We always store 16-bit data in little-endian.
+
+                switch (numberOfChannels)
+                {
+                case 1:
+                    row[0] = boost::endian::native_to_little(Normalize16BitRange(row[0]));
+                    break;
+                case 2:
+                    row[0] = boost::endian::native_to_little(Normalize16BitRange(row[0]));
+                    row[1] = boost::endian::native_to_little(Normalize16BitRange(row[1]));
+                    break;
+                case 3:
+                    row[0] = boost::endian::native_to_little(Normalize16BitRange(row[0]));
+                    row[1] = boost::endian::native_to_little(Normalize16BitRange(row[1]));
+                    row[2] = boost::endian::native_to_little(Normalize16BitRange(row[2]));
+                    break;
+                case 4:
+                    row[0] = boost::endian::native_to_little(Normalize16BitRange(row[0]));
+                    row[1] = boost::endian::native_to_little(Normalize16BitRange(row[1]));
+                    row[2] = boost::endian::native_to_little(Normalize16BitRange(row[2]));
+                    row[3] = boost::endian::native_to_little(Normalize16BitRange(row[3]));
+                    break;
+                }
+
+                row += numberOfChannels;
+            }
         }
     }
 
@@ -154,13 +184,11 @@ namespace
                         break;
                     }
 
-                    const size_t rowCount = static_cast<size_t>(bottom) - top;
+                    const int32 rowCount = bottom - top;
 
                     if (bitDepth == 16)
                     {
-                        size_t length = rowCount * width * numberOfChannels;
-
-                        ScaleSixteenBitDataToOutputRange(static_cast<uint16*>(filterRecord->inData), length);
+                        ScaleSixteenBitDataToOutputRange(filterRecord->inData, width, rowCount, numberOfChannels, filterRecord->inRowBytes);
                     }
 
                     if (outputStride == filterRecord->inRowBytes)
@@ -168,7 +196,7 @@ namespace
                         // If the host's buffer stride matches the output image stride
                         // we can write the buffer directly.
 
-                        err = WriteFile(fileHandle, filterRecord->inData, rowCount * outputStride);
+                        err = WriteFile(fileHandle, filterRecord->inData, static_cast<size_t>(rowCount) * outputStride);
 
                         if (err != noErr)
                         {
@@ -365,16 +393,14 @@ namespace
                                 break;
                             }
 
-                            const size_t rowCount = static_cast<size_t>(writeRect.bottom) - writeRect.top;
+                            const int32 rowCount = writeRect.bottom - writeRect.top;
 
                             if (bitDepth == 16)
                             {
-                                size_t length = rowCount * width * numberOfChannels;
-
-                                ScaleSixteenBitDataToOutputRange(static_cast<uint16*>(dest.data), length);
+                                ScaleSixteenBitDataToOutputRange(dest.data, width, rowCount, numberOfChannels, filterRecord->inRowBytes);
                             }
 
-                            err = WriteFile(fileHandle, imageDataBuffer, rowCount * filterRecord->inRowBytes);
+                            err = WriteFile(fileHandle, imageDataBuffer, static_cast<size_t>(rowCount) * filterRecord->inRowBytes);
 
                             if (err != noErr)
                             {
