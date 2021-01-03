@@ -57,7 +57,6 @@ public:
                             ULARGE_INTEGER cb,
                             DWORD dwLockType);
 
-
     STDMETHODIMP Revert();
 
     STDMETHODIMP Seek(LARGE_INTEGER dlibMove,

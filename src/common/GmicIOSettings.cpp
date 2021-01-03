@@ -143,7 +143,6 @@ namespace
         return err;
     }
 
-
     OSErr WriteSecondInputImageSourceValue(const FileHandle* fileHandle, SecondInputImageSource value)
     {
         uint32_t integerValue = static_cast<uint32_t>(value);

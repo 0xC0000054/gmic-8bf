@@ -237,7 +237,6 @@ DLLExport MACPASCAL void Gmic_Entry_Point(
     DebugOut("%s selector: %d, result: %d", __FUNCTION__, selector, *result);
 }
 
-
 OSErr DoParameters(FilterRecord* filterRecord)
 {
     PrintFunctionName();
@@ -343,7 +342,6 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept
     return err;
 }
 
-
 OSErr DoStart(FilterRecord* filterRecord)
 {
     PrintFunctionName();
@@ -414,7 +412,6 @@ OSErr DoFinish()
 
     return noErr;
 }
-
 
 FilterParameters* LockParameters(FilterRecordPtr filterRecord)
 {

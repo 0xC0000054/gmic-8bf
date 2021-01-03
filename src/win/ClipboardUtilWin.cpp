@@ -334,7 +334,6 @@ namespace
         return err;
     }
 
-
 #if DEBUG_BUILD
 #include <map>
 

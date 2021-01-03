@@ -39,7 +39,6 @@ namespace
     constexpr int16 ReadImageDocumentDescFirstVersion = 0;
     constexpr int16 RequiredReadImageDocumentDescVersion = 2;
 
-
     bool IsAffinityPhoto(const FilterRecord* filterRecord) noexcept
     {
         return (filterRecord->hostSig == 'AffP' || filterRecord->hostSig == 'PffA');
@@ -82,7 +81,6 @@ namespace
             DebugOut("BufferProcs == nullptr");
         }
 #endif // DEBUG_BUILD
-
 
         bool available = true;		// assume docInfo are available
 

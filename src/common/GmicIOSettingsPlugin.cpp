@@ -123,7 +123,6 @@ OSErr GmicIOSettingsDoPrepare()
     return noErr;
 }
 
-
 OSErr GmicIOSettingsDoStart()
 {
     PrintFunctionName();
