@@ -124,57 +124,6 @@ namespace
 #pragma warning(default: 4366)
 #endif
     }
-
-    OSErr InitializeDefaultOutputFolderHandle(
-        const FilterRecordPtr filterRecord,
-        const GmicIOSettings& settings,
-        Handle* defaultOutputFolderHandle)
-    {
-        if (!defaultOutputFolderHandle)
-        {
-            return nilHandleErr;
-        }
-
-        if (*defaultOutputFolderHandle != nullptr)
-        {
-            UnlockPIHandle(filterRecord, *defaultOutputFolderHandle);
-            DisposePIHandle(filterRecord, *defaultOutputFolderHandle);
-        }
-
-        *defaultOutputFolderHandle = nullptr;
-
-        const boost::filesystem::path& defaultOutputPath = settings.GetDefaultOutputPath();
-
-        OSErr err = noErr;
-
-        if (!defaultOutputPath.empty())
-        {
-            uint64 bufferSizeInBytes = static_cast<uint64>(defaultOutputPath.size()) * sizeof(boost::filesystem::path::value_type);
-
-            if (bufferSizeInBytes > static_cast<uint64>(std::numeric_limits<int32>::max()))
-            {
-                err = memFullErr;
-            }
-            else
-            {
-                err = NewPIHandle(filterRecord, static_cast<int32>(bufferSizeInBytes), defaultOutputFolderHandle);
-
-                if (err == noErr)
-                {
-                    Ptr dest = LockPIHandle(filterRecord, *defaultOutputFolderHandle, false);
-
-                    if (dest != nullptr)
-                    {
-                        memcpy(dest, defaultOutputPath.c_str(), static_cast<size_t>(bufferSizeInBytes));
-
-                        UnlockPIHandle(filterRecord, *defaultOutputFolderHandle);
-                    }
-                }
-            }
-        }
-
-        return err;
-    }
 }
 
 //-------------------------------------------------------------------------------
