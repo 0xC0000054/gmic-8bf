@@ -238,6 +238,12 @@ namespace
 
         THROW_IF_FAILED(decoderFrame->GetSize(&uiWidth, &uiHeight));
 
+        if (uiWidth > static_cast<UINT>(std::numeric_limits<int32>::max()) ||
+            uiHeight > static_cast<UINT>(std::numeric_limits<int32>::max()))
+        {
+            throw wil::ResultException(HRESULT_FROM_WIN32(ERROR_ARITHMETIC_OVERFLOW));
+        }
+
         WICPixelFormatGUID format;
 
         THROW_IF_FAILED(decoderFrame->GetPixelFormat(&format));
