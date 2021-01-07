@@ -554,7 +554,7 @@ int32 GetTileHeight(int16 suggestedTileHeight)
     // Some hosts may use an unsigned value for the tile height
     // so we have to check if it is a positive number.
 
-    return suggestedTileHeight > 0 ? suggestedTileHeight : 256;
+    return suggestedTileHeight > 0 ? suggestedTileHeight : 1024;
 }
 
 int32 GetTileWidth(int16 suggestedTileWidth)
@@ -562,7 +562,7 @@ int32 GetTileWidth(int16 suggestedTileWidth)
     // Some hosts may use an unsigned value for the tile width
     // so we have to check if it is a positive number.
 
-    return suggestedTileWidth > 0 ? suggestedTileWidth : 256;
+    return suggestedTileWidth > 0 ? suggestedTileWidth : 1024;
 }
 
 void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right)
