@@ -40,6 +40,8 @@ OSErr WritePixelsFromCallback(
     int32 numberOfChannels,
     int32 bitsPerChannel,
     bool planar,
+    int32 tileWidth,
+    int32 tileHeight,
     WritePixelsCallback writeCallback,
     void* writeCallbackUserState,
     const boost::filesystem::path& outputPath);

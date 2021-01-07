@@ -25,7 +25,9 @@ namespace
             int32 imageHeight,
             int32 imageNumberOfChannels,
             int32 imageBitsPerChannel,
-            bool planarChannelOrder)
+            bool planarChannelOrder,
+            int32 imageTileWidth,
+            int32 imageTileHeight)
         {
             // G8II = GMIC 8BF input image
             signature[0] = 'G';
@@ -38,6 +40,8 @@ namespace
             numberOfChannels = imageNumberOfChannels;
             bitsPerChannel = imageBitsPerChannel;
             flags = planarChannelOrder ? 1 : 0;
+            tileWidth = imageTileWidth;
+            tileHeight = imageTileHeight;
         }
 
         char signature[4];
@@ -47,6 +51,8 @@ namespace
         boost::endian::little_int32_t numberOfChannels;
         boost::endian::little_int32_t bitsPerChannel;
         boost::endian::little_int32_t flags;
+        boost::endian::little_int32_t tileWidth;
+        boost::endian::little_int32_t tileHeight;
     };
 
     uint16 Normalize16BitRange(uint16 value)
@@ -116,7 +122,10 @@ namespace
             return filterBadMode;
         }
 
-        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true);
+        const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
+        const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
+
+        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
 
         OSErr err = WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
@@ -139,29 +148,23 @@ namespace
             filterRecord->inColumnBytes = filterRecord->inPlaneBytes;
             filterRecord->inputRate = int2fixed(1);
 
-            int32 outputStride;
-            if (!TryMultiplyInt32(width, filterRecord->inColumnBytes, outputStride))
+            for (int32 i = 0; i < numberOfChannels; i++)
             {
-                // The multiplication would have resulted in an integer overflow / underflow.
-                return memFullErr;
-            }
+                filterRecord->inLoPlane = filterRecord->inHiPlane = static_cast<int16>(i);
 
-            const int32 tileHeight = GetTileHeight(filterRecord->inTileHeight);
-            const int32 maxChunkHeight = std::min(tileHeight, height);
-
-            if (err == noErr)
-            {
-                const int32 left = 0;
-                const int32 right = imageSize.h;
-
-                for (int32 i = 0; i < numberOfChannels; i++)
+                for (int32 y = 0; y < height; y += tileHeight)
                 {
-                    filterRecord->inLoPlane = filterRecord->inHiPlane = static_cast<int16>(i);
+                    const int32 top = y;
+                    const int32 bottom = std::min(y + tileHeight, imageSize.v);
 
-                    for (int32 y = 0; y < height; y += maxChunkHeight)
+                    const int32 rowCount = bottom - top;
+
+                    for (int32 x = 0; x < width; x += tileWidth)
                     {
-                        const int32 top = y;
-                        const int32 bottom = std::min(y + maxChunkHeight, imageSize.v);
+                        const int32 left = x;
+                        const int32 right = std::min(x + tileWidth, imageSize.h);
+
+                        const int32 columnCount = right - left;
 
                         SetInputRect(filterRecord, top, left, bottom, right);
 
@@ -171,11 +174,12 @@ namespace
                             goto error;
                         }
 
-                        const int32 rowCount = bottom - top;
+                        int32 outputStride = columnCount;
 
                         if (bitDepth == 16)
                         {
-                            ScaleSixteenBitDataToOutputRange(filterRecord->inData, width, rowCount, filterRecord->inRowBytes);
+                            outputStride *= 2;
+                            ScaleSixteenBitDataToOutputRange(filterRecord->inData, columnCount, rowCount, filterRecord->inRowBytes);
                         }
 
                         if (outputStride == filterRecord->inRowBytes)
@@ -260,7 +264,10 @@ namespace
             return filterBadMode;
         }
 
-        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true);
+        const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
+        const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
+
+        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
 
         OSErr err = WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
@@ -282,20 +289,18 @@ namespace
 
             filterRecord->inColumnBytes = filterRecord->inPlaneBytes;
             filterRecord->inputRate = int2fixed(1);
+            int32 tileRowBytes;
 
-            if (!TryMultiplyInt32(width, filterRecord->inColumnBytes, filterRecord->inRowBytes))
+            if (!TryMultiplyInt32(tileWidth, filterRecord->inColumnBytes, tileRowBytes))
             {
                 // The multiplication would have resulted in an integer overflow / underflow.
                 return memFullErr;
             }
 
-            const int32 tileHeight = GetTileHeight(filterRecord->inTileHeight);
-            const int32 maxChunkHeight = std::min(tileHeight, height);
-
             BufferID imageDataBufferID;
             int32 imageDataBufferSize;
 
-            if (!TryMultiplyInt32(maxChunkHeight, filterRecord->inRowBytes, imageDataBufferSize))
+            if (!TryMultiplyInt32(tileHeight, tileRowBytes, imageDataBufferSize))
             {
                 // The multiplication would have resulted in an integer overflow / underflow.
                 return memFullErr;
@@ -311,8 +316,7 @@ namespace
                 dest.data = imageDataBuffer;
                 dest.depth = filterRecord->depth;
 
-                if (!TryMultiplyInt32(filterRecord->inColumnBytes, dest.depth, dest.colBits) ||
-                    !TryMultiplyInt32(filterRecord->inRowBytes, dest.depth, dest.rowBits))
+                if (!TryMultiplyInt32(filterRecord->inColumnBytes, dest.depth, dest.colBits))
                 {
                     // The multiplication would have resulted in an integer overflow / underflow.
                     err = memFullErr;
@@ -347,47 +351,60 @@ namespace
                         {
                             dest.bitOffset = i * dest.depth;
 
-                            for (int32 y = 0; y < height; y += maxChunkHeight)
+                            for (int32 y = 0; y < height; y += tileHeight)
                             {
                                 VRect writeRect{};
                                 writeRect.top = y;
-                                writeRect.left = 0;
-                                writeRect.bottom = std::min(y + maxChunkHeight, imageSize.v);
-                                writeRect.right = imageSize.h;
-
-                                PSScaling scaling{};
-                                scaling.sourceRect = scaling.destinationRect = writeRect;
-
-                                VRect wroteRect;
-
-                                err = filterRecord->channelPortProcs->readPixelsProc(imageChannels[i]->port, &scaling, &writeRect, &dest, &wroteRect);
-
-                                if (err != noErr)
-                                {
-                                    goto error;
-                                }
-
-                                if (wroteRect.top != writeRect.top ||
-                                    wroteRect.left != writeRect.left ||
-                                    wroteRect.bottom != writeRect.bottom ||
-                                    wroteRect.right != writeRect.right)
-                                {
-                                    err = readErr;
-                                    goto error;
-                                }
+                                writeRect.bottom = std::min(y + tileHeight, imageSize.v);
 
                                 const int32 rowCount = writeRect.bottom - writeRect.top;
 
-                                if (bitDepth == 16)
+                                for (int32 x = 0; x < width; x += tileWidth)
                                 {
-                                    ScaleSixteenBitDataToOutputRange(dest.data, width, rowCount, filterRecord->inRowBytes);
-                                }
+                                    writeRect.left = x;
+                                    writeRect.right = std::min(x + tileWidth, imageSize.h);
 
-                                err = WriteFile(fileHandle, imageDataBuffer, static_cast<size_t>(rowCount) * filterRecord->inRowBytes);
+                                    const int32 columnCount = writeRect.right - writeRect.left;
+                                    tileRowBytes = columnCount * filterRecord->inColumnBytes;
 
-                                if (err != noErr)
-                                {
-                                    goto error;
+                                    if (!TryMultiplyInt32(tileRowBytes, dest.depth, dest.rowBits))
+                                    {
+                                        err = memFullErr;
+                                        goto error;
+                                    }
+
+                                    PSScaling scaling{};
+                                    scaling.sourceRect = scaling.destinationRect = writeRect;
+
+                                    VRect wroteRect;
+
+                                    err = filterRecord->channelPortProcs->readPixelsProc(imageChannels[i]->port, &scaling, &writeRect, &dest, &wroteRect);
+
+                                    if (err != noErr)
+                                    {
+                                        goto error;
+                                    }
+
+                                    if (wroteRect.top != writeRect.top ||
+                                        wroteRect.left != writeRect.left ||
+                                        wroteRect.bottom != writeRect.bottom ||
+                                        wroteRect.right != writeRect.right)
+                                    {
+                                        err = readErr;
+                                        goto error;
+                                    }
+
+                                    if (bitDepth == 16)
+                                    {
+                                        ScaleSixteenBitDataToOutputRange(dest.data, width, rowCount, tileRowBytes);
+                                    }
+
+                                    err = WriteFile(fileHandle, imageDataBuffer, static_cast<size_t>(rowCount) * tileRowBytes);
+
+                                    if (err != noErr)
+                                    {
+                                        goto error;
+                                    }
                                 }
                             }
                         }
@@ -413,6 +430,8 @@ OSErr WritePixelsFromCallback(
     int32 numberOfChannels,
     int32 bitsPerChannel,
     bool planar,
+    int32 tileWidth,
+    int32 tileHeight,
     WritePixelsCallback writeCallback,
     void* writeCallbackUserState,
     const boost::filesystem::path& outputPath)
@@ -430,7 +449,7 @@ OSErr WritePixelsFromCallback(
 
     if (err == noErr)
     {
-        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, planar);
+        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, planar, tileWidth, tileHeight);
 
         err = WriteFile(file.get(), &fileHeader, sizeof(fileHeader));
 

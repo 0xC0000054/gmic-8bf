@@ -557,6 +557,14 @@ int32 GetTileHeight(int16 suggestedTileHeight)
     return suggestedTileHeight > 0 ? suggestedTileHeight : 256;
 }
 
+int32 GetTileWidth(int16 suggestedTileWidth)
+{
+    // Some hosts may use an unsigned value for the tile width
+    // so we have to check if it is a positive number.
+
+    return suggestedTileWidth > 0 ? suggestedTileWidth : 256;
+}
+
 void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right)
 {
     if (filterRecord->bigDocumentData != nullptr && filterRecord->bigDocumentData->PluginUsing32BitCoordinates)

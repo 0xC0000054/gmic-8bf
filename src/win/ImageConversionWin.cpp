@@ -49,52 +49,31 @@ namespace
     WICPixelFormatGUID GetTargetFormat(
         const WICPixelFormatGUID& format,
         int& bitsPerChannel,
-        int& numberOfChannels,
-        bool& swapBGRToRGB)
+        int& numberOfChannels)
     {
         WICPixelFormatGUID targetFormat = GUID_WICPixelFormat32bppRGBA;
         bitsPerChannel = 8;
         numberOfChannels = 4;
-        swapBGRToRGB = false;
 
-        // GUID_WICPixelFormat24bppBGR and GUID_WICPixelFormat32bppBGRA are two
-        // of the most common formats that WIC will use when it loads an image.
-        //
-        // Manually swapping the color channels when reading the image data should
-        // be faster and require less memory than creating a format converter.
-        if (IsEqualGUID(format, GUID_WICPixelFormat24bppBGR))
-        {
-            targetFormat = format;
-            bitsPerChannel = 8;
-            numberOfChannels = 3;
-            swapBGRToRGB = true;
-        }
-        else if (IsEqualGUID(format, GUID_WICPixelFormat32bppBGRA))
-        {
-            targetFormat = format;
-            bitsPerChannel = 8;
-            numberOfChannels = 4;
-            swapBGRToRGB = true;
-        }
-        else if (IsEqualGUID(format, GUID_WICPixelFormat24bppRGB) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat32bppBGR) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat16bppBGR555) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat16bppBGR565) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat48bppRGB) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat48bppBGR) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat48bppBGRFixedPoint) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat48bppRGBFixedPoint) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat48bppRGBHalf) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGB) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGBFixedPoint) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat64bppRGBHalf) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFloat) ||
-                 IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFixedPoint))
+        if (IsEqualGUID(format, GUID_WICPixelFormat24bppBGR) ||
+            IsEqualGUID(format, GUID_WICPixelFormat24bppRGB) ||
+            IsEqualGUID(format, GUID_WICPixelFormat32bppBGR) ||
+            IsEqualGUID(format, GUID_WICPixelFormat16bppBGR555) ||
+            IsEqualGUID(format, GUID_WICPixelFormat16bppBGR565) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppRGB) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppBGR) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppBGRFixedPoint) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppRGBFixedPoint) ||
+            IsEqualGUID(format, GUID_WICPixelFormat48bppRGBHalf) ||
+            IsEqualGUID(format, GUID_WICPixelFormat64bppRGB) ||
+            IsEqualGUID(format, GUID_WICPixelFormat64bppRGBFixedPoint) ||
+            IsEqualGUID(format, GUID_WICPixelFormat64bppRGBHalf) ||
+            IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFloat) ||
+            IsEqualGUID(format, GUID_WICPixelFormat128bppRGBFixedPoint))
         {
             targetFormat = GUID_WICPixelFormat24bppRGB;
             bitsPerChannel = 8;
             numberOfChannels = 3;
-            swapBGRToRGB = false;
         }
         else if (IsEqualGUID(format, GUID_WICPixelFormat8bppGray) ||
                  IsEqualGUID(format, GUID_WICPixelFormatBlackWhite) ||
@@ -110,7 +89,6 @@ namespace
             targetFormat = GUID_WICPixelFormat8bppGray;
             bitsPerChannel = 8;
             numberOfChannels = 1;
-            swapBGRToRGB = false;
         }
 
         return targetFormat;
@@ -118,7 +96,13 @@ namespace
 
     struct GmicOutputWriter
     {
-        GmicOutputWriter(IWICBitmapSource* source, bool swapBGR) : image(source), swapBGRToRGB(swapBGR)
+        GmicOutputWriter(
+            IWICBitmap* source,
+            int32 width,
+            int32 height)
+            : image(source),
+              tileWidth(std::min(width, 1024)),
+              tileHeight(std::min(height, 1024))
         {
         }
 
@@ -140,6 +124,16 @@ namespace
             return instance->WritePixels(file, imageWidth, imageHeight, numberOfChannels, bitsPerChannel);
         }
 
+        int32 GetTileHeight() const
+        {
+            return tileHeight;
+        }
+
+        int32 GetTileWidth() const
+        {
+            return tileWidth;
+        }
+
     private:
 
         OSErr WritePixels(
@@ -149,94 +143,74 @@ namespace
             int32 numberOfChannels,
             int32 bitsPerChannel)
         {
-            UINT wicStride;
-
-            if (!TryCalculateWICStride(imageWidth, numberOfChannels, bitsPerChannel, wicStride))
-            {
-                return memFullErr;
-            }
-
-            int32 chunkHeight;
-            UINT copyBufferSize;
-
-            if (!TryCalculateCopyBufferSize(imageHeight, wicStride, chunkHeight, copyBufferSize))
-            {
-                return memFullErr;
-            }
-
-            std::unique_ptr<BYTE[]> buffer(new (std::nothrow) BYTE[static_cast<size_t>(copyBufferSize)]);
-
-            if (buffer == nullptr)
-            {
-                return memFullErr;
-            }
-
             const int32 bytesPerChannel = bitsPerChannel / 8;
-            const size_t outputStride = static_cast<size_t>(imageWidth) * numberOfChannels * bytesPerChannel;
 
-            WICRect copyRect{};
-            copyRect.X = 0;
-            copyRect.Width = imageWidth;
+            WICRect lockRect{};
 
-            BYTE* bufferStart = buffer.get();
-
-            for (int32 y = 0; y < imageHeight; y += chunkHeight)
+            for (int32 y = 0; y < imageHeight; y += tileHeight)
             {
-                copyRect.Y = y;
-                copyRect.Height = std::min(chunkHeight, imageHeight - y);
+                lockRect.Y = y;
+                lockRect.Height = std::min(tileHeight, imageHeight - y);
 
-                if (FAILED(image->CopyPixels(&copyRect, wicStride, copyBufferSize, bufferStart)))
+                INT rowCount = lockRect.Height;
+
+                for (int32 x = 0; x < imageWidth; x += tileWidth)
                 {
-                    return ioErr;
-                }
+                    lockRect.X = x;
+                    lockRect.Width = std::min(tileWidth, imageWidth - x);
 
-                INT rowCount = copyRect.Height;
+                    wil::com_ptr<IWICBitmapLock> bitmapLock;
 
-                if (swapBGRToRGB)
-                {
-                    switch (bitsPerChannel)
+                    HRESULT hr = image->Lock(&lockRect, WICBitmapLockRead, &bitmapLock);
+                    if (FAILED(hr))
                     {
-                    case 8:
-                        SwapBGRToRGB<BYTE>(bufferStart, imageWidth, rowCount, wicStride, numberOfChannels);
-                        break;
-                    case 16:
-                        SwapBGRToRGB<USHORT>(
-                            reinterpret_cast<USHORT*>(bufferStart),
-                            imageWidth,
-                            rowCount,
-                            wicStride / 2,
-                            numberOfChannels);
-                        break;
-                    default:
-                        return paramErr;
+                        return ioErr;
                     }
-                }
 
-                if (wicStride == outputStride)
-                {
-                    // If the WIC image stride matches the output image stride
-                    // we can write the buffer directly.
-
-                    const size_t imageDataLength = static_cast<size_t>(rowCount) * wicStride;
-
-                    OSErr err = WriteFile(file, bufferStart, imageDataLength);
-
-                    if (err != noErr)
+                    UINT wicStride;
+                    hr = bitmapLock->GetStride(&wicStride);
+                    if (FAILED(hr))
                     {
-                        return err;
+                        return ioErr;
                     }
-                }
-                else
-                {
-                    for (INT i = 0; i < rowCount; i++)
-                    {
-                        BYTE* row = bufferStart + (static_cast<size_t>(i) * wicStride);
 
-                        OSErr err = WriteFile(file, row, outputStride);
+                    UINT wicBufferSize;
+                    BYTE* bufferStart;
+
+                    hr = bitmapLock->GetDataPointer(&wicBufferSize, &bufferStart);
+                    if (FAILED(hr))
+                    {
+                        return ioErr;
+                    }
+
+                    INT columnCount = lockRect.Width;
+
+                    const size_t outputStride = static_cast<size_t>(columnCount) * numberOfChannels * bytesPerChannel;
+
+                    if (wicStride == outputStride)
+                    {
+                        // If the WIC image stride matches the output image stride
+                        // we can write the buffer directly.
+
+                        OSErr err = WriteFile(file, bufferStart, static_cast<size_t>(wicBufferSize));
 
                         if (err != noErr)
                         {
                             return err;
+                        }
+                    }
+                    else
+                    {
+                        for (INT i = 0; i < rowCount; i++)
+                        {
+                            BYTE* row = bufferStart + (static_cast<size_t>(i) * wicStride);
+
+                            OSErr err = WriteFile(file, row, outputStride);
+
+                            if (err != noErr)
+                            {
+                                return err;
+                            }
                         }
                     }
                 }
@@ -245,78 +219,9 @@ namespace
             return noErr;
         }
 
-        template <typename T>
-        void SwapBGRToRGB(
-            T* scan0,
-            const int32& width,
-            const int32& height,
-            const UINT& stride,
-            const int32& numberOfChannels)
-        {
-            for (int32 y = 0; y < height; y++)
-            {
-                T* row = scan0 + (static_cast<size_t>(y) * stride);
-
-                for (int32 x = 0; x < width; x++)
-                {
-                    T temp = row[0];
-                    row[0] = row[2];
-                    row[2] = temp;
-
-                    row += numberOfChannels;
-                }
-            }
-        }
-
-        bool TryCalculateCopyBufferSize(
-            const int32& imageHeight,
-            const UINT& wicStride,
-            int32& chunkHeight,
-            UINT& copyBufferSize)
-        {
-            chunkHeight = std::min(imageHeight, 256);
-            uint64 bufferSize = static_cast<uint64>(chunkHeight) * wicStride;
-
-            // WIC can only copy up to 4 GB at a time.
-            while (bufferSize > std::numeric_limits<UINT>::max())
-            {
-                chunkHeight /= 2;
-                bufferSize = static_cast<uint64>(chunkHeight) * wicStride;
-            }
-
-            if (bufferSize > 0 && bufferSize <= std::numeric_limits<UINT>::max())
-            {
-                copyBufferSize = static_cast<UINT>(bufferSize);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        bool TryCalculateWICStride(
-            const int32& imageWidth,
-            const int32& numberOfChannels,
-            const int32& bitsPerChannel,
-            UINT& wicStride)
-        {
-            const uint64 bitsPerPixel = static_cast<uint64>(numberOfChannels) * bitsPerChannel;
-            const uint64 imageStride = ((static_cast<int64>(imageWidth) * bitsPerPixel) + 7) / 8;
-
-            if (imageStride <= std::numeric_limits<UINT>::max())
-            {
-                wicStride = static_cast<UINT>(imageStride);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        IWICBitmapSource* image;
-        const bool swapBGRToRGB;
+        IWICBitmap* image;
+        const int32 tileHeight;
+        const int32 tileWidth;
     };
 
     void DoGmicInputFormatConversion(
@@ -339,27 +244,16 @@ namespace
 
         int bitsPerChannel;
         int numberOfChannels;
-        bool swapBGRToRGB;
 
         WICPixelFormatGUID targetFormat = GetTargetFormat(
                                             format,
                                             bitsPerChannel,
-                                            numberOfChannels,
-                                            swapBGRToRGB);
+                                            numberOfChannels);
+        wil::com_ptr<IWICBitmap> bitmap;
 
         if (IsEqualGUID(format, targetFormat))
         {
-            GmicOutputWriter writer(decoderFrame.get(), swapBGRToRGB);
-
-            OSErrException::ThrowIfError(WritePixelsFromCallback(
-                static_cast<int32>(uiWidth),
-                static_cast<int32>(uiHeight),
-                numberOfChannels,
-                bitsPerChannel,
-                /* planar */ false,
-                &GmicOutputWriter::WriteCallback,
-                &writer,
-                output));
+            THROW_IF_FAILED(factory->CreateBitmapFromSource(decoderFrame.get(), WICBitmapCacheOnLoad, &bitmap));
         }
         else
         {
@@ -373,19 +267,25 @@ namespace
                 nullptr,
                 0.f,
                 WICBitmapPaletteTypeCustom));
-
-            GmicOutputWriter writer(formatConverter.get(), swapBGRToRGB);
-
-            OSErrException::ThrowIfError(WritePixelsFromCallback(
-                static_cast<int32>(uiWidth),
-                static_cast<int32>(uiHeight),
-                numberOfChannels,
-                bitsPerChannel,
-                /* planar */ false,
-                &GmicOutputWriter::WriteCallback,
-                &writer,
-                output));
+            THROW_IF_FAILED(factory->CreateBitmapFromSource(formatConverter.get(), WICBitmapCacheOnLoad, &bitmap));
         }
+
+        GmicOutputWriter writer(
+            bitmap.get(),
+            static_cast<int32>(uiWidth),
+            static_cast<int32>(uiHeight));
+
+        OSErrException::ThrowIfError(WritePixelsFromCallback(
+            static_cast<int32>(uiWidth),
+            static_cast<int32>(uiHeight),
+            numberOfChannels,
+            bitsPerChannel,
+            /* planar */ false,
+            writer.GetTileWidth(),
+            writer.GetTileHeight(),
+            &GmicOutputWriter::WriteCallback,
+            &writer,
+            output));
     }
 }
 

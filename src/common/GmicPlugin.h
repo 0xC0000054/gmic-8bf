@@ -68,6 +68,7 @@ bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
 int32 GetImagePlaneCount(int32 nonLayerPlanes, int32 layerPlanes, int32 transparencyPlanes);
 VPoint GetImageSize(const FilterRecordPtr filterRecord);
 int32 GetTileHeight(int16 suggestedTileHeight);
+int32 GetTileWidth(int16 suggestedTileWidth);
 void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
 void SetOutputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
 void SetMaskRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
