@@ -198,7 +198,7 @@ namespace
                         {
                             for (int32 j = 0; j < rowCount; j++)
                             {
-                                const uint8* row = static_cast<const uint8*>(filterRecord->inData) + (j * filterRecord->inRowBytes);
+                                const uint8* row = static_cast<const uint8*>(filterRecord->inData) + (static_cast<int64>(j) * filterRecord->inRowBytes);
 
                                 err = WriteFile(fileHandle, row, outputStride);
 
