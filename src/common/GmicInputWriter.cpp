@@ -196,7 +196,7 @@ namespace
                         }
                         else
                         {
-                            for (size_t j = 0; j < rowCount; j++)
+                            for (int32 j = 0; j < rowCount; j++)
                             {
                                 const uint8* row = static_cast<const uint8*>(filterRecord->inData) + (j * filterRecord->inRowBytes);
 

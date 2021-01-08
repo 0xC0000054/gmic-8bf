@@ -195,7 +195,7 @@ namespace
                         }
                         else
                         {
-                            std::vector<BYTE> memoryBmp(fileSize);
+                            std::vector<BYTE> memoryBmp(static_cast<size_t>(fileSize));
 
                             BITMAPFILEHEADER* bfh = reinterpret_cast<BITMAPFILEHEADER*>(memoryBmp.data());
                             bfh->bfType = 0x4d42; // 0x42 = "B" 0x4d = "M"
