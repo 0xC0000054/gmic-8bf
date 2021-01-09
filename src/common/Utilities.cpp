@@ -491,8 +491,16 @@ bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& 
 
                 if (data != nullptr)
                 {
-                    utf8LayerName = ConvertLayerNameToUTF8(reinterpret_cast<uint16*>(data));
-                    result = !utf8LayerName.empty();
+                    try
+                    {
+                        utf8LayerName = ConvertLayerNameToUTF8(reinterpret_cast<uint16*>(data));
+                        result = !utf8LayerName.empty();
+                    }
+                    catch (...)
+                    {
+                        // Ignore any exceptions that are thrown when converting the layer name to UTF-8.
+                        result = false;
+                    }
                 }
 
                 filterRecord->handleProcs->unlockProc(complexProperty);
