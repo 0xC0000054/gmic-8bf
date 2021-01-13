@@ -172,12 +172,12 @@ OSErr ReadFileNative(const FileHandle* fileHandle, void* data, size_t dataSize)
 
         if (!ReadFile(hFile, buffer, numBytesToRead, &bytesRead, nullptr))
         {
-            return ioErr;
+            return readErr;
         }
 
         if (bytesRead != numBytesToRead)
         {
-            return bytesRead == 0 ? eofErr : ioErr;
+            return bytesRead == 0 ? eofErr : readErr;
         }
 
         buffer += bytesRead;
@@ -254,12 +254,12 @@ OSErr WriteFileNative(const FileHandle* fileHandle, const void* data, size_t dat
 
         if (!WriteFile(hFile, buffer, numBytesToWrite, &bytesWritten, nullptr))
         {
-            return ioErr;
+            return writErr;
         }
 
         if (bytesWritten != numBytesToWrite)
         {
-            return ioErr;
+            return writErr;
         }
 
         buffer += bytesWritten;
