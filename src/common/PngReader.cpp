@@ -419,7 +419,7 @@ namespace
                 const bool pngHasAlphaChannel = colorType == PNG_COLOR_TYPE_RGB_ALPHA;
                 const bool canEditLayerTransparency = filterRecord->outLayerPlanes != 0 && filterRecord->outTransparencyMask != 0;
                 const int32 numberOfOutputPlanes = GetImagePlaneCount(
-                    filterRecord->outNonLayerPlanes,
+                    filterRecord->imageMode,
                     filterRecord->outLayerPlanes,
                     pngHasAlphaChannel ? filterRecord->outTransparencyMask : 0);
 

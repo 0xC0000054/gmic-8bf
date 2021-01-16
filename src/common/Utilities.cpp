@@ -523,21 +523,30 @@ bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept
     return false;
 }
 
-int32 GetImagePlaneCount(int32 nonLayerPlanes, int32 layerPlanes, int32 transparencyPlanes)
+int32 GetImagePlaneCount(int16 imageMode, int32 layerPlanes, int32 transparencyPlanes)
 {
-    int32 planes = nonLayerPlanes;
+    int32 imagePlanes;
 
-    if (layerPlanes != 0)
+    switch (imageMode)
     {
-        planes = layerPlanes;
-
-        if (transparencyPlanes != 0)
-        {
-            planes++;
-        }
+    case plugInModeGrayScale:
+    case plugInModeGray16:
+        imagePlanes = 1;
+        break;
+    case plugInModeRGBColor:
+    case plugInModeRGB48:
+        imagePlanes = 3;
+        break;
+    default:
+        return 0;
     }
 
-    return planes;
+    if (layerPlanes == imagePlanes && transparencyPlanes > 0)
+    {
+        imagePlanes++;
+    }
+
+    return imagePlanes;
 }
 
 VPoint GetImageSize(const FilterRecordPtr filterRecord)
