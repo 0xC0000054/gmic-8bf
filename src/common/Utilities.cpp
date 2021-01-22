@@ -339,7 +339,7 @@ namespace
                 compositeChannel = compositeChannel->next;
             }
 
-            // For layer transparency, only the first channel need to be checked.
+            // For layer transparency, only the first channel needs to be checked.
             if (result && layersDescriptor->transparency != nullptr)
             {
                 result &= ReadChannelDescSupported(layersDescriptor->transparency);
