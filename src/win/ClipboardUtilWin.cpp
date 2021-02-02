@@ -91,7 +91,7 @@ namespace
             err = ioErr;
         }
 
-        return false;
+        return err;
     }
 
     bool FileDropIsImage(const std::wstring& path)
