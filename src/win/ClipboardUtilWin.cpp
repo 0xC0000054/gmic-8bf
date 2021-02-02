@@ -260,7 +260,7 @@ namespace
             {
                 err = ConvertImageToGmicInputFormatNative(
                     filterRecord,
-                    hGlobal,
+                    data,
                     handleSize,
                     gmicInputPath);
             }
