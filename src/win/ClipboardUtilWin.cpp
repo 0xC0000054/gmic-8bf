@@ -34,7 +34,7 @@ namespace
         return formats;
     }
 
-    OSErr TryGetFileDropPath(std::wstring& path)
+    OSErr GetFileDropPath(std::wstring& path)
     {
         OSErr err = noErr;
 
@@ -301,7 +301,7 @@ namespace
                 // Web Browsers often download the image and place a link on the clipboard.
 
                 std::wstring path;
-                if (TryGetFileDropPath(path) == noErr && FileDropIsImage(path))
+                if (GetFileDropPath(path) == noErr && FileDropIsImage(path))
                 {
                     err = ProcessFileDrop(filterRecord, path, gmicInputPath);
 
