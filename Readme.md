@@ -17,7 +17,14 @@ The latest version can be downloaded from the [Releases](https://github.com/0xC0
 4. The plug-in will now be available as the G'MIC-Qt menu item in the GMIC category.
 
 ### Default plugins folders:
-- Photoshop: `C:\Program Files\Common Files\Adobe\Plug-Ins\CC\`
+- Photoshop
+  - 64-bit: `C:\Program Files\Common Files\Adobe\Plug-Ins\CC\` (older versions use a folder like `CS6` instead of `CC`).
+  - 32-bit: `C:\Program Files (x86)\Common Files\Adobe\Plug-Ins\CC\` (the same applies).
+  - More information regarding Photoshop paths: https://helpx.adobe.com/photoshop/kb/plug-ins-photoshop-troubleshooting.html
+
+- Affinity Photo:
+  - `C:\ProgramData\Affinity\Photo\1.0\Plugins`
+
 
 ### Updating
 
