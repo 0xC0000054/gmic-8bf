@@ -40,7 +40,6 @@ FilterParameters* LockParameters(FilterRecordPtr filterRecord);
 void UnlockParameters(FilterRecordPtr filterRecord);
 
 OSErr DoAbout(const AboutRecord* aboutRecord) noexcept;
-OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode);
 
 OSErr ReadGmicOutput(
     const boost::filesystem::path& outputDir,
