@@ -62,7 +62,71 @@ std::string FourCCToString(const uint32 fourCC)
 }
 #endif // DEBUG_BUILD
 
-OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode)
+OSErr LaunderOSErrResult(OSErr err, const char* caption, const FilterRecordPtr filterRecord)
 {
-    return ShowErrorMessageNative(message, filterRecord, fallbackErrorCode);
+    // A positive error code indicates that a custom error message was already shown to the user.
+    // The negative error codes are standard errors that plug-ins can use in place of a custom error message.
+    // A value of zero is used to indicate that no error has occurred.
+    //
+    // When a plug-in exits with a standard error code the host is supposed to show an error message
+    // to the user for all error codes except userCanceledErr, but a number of popular 3rd-party hosts
+    // silently ignore all error codes that are returned from a plug-in.
+    if (err < 0 && err != userCanceledErr)
+    {
+        const char* message = nullptr;
+
+        switch (err)
+        {
+        case readErr:
+        case writErr:
+        case openErr:
+        case ioErr:
+            message = "A file I/O error occurred.";
+            break;
+        case eofErr:
+            message = "Reached the end of the file.";
+            break;
+        case dskFulErr:
+            message = "There is not enough space on the disk.";
+            break;
+        case fLckdErr:
+            message = "The file is in use or locked by another process.";
+            break;
+        case vLckdErr:
+            message = "The disk is in use or locked by another process.";
+            break;
+        case fnfErr:
+            message = "The system cannot find the file specified.";
+            break;
+        case memFullErr:
+        case memWZErr:
+        case nilHandleErr:
+            message = "Insufficient memory to continue execution of the plug-in.";
+            break;
+        case errPlugInHostInsufficient:
+            message = "The plug-in requires services not provided by this host.";
+            break;
+        case filterBadMode:
+            message = "This plug-in does not support the current image mode.";
+            break;
+        case filterBadParameters:
+        case paramErr:
+        default:
+            message = "A problem with the filter module interface.";
+            break;
+        }
+
+        return ShowErrorMessageNative(message, caption, filterRecord, err);
+    }
+
+    return err;
+}
+
+OSErr ShowErrorMessage(
+    const char* message,
+    const char* caption,
+    const FilterRecordPtr filterRecord,
+    OSErr fallbackErrorCode)
+{
+    return ShowErrorMessageNative(message, caption, filterRecord, fallbackErrorCode);
 }

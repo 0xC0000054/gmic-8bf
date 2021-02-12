@@ -17,11 +17,10 @@
 
 #include "GmicPlugin.h"
 
-OSErr PngImageSizeMatchesDocument(
+bool PngImageSizeMatchesDocument(
     const boost::filesystem::path& path,
-    const VPoint& documentSize,
-    bool& imageSizeMatchesDocument);
+    const VPoint& documentSize);
 
-OSErr LoadPngImage(const boost::filesystem::path& path, FilterRecord* filterRecord);
+void LoadPngImage(const boost::filesystem::path& path, FilterRecord* filterRecord);
 
 #endif // !PNGREADER_H

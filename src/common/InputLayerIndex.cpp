@@ -57,77 +57,56 @@ namespace
         boost::endian::little_int32_t documentFlags;
     };
 
-    OSErr WriteAlternateInputImagePath(const FileHandle* fileHandle, const boost::filesystem::path& path)
+    void WriteAlternateInputImagePath(const FileHandle* fileHandle, const boost::filesystem::path& path)
     {
         // The file path will be converted from UTF-16 to UTF-8.
         const std::string& value = path.string();
 
         if (value.size() > static_cast<size_t>(std::numeric_limits<int32>::max()))
         {
-            return ioErr;
+            throw std::runtime_error("The string length exceeds 2GB.");
         }
 
         boost::endian::little_int32_t stringLength = static_cast<int32>(value.size());
 
-        OSErr err = WriteFile(fileHandle, &stringLength, sizeof(stringLength));
+        WriteFile(fileHandle, &stringLength, sizeof(stringLength));
 
-        if (err == noErr)
-        {
-            err = WriteFile(fileHandle, value.data(), value.size());
-        }
-
-        return err;
+        WriteFile(fileHandle, value.data(), value.size());
     }
 
-    OSErr WriteAlternateInputImageData(
+    void WriteAlternateInputImageData(
         const FileHandle* fileHandle,
         const FilterRecordPtr filterRecord,
         const GmicIOSettings& settings)
     {
         const SecondInputImageSource source = settings.GetSecondInputImageSource();
 
-        OSErr err = noErr;
-
         if (source == SecondInputImageSource::None)
         {
             // Write an empty path if document layers are the only input source.
             // This avoids some overhead from creating a file path and trying to open a nonexistent file.
-            err = WriteAlternateInputImagePath(fileHandle, boost::filesystem::path());
+            WriteAlternateInputImagePath(fileHandle, boost::filesystem::path());
         }
         else
         {
-            boost::filesystem::path inputDir;
+            boost::filesystem::path inputDir = GetInputDirectory();
 
-            err = GetInputDirectory(inputDir);
+            boost::filesystem::path secondGmicInputImage = GetTemporaryFileName(inputDir, ".g8i");
 
-            if (err == noErr)
+            if (source == SecondInputImageSource::Clipboard)
             {
-                boost::filesystem::path secondGmicInputImage;
-                err = GetTemporaryFileName(inputDir, secondGmicInputImage, ".g8i");
-
-                if (err == noErr)
-                {
-                    if (source == SecondInputImageSource::Clipboard)
-                    {
-                        err = ConvertClipboardImageToGmicInput(filterRecord, secondGmicInputImage);
-                    }
-                    else if (source == SecondInputImageSource::File)
-                    {
-                        err = ConvertImageToGmicInputFormat(
-                            filterRecord,
-                            settings.GetSecondInputImagePath(),
-                            secondGmicInputImage);
-                    }
-
-                    if (err == noErr)
-                    {
-                        err = WriteAlternateInputImagePath(fileHandle, secondGmicInputImage);
-                    }
-                }
+                OSErrException::ThrowIfError(ConvertClipboardImageToGmicInput(filterRecord, secondGmicInputImage));
             }
-        }
+            else if (source == SecondInputImageSource::File)
+            {
+                OSErrException::ThrowIfError(ConvertImageToGmicInputFormat(
+                    filterRecord,
+                    settings.GetSecondInputImagePath(),
+                    secondGmicInputImage));
+            }
 
-        return err;
+            WriteAlternateInputImagePath(fileHandle, secondGmicInputImage);
+        }
     }
 }
 
@@ -142,27 +121,16 @@ InputLayerIndex::~InputLayerIndex()
 {
 }
 
-OSErr InputLayerIndex::AddFile(
+void InputLayerIndex::AddFile(
     const boost::filesystem::path& path,
     int32 width,
     int32 height,
     bool visible,
     std::string utf8Name)
 {
-    OSErr err = noErr;
+    InputLayerInfo info(path, width, height, visible, utf8Name);
 
-    try
-    {
-        InputLayerInfo info(path, width, height, visible, utf8Name);
-
-        inputFiles.push_back(info);
-    }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
-    }
-
-    return err;
+    inputFiles.push_back(info);
 }
 
 void InputLayerIndex::SetActiveLayerIndex(int32 index)
@@ -170,61 +138,38 @@ void InputLayerIndex::SetActiveLayerIndex(int32 index)
     activeLayerIndex = index;
 }
 
-OSErr InputLayerIndex::Write(
+void InputLayerIndex::Write(
     const boost::filesystem::path& path,
     const FilterRecordPtr filterRecord,
     const GmicIOSettings& settings)
 {
     if (inputFiles.size() > static_cast<size_t>(std::numeric_limits<int32>().max()))
     {
-        return ioErr;
+        throw std::runtime_error("The number of input files exceeds 2,147,483,647.");
     }
 
-    OSErr err = noErr;
-
-    try
-    {
-        // Convert the narrow path string to UTF-8 on Windows.
+    // Convert the narrow path string to UTF-8 on Windows.
 #if __PIWin__
-        boost::filesystem::path::imbue( std::locale(std::locale(), new std::codecvt_utf8_utf16<wchar_t>()));
+    boost::filesystem::path::imbue(std::locale(std::locale(), new std::codecvt_utf8_utf16<wchar_t>()));
 #endif
 
-        std::unique_ptr<FileHandle> file;
+    std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Write);
 
-        err = OpenFile(path, FileOpenMode::Write, file);
+    IndexFileHeader header(
+        static_cast<int32>(inputFiles.size()),
+        activeLayerIndex,
+        grayScale,
+        sixteenBitsPerChannel);
 
-        if (err == noErr)
-        {
-            IndexFileHeader header(
-                static_cast<int32>(inputFiles.size()),
-                activeLayerIndex,
-                grayScale,
-                sixteenBitsPerChannel);
+    WriteFile(file.get(), &header, sizeof(header));
 
-            err = WriteFile(file.get(), &header, sizeof(header));
-
-            if (err == noErr)
-            {
-                for (size_t i = 0; i < inputFiles.size(); i++)
-                {
-                    err = inputFiles[i].Write(file.get());
-                    if (err != noErr)
-                    {
-                        break;
-                    }
-                }
-
-                if (inputFiles.size() == 1 && err == noErr)
-                {
-                    err = WriteAlternateInputImageData(file.get(), filterRecord, settings);
-                }
-            }
-        }
-    }
-    catch (const std::bad_alloc&)
+    for (size_t i = 0; i < inputFiles.size(); i++)
     {
-        err = memFullErr;
+        inputFiles[i].Write(file.get());
     }
 
-    return err;
+    if (inputFiles.size() == 1)
+    {
+        WriteAlternateInputImageData(file.get(), filterRecord, settings);
+    }
 }

@@ -25,7 +25,7 @@ namespace
     {
     public:
 
-        TempDirectory(boost::filesystem::path sessionDirectoriesRoot) : path(), isValid(false)
+        TempDirectory(boost::filesystem::path sessionDirectoriesRoot) : path()
         {
             if (sessionDirectoriesRoot.empty())
             {
@@ -36,8 +36,6 @@ namespace
             path /= boost::filesystem::unique_path();
 
             boost::filesystem::create_directories(path);
-
-            isValid = true;
         }
 
         TempDirectory(const TempDirectory&) = delete;
@@ -50,7 +48,6 @@ namespace
         {
             boost::system::error_code ec;
             boost::filesystem::remove_all(path, ec);
-            isValid = false;
         }
 
         boost::filesystem::path Get() const
@@ -58,15 +55,9 @@ namespace
             return path;
         }
 
-        bool IsValid() const noexcept
-        {
-            return isValid;
-        }
-
     private:
 
         boost::filesystem::path path;
-        bool isValid;
     };
 
     boost::filesystem::path GetPluginDataDirectory()
@@ -80,233 +71,99 @@ namespace
     {
         boost::filesystem::path path = GetPluginDataDirectory();
 
-        if (!path.empty())
-        {
-            path /= "SessionData";
-        }
+        path /= "SessionData";
 
         return path;
     }
 
-    OSErr GetSessionDirectory(boost::filesystem::path& path)
+    boost::filesystem::path GetSessionDirectory()
     {
+        static std::unique_ptr<TempDirectory> sessionDir = std::make_unique<TempDirectory>(GetSessionDirectoriesRoot());
 
-        OSErr err = noErr;
-
-        try
-        {
-            static std::unique_ptr<TempDirectory> sessionDir = std::make_unique<TempDirectory>(GetSessionDirectoriesRoot());
-
-            if (sessionDir->IsValid())
-            {
-                path = sessionDir->Get();
-            }
-            else
-            {
-                err = ioErr;
-            }
-        }
-        catch (const std::bad_alloc&)
-        {
-            err = memFullErr;
-        }
-        catch (const std::length_error&)
-        {
-            err = memFullErr;
-        }
-        catch (...)
-        {
-            err = ioErr;
-        }
-
-        return err;
+        return sessionDir->Get();
     }
 
-    OSErr GetSettingsDirectory(boost::filesystem::path& path)
+    boost::filesystem::path GetSettingsDirectory()
     {
-        OSErr err = noErr;
+        boost::filesystem::path path = GetPluginDataDirectory();
 
-        try
-        {
-            path = GetPluginDataDirectory();
+        path /= "settings";
+        boost::filesystem::create_directories(path);
 
-            if (!path.empty())
-            {
-                path /= "settings";
-                boost::filesystem::create_directories(path);
-            }
-            else
-            {
-                err = ioErr;
-            }
-        }
-        catch (const std::bad_alloc&)
-        {
-            err = memFullErr;
-        }
-        catch (const std::length_error&)
-        {
-            err = memFullErr;
-        }
-        catch (...)
-        {
-            err = ioErr;
-        }
-
-        return err;
+        return path;
     }
 }
 
-OSErr GetGmicQtPath(boost::filesystem::path& path)
+boost::filesystem::path GetGmicQtPath()
 {
-    OSErr err = noErr;
+    boost::filesystem::path path = GetPluginInstallDirectoryNative();
 
-    try
-    {
-        boost::filesystem::path pluginInstallDir;
+    path /= "gmic";
+    path /= ExecutableName;
 
-        err = GetPluginInstallDirectoryNative(pluginInstallDir);
-
-        if (err == noErr)
-        {
-            path = pluginInstallDir;
-            path /= "gmic";
-            path /= ExecutableName;
-        }
-    }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
-    }
-    catch (...)
-    {
-        err = ioErr;
-    }
-
-    return err;
+    return path;
 }
 
-OSErr GetInputDirectory(boost::filesystem::path& path)
+boost::filesystem::path GetInputDirectory()
 {
-    OSErr err = noErr;
-
-    try
-    {
-        err = GetSessionDirectory(path);
-    }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
-    }
-    catch (...)
-    {
-        err = ioErr;
-    }
-
-    return err;
+    return GetSessionDirectory();
 }
 
-OSErr GetOutputDirectory(boost::filesystem::path& path)
+boost::filesystem::path GetOutputDirectory()
 {
-    OSErr err = noErr;
+    boost::filesystem::path path = GetSessionDirectory();
+    path /= "out";
 
-    try
-    {
-        err = GetSessionDirectory(path);
-        if (err == noErr)
-        {
-            path /= "out";
+    boost::filesystem::create_directory(path);
 
-            boost::filesystem::create_directory(path);
-        }
-    }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
-    }
-    catch (...)
-    {
-        err = ioErr;
-    }
-
-    return err;
+    return path;
 }
 
-OSErr GetIOSettingsPath(boost::filesystem::path& path)
+boost::filesystem::path GetIOSettingsPath()
 {
-    OSErr err = noErr;
+    boost::filesystem::path path = GetSettingsDirectory();
 
-    try
-    {
-        err = GetSettingsDirectory(path);
-        if (err == noErr)
-        {
-            path /= "IOSettings.dat";
-        }
-        else
-        {
-            err = ioErr;
-        }
-    }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
-    }
-    catch (...)
-    {
-        err = ioErr;
-    }
+    path /= "IOSettings.dat";
 
-    return err;
+    return path;
 }
 
-OSErr GetTemporaryFileName(const boost::filesystem::path& dir, boost::filesystem::path& path, const char* const fileExtension)
+boost::filesystem::path GetTemporaryFileName(const boost::filesystem::path& dir, const char* const fileExtension)
 {
-    OSErr err = noErr;
+    boost::filesystem::path path;
 
-    try
-    {
-        path = dir;
-        path /= boost::filesystem::unique_path("%%%%%%%%");
+    path = dir;
+    path /= boost::filesystem::unique_path("%%%%%%%%");
 
-        if (fileExtension)
-        {
-            path += fileExtension;
-        }
-    }
-    catch (const std::bad_alloc&)
+    if (fileExtension)
     {
-        err = memFullErr;
-    }
-    catch (...)
-    {
-        err = ioErr;
+        path += fileExtension;
     }
 
-    return err;
+    return path;
 }
 
-OSErr OpenFile(const boost::filesystem::path& path, FileOpenMode mode, std::unique_ptr<FileHandle>& fileHandle)
+std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOpenMode mode)
 {
-    return OpenFileNative(path, mode, fileHandle);
+    return OpenFileNative(path, mode);
 }
 
-OSErr ReadFile(const FileHandle* fileHandle, void* data, size_t dataSize)
+void ReadFile(const FileHandle* fileHandle, void* data, size_t dataSize)
 {
-    return ReadFileNative(fileHandle, data, dataSize);
+    ReadFileNative(fileHandle, data, dataSize);
 }
 
-OSErr SetFileLength(const FileHandle* fileHandle, int64 length)
+void SetFileLength(const FileHandle* fileHandle, int64 length)
 {
-    return SetFileLengthNative(fileHandle, length);
+    SetFileLengthNative(fileHandle, length);
 }
 
-OSErr SetFilePosition(const FileHandle* fileHandle, int16 posMode, int64 posOffset)
+void SetFilePosition(const FileHandle* fileHandle, int16 posMode, int64 posOffset)
 {
-    return SetFilePositionNative(fileHandle, posMode, posOffset);
+    SetFilePositionNative(fileHandle, posMode, posOffset);
 }
 
-OSErr WriteFile(const FileHandle* fileHandle, const void* data, size_t dataSize)
+void WriteFile(const FileHandle* fileHandle, const void* data, size_t dataSize)
 {
-    return WriteFileNative(fileHandle, data, dataSize);
+    WriteFileNative(fileHandle, data, dataSize);
 }

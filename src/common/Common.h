@@ -24,6 +24,7 @@
 #include "PIDefines.h"
 #include "PITypes.h"
 #include "PIFilter.h"
+#include "OSErrException.h"
 #include <stdlib.h>
 #include <string>
 #include <boost/filesystem.hpp>
@@ -48,6 +49,15 @@ std::string FourCCToString(const uint32 fourCC);
 
 #define PrintFunctionName() DebugOut("%s", __FUNCTION__)
 
-OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode);
+// Displays an error message to the user for the OSErr results that need it
+// and tells the host that the plug-in has handled the error.
+// This is necessary because a number of popular 3rd-party hosts silently
+// ignore the error codes that a plug-in may return.
+OSErr LaunderOSErrResult(OSErr err, const char* caption, const FilterRecordPtr filterRecord);
+OSErr ShowErrorMessage(
+    const char* message,
+    const char* caption,
+    const FilterRecordPtr filterRecord,
+    OSErr fallbackErrorCode);
 
 #endif // !COMMON_H

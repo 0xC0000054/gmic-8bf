@@ -19,6 +19,10 @@
 
 void CenterDialog(HWND hDlg);
 
-OSErr ShowErrorMessageNative(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode);
+OSErr ShowErrorMessageNative(
+    const char* message,
+    const char* caption,
+    const FilterRecordPtr filterRecord,
+    OSErr fallbackErrorCode);
 
 #endif // !COMMONUIWIN_H

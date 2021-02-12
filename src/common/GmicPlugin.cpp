@@ -54,30 +54,25 @@ namespace
 
         try
         {
-            boost::filesystem::path gmicExecutablePath;
+            boost::filesystem::path gmicExecutablePath = GetGmicQtPath();
 
-            err = GetGmicQtPath(gmicExecutablePath);
+            boost::filesystem::path reapply = ShowUI(filterRecord) ? "" : "reapply";
 
-            if (err == noErr)
+            boost::process::child child(gmicExecutablePath, indexFilePath, outputDir, reapply);
+
+            child.wait();
+
+            int exitCode = child.exit_code();
+
+            if (exitCode != 0)
             {
-                boost::filesystem::path reapply = ShowUI(filterRecord) ? "" : "reapply";
-
-                boost::process::child child(gmicExecutablePath, indexFilePath, outputDir, reapply);
-
-                child.wait();
-
-                int exitCode = child.exit_code();
-
-                if (exitCode != 0)
+                if (exitCode == 5)
                 {
-                    if (exitCode == 5)
-                    {
-                        err = userCanceledErr;
-                    }
-                    else
-                    {
-                        err = ioErr;
-                    }
+                    err = userCanceledErr;
+                }
+                else
+                {
+                    err = ShowErrorMessage("An unspecified error occurred when running G'MIC-Qt.", filterRecord, ioErr);
                 }
             }
         }
@@ -85,9 +80,13 @@ namespace
         {
             err = memFullErr;
         }
-        catch (const boost::process::process_error& e)
+        catch (const std::exception& e)
         {
             err = ShowErrorMessage(e.what(), filterRecord, ioErr);
+        }
+        catch (...)
+        {
+            err = ShowErrorMessage("An unspecified error occurred when running G'MIC-Qt.", filterRecord, ioErr);
         }
 
         return err;
@@ -124,6 +123,35 @@ namespace
 #pragma warning(default: 4366)
 #endif
     }
+
+    OSErr CreateGmicQtSessionFolders(
+        const FilterRecordPtr filterRecord,
+        boost::filesystem::path& inputDir,
+        boost::filesystem::path& outputDir)
+    {
+        OSErr err = noErr;
+
+        try
+        {
+            inputDir = GetInputDirectory();
+            outputDir = GetOutputDirectory();
+        }
+        catch (const std::bad_alloc&)
+        {
+            err = memFullErr;
+        }
+        catch (const std::exception& e)
+        {
+            err = ShowErrorMessage(e.what(), filterRecord, ioErr);
+        }
+
+        return err;
+    }
+
+    OSErr LaunderOSErrResult(OSErr err, const FilterRecordPtr filterRecord)
+    {
+        return LaunderOSErrResult(err, "G'MIC-Qt filter", filterRecord);
+    }
 }
 
 //-------------------------------------------------------------------------------
@@ -145,19 +173,19 @@ DLLExport MACPASCAL void Gmic_Entry_Point(
             *result = DoAbout(reinterpret_cast<AboutRecord*>(filterRecord));
             break;
         case filterSelectorParameters:
-            *result = DoParameters(filterRecord);
+            *result = LaunderOSErrResult(DoParameters(filterRecord), filterRecord);
             break;
         case filterSelectorPrepare:
-            *result = DoPrepare(filterRecord);
+            *result = LaunderOSErrResult(DoPrepare(filterRecord), filterRecord);
             break;
         case filterSelectorStart:
-            *result = DoStart(filterRecord);
+            *result = LaunderOSErrResult(DoStart(filterRecord), filterRecord);
             break;
         case filterSelectorContinue:
-            *result = DoContinue();
+            *result = LaunderOSErrResult(DoContinue(), filterRecord);
             break;
         case filterSelectorFinish:
-            *result = DoFinish();
+            *result = LaunderOSErrResult(DoFinish(), filterRecord);
             break;
         default:
             *result = filterBadParameters;
@@ -305,41 +333,39 @@ OSErr DoStart(FilterRecord* filterRecord)
     if (err == noErr)
     {
         GmicIOSettings settings;
-        boost::filesystem::path settingsPath;
 
         // Try to load the settings file, if present.
-        // If the settings file cannot be loaded the plug-in will still be launched.
-        if (GetIOSettingsPath(settingsPath) == noErr)
+        try
         {
+            boost::filesystem::path settingsPath = GetIOSettingsPath();
             settings.Load(settingsPath);
+        }
+        catch (...)
+        {
+            // If the settings file cannot be loaded the plug-in will still be launched.
         }
 
         boost::filesystem::path inputDir;
         boost::filesystem::path outputDir;
 
-        err = GetInputDirectory(inputDir);
+        err = CreateGmicQtSessionFolders(filterRecord, inputDir, outputDir);
 
         if (err == noErr)
         {
-            err = GetOutputDirectory(outputDir);
+            boost::filesystem::path indexFilePath;
+
+            err = WriteGmicFiles(inputDir, indexFilePath, filterRecord, settings);
+            DebugOut("After WriteGmicFiles err=%d", err);
 
             if (err == noErr)
             {
-                boost::filesystem::path indexFilePath;
-
-                err = WriteGmicFiles(inputDir, indexFilePath, filterRecord, settings);
-                DebugOut("After WriteGmicFiles err=%d", err);
+                err = ExecuteGmicQt(indexFilePath, outputDir, filterRecord);
+                DebugOut("After ExecuteGmicQt err=%d", err);
 
                 if (err == noErr)
                 {
-                    err = ExecuteGmicQt(indexFilePath, outputDir, filterRecord);
-                    DebugOut("After ExecuteGmicQt err=%d", err);
-
-                    if (err == noErr)
-                    {
-                        err = ReadGmicOutput(outputDir, filterRecord, settings);
-                        DebugOut("After ReadGmicOutput err=%d", err);
-                    }
+                    err = ReadGmicOutput(outputDir, filterRecord, settings);
+                    DebugOut("After ReadGmicOutput err=%d", err);
                 }
             }
         }
@@ -370,4 +396,9 @@ FilterParameters* LockParameters(FilterRecordPtr filterRecord)
 void UnlockParameters(FilterRecordPtr filterRecord)
 {
     UnlockPIHandle(filterRecord, filterRecord->parameters);
+}
+
+OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode)
+{
+    return ShowErrorMessage(message, "G'MIC-Qt filter", filterRecord, fallbackErrorCode);
 }

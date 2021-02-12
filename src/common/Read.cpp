@@ -26,27 +26,16 @@
 
 namespace
 {
-    OSErr GetOutputFiles(const boost::filesystem::path& outputDir, std::vector<boost::filesystem::path>& filePaths)
+    std::vector<boost::filesystem::path> GetOutputFiles(const boost::filesystem::path& outputDir)
     {
-        OSErr err = noErr;
+        std::vector<boost::filesystem::path> filePaths;
 
-        try
+        for (auto& file : boost::filesystem::directory_iterator(outputDir))
         {
-            for (auto& file : boost::filesystem::directory_iterator(outputDir))
-            {
-                filePaths.push_back(file.path());
-            }
-        }
-        catch (const std::bad_alloc&)
-        {
-            err = memFullErr;
-        }
-        catch (...)
-        {
-            err = ioErr;
+            filePaths.push_back(file.path());
         }
 
-        return err;
+        return filePaths;
     }
 
     bool TryGetDefaultOutputFolder(const GmicIOSettings& settings, boost::filesystem::path& defaultOutputFolder)
@@ -134,51 +123,29 @@ OSErr ReadGmicOutput(
 
     OSErr err = noErr;
 
-    std::vector<boost::filesystem::path> filePaths;
-
-    err = GetOutputFiles(outputDir, filePaths);
-
-    if (err == noErr && !filePaths.empty())
+    try
     {
-        if (filePaths.size() == 1)
+        std::vector<boost::filesystem::path> filePaths = GetOutputFiles(outputDir);
+
+        if (!filePaths.empty())
         {
-            const boost::filesystem::path& filePath = filePaths[0];
-            const VPoint& documentSize = GetImageSize(filterRecord);
-            bool imageSizeMatchesDocument = false;
-
-            err = PngImageSizeMatchesDocument(filePath, documentSize, imageSizeMatchesDocument);
-
-            if (err == noErr)
+            if (filePaths.size() == 1)
             {
+                const boost::filesystem::path& filePath = filePaths[0];
+                const VPoint& documentSize = GetImageSize(filterRecord);
+                bool imageSizeMatchesDocument = PngImageSizeMatchesDocument(filePath, documentSize);
+
                 if (imageSizeMatchesDocument)
                 {
-                    err = LoadPngImage(filePath, filterRecord);
+                    LoadPngImage(filePath, filterRecord);
                 }
                 else
                 {
-                    try
-                    {
-                        boost::filesystem::path outputFileName;
+                    boost::filesystem::path outputFileName;
 
-                        err = GetResizedImageOutputPath(filterRecord, settings, filePath.filename(), outputFileName);
+                    OSErrException::ThrowIfError(GetResizedImageOutputPath(filterRecord, settings, filePath.filename(), outputFileName));
 
-                        if (err == noErr)
-                        {
-                            boost::filesystem::copy_file(filePath, outputFileName, boost::filesystem::copy_options::overwrite_existing);
-                        }
-                    }
-                    catch (const std::bad_alloc&)
-                    {
-                        err = memFullErr;
-                    }
-                    catch (const boost::filesystem::filesystem_error& e)
-                    {
-                        err = ShowErrorMessage(e.what(), filterRecord, ioErr);
-                    }
-                    catch (...)
-                    {
-                        err = ioErr;
-                    }
+                    boost::filesystem::copy_file(filePath, outputFileName, boost::filesystem::copy_options::overwrite_existing);
                 }
             }
         }
@@ -186,39 +153,42 @@ OSErr ReadGmicOutput(
         {
             boost::filesystem::path outputFolder;
 
-            err = GetOutputFolder(filterRecord, settings, outputFolder);
+            OSErrException::ThrowIfError(GetOutputFolder(filterRecord, settings, outputFolder));
 
-            if (err == noErr)
+            boost::filesystem::create_directories(outputFolder);
+
+            for (size_t i = 0; i < filePaths.size(); i++)
             {
-                try
-                {
-                    boost::filesystem::create_directories(outputFolder);
+                const boost::filesystem::path& oldPath = filePaths[i];
 
-                    for (size_t i = 0; i < filePaths.size(); i++)
-                    {
-                        const boost::filesystem::path& oldPath = filePaths[i];
+                boost::filesystem::path newPath = outputFolder;
+                newPath /= oldPath.filename();
 
-                        boost::filesystem::path newPath = outputFolder;
-                        newPath /= oldPath.filename();
-
-                        boost::filesystem::copy_file(oldPath, newPath, boost::filesystem::copy_options::overwrite_existing);
-                    }
-                }
-                catch (const std::bad_alloc&)
-                {
-                    err = memFullErr;
-                }
-                catch (const boost::filesystem::filesystem_error& e)
-                {
-                    err = ShowErrorMessage(e.what(), filterRecord, ioErr);
-                }
-                catch (...)
-                {
-                    err = ioErr;
-                }
+                boost::filesystem::copy_file(oldPath, newPath, boost::filesystem::copy_options::overwrite_existing);
             }
         }
     }
+    catch (const std::bad_alloc&)
+    {
+        err = memFullErr;
+    }
+    catch (const OSErrException& e)
+    {
+        err = e.GetErrorCode();
+    }
+    catch (const std::exception& e)
+    {
+        err = ShowErrorMessage(e.what(), filterRecord, readErr);
+    }
+    catch (...)
+    {
+        err = ShowErrorMessage("An unspecified error occurred when processing the G'MIC-Qt output.", filterRecord, readErr);
+    }
+
+    // Do not set the FilterRecord data pointers to NULL, some hosts
+    // (e.g. XnView) will crash if they are set to NULL by a plug-in.
+    SetOutputRect(filterRecord, 0, 0, 0, 0);
+    SetMaskRect(filterRecord, 0, 0, 0, 0);
 
     return err;
 }

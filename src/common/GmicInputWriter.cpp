@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "GmicInputWriter.h"
+#include "ScopedBufferSuite.h"
 #include "FileUtil.h"
 #include "InputLayerIndex.h"
 #include <boost/endian.hpp>
@@ -81,7 +82,7 @@ namespace
         }
     }
 
-    OSErr SaveActiveLayerImpl(FilterRecordPtr filterRecord, const FileHandle* fileHandle)
+    void SaveActiveLayerImpl(FilterRecordPtr filterRecord, const FileHandle* fileHandle)
     {
         const bool hasTransparency = filterRecord->inLayerPlanes != 0 && filterRecord->inTransparencyMask != 0;
 
@@ -103,7 +104,7 @@ namespace
             bitDepth = 16;
             break;
         default:
-            return filterBadMode;
+            throw OSErrException(filterBadMode);
         }
 
         int32 numberOfChannels;
@@ -119,7 +120,7 @@ namespace
             numberOfChannels = hasTransparency ? 4 : 3;
             break;
         default:
-            return filterBadMode;
+            throw OSErrException(filterBadMode);
         }
 
         const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
@@ -127,101 +128,77 @@ namespace
 
         Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
 
-        OSErr err = WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
+        WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
-        if (err == noErr)
+        switch (filterRecord->imageMode)
         {
-            switch (filterRecord->imageMode)
+        case plugInModeGrayScale:
+        case plugInModeRGBColor:
+            filterRecord->inPlaneBytes = 1;
+            break;
+        case plugInModeGray16:
+        case plugInModeRGB48:
+            filterRecord->inPlaneBytes = 2;
+            break;
+        default:
+            throw OSErrException(filterBadMode);
+        }
+
+        filterRecord->inColumnBytes = filterRecord->inPlaneBytes;
+        filterRecord->inputRate = int2fixed(1);
+
+        for (int32 i = 0; i < numberOfChannels; i++)
+        {
+            filterRecord->inLoPlane = filterRecord->inHiPlane = static_cast<int16>(i);
+
+            for (int32 y = 0; y < height; y += tileHeight)
             {
-            case plugInModeGrayScale:
-            case plugInModeRGBColor:
-                filterRecord->inPlaneBytes = 1;
-                break;
-            case plugInModeGray16:
-            case plugInModeRGB48:
-                filterRecord->inPlaneBytes = 2;
-                break;
-            default:
-                return filterBadMode;
-            }
+                const int32 top = y;
+                const int32 bottom = std::min(y + tileHeight, imageSize.v);
 
-            filterRecord->inColumnBytes = filterRecord->inPlaneBytes;
-            filterRecord->inputRate = int2fixed(1);
+                const int32 rowCount = bottom - top;
 
-            for (int32 i = 0; i < numberOfChannels; i++)
-            {
-                filterRecord->inLoPlane = filterRecord->inHiPlane = static_cast<int16>(i);
-
-                for (int32 y = 0; y < height; y += tileHeight)
+                for (int32 x = 0; x < width; x += tileWidth)
                 {
-                    const int32 top = y;
-                    const int32 bottom = std::min(y + tileHeight, imageSize.v);
+                    const int32 left = x;
+                    const int32 right = std::min(x + tileWidth, imageSize.h);
 
-                    const int32 rowCount = bottom - top;
+                    const int32 columnCount = right - left;
 
-                    for (int32 x = 0; x < width; x += tileWidth)
+                    SetInputRect(filterRecord, top, left, bottom, right);
+
+                    OSErrException::ThrowIfError(filterRecord->advanceState());
+
+                    int32 outputStride = columnCount;
+
+                    if (bitDepth == 16)
                     {
-                        const int32 left = x;
-                        const int32 right = std::min(x + tileWidth, imageSize.h);
+                        outputStride *= 2;
+                        ScaleSixteenBitDataToOutputRange(filterRecord->inData, columnCount, rowCount, filterRecord->inRowBytes);
+                    }
 
-                        const int32 columnCount = right - left;
+                    if (outputStride == filterRecord->inRowBytes)
+                    {
+                        // If the host's buffer stride matches the output image stride
+                        // we can write the buffer directly.
 
-                        SetInputRect(filterRecord, top, left, bottom, right);
-
-                        err = filterRecord->advanceState();
-                        if (err != noErr)
+                        WriteFile(fileHandle, filterRecord->inData, static_cast<size_t>(rowCount) * outputStride);
+                    }
+                    else
+                    {
+                        for (int32 j = 0; j < rowCount; j++)
                         {
-                            goto error;
-                        }
+                            const uint8* row = static_cast<const uint8*>(filterRecord->inData) + (static_cast<int64>(j) * filterRecord->inRowBytes);
 
-                        int32 outputStride = columnCount;
-
-                        if (bitDepth == 16)
-                        {
-                            outputStride *= 2;
-                            ScaleSixteenBitDataToOutputRange(filterRecord->inData, columnCount, rowCount, filterRecord->inRowBytes);
-                        }
-
-                        if (outputStride == filterRecord->inRowBytes)
-                        {
-                            // If the host's buffer stride matches the output image stride
-                            // we can write the buffer directly.
-
-                            err = WriteFile(fileHandle, filterRecord->inData, static_cast<size_t>(rowCount) * outputStride);
-
-                            if (err != noErr)
-                            {
-                                goto error;
-                            }
-                        }
-                        else
-                        {
-                            for (int32 j = 0; j < rowCount; j++)
-                            {
-                                const uint8* row = static_cast<const uint8*>(filterRecord->inData) + (static_cast<int64>(j) * filterRecord->inRowBytes);
-
-                                err = WriteFile(fileHandle, row, outputStride);
-
-                                if (err != noErr)
-                                {
-                                    goto error;
-                                }
-                            }
+                            WriteFile(fileHandle, row, outputStride);
                         }
                     }
                 }
             }
         }
-        error:
-
-        // Do not set the FilterRecord data pointers to NULL, some hosts
-        // (e.g. XnView) will crash if they are set to NULL by a plug-in.
-        SetInputRect(filterRecord, 0, 0, 0, 0);
-
-        return err;
     }
 
-    OSErr SaveDocumentLayer(
+    void SaveDocumentLayer(
         FilterRecordPtr filterRecord,
         const ReadLayerDesc* layerDescriptor,
         const FileHandle* fileHandle)
@@ -245,7 +222,7 @@ namespace
             bitDepth = 16;
             break;
         default:
-            return filterBadMode;
+            throw OSErrException(filterBadMode);
         }
 
         int32 numberOfChannels;
@@ -261,7 +238,7 @@ namespace
             numberOfChannels = hasTransparency ? 4 : 3;
             break;
         default:
-            return filterBadMode;
+            throw OSErrException(filterBadMode);
         }
 
         const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
@@ -269,162 +246,135 @@ namespace
 
         Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
 
-        OSErr err = WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
+        WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
-        if (err == noErr)
+        switch (filterRecord->imageMode)
         {
+        case plugInModeGrayScale:
+        case plugInModeRGBColor:
+            filterRecord->inPlaneBytes = 1;
+            break;
+        case plugInModeGray16:
+        case plugInModeRGB48:
+            filterRecord->inPlaneBytes = 2;
+            break;
+        default:
+            throw OSErrException(filterBadMode);
+        }
+
+        filterRecord->inColumnBytes = filterRecord->inPlaneBytes;
+        filterRecord->inputRate = int2fixed(1);
+        int32 tileRowBytes;
+
+        if (!TryMultiplyInt32(tileWidth, filterRecord->inColumnBytes, tileRowBytes))
+        {
+            // The multiplication would have resulted in an integer overflow / underflow.
+            throw OSErrException(memFullErr);
+        }
+
+        int32 imageDataBufferSize;
+
+        if (!TryMultiplyInt32(tileHeight, tileRowBytes, imageDataBufferSize))
+        {
+            // The multiplication would have resulted in an integer overflow / underflow.
+            throw OSErrException(memFullErr);
+        }
+
+        // Nested scope to ensure that the unique_buffer_suite_buffer is destroyed before the method exits.
+        {
+            unique_buffer_suite_buffer buffer(filterRecord, imageDataBufferSize);
+
+            void* imageDataBuffer = buffer.Lock();
+
+            PixelMemoryDesc dest{};
+            dest.data = imageDataBuffer;
+            dest.depth = filterRecord->depth;
+
+            if (!TryMultiplyInt32(filterRecord->inColumnBytes, dest.depth, dest.colBits))
+            {
+                // The multiplication would have resulted in an integer overflow / underflow.
+                throw OSErrException(memFullErr);
+            }
+
+            ReadChannelDesc* imageChannels[4] = { nullptr, nullptr, nullptr, nullptr };
+
             switch (filterRecord->imageMode)
             {
             case plugInModeGrayScale:
-            case plugInModeRGBColor:
-                filterRecord->inPlaneBytes = 1;
-                break;
             case plugInModeGray16:
+                imageChannels[0] = layerDescriptor->compositeChannelsList;
+                imageChannels[1] = layerDescriptor->transparency;
+                break;
+            case plugInModeRGBColor:
             case plugInModeRGB48:
-                filterRecord->inPlaneBytes = 2;
+                imageChannels[0] = layerDescriptor->compositeChannelsList;
+                imageChannels[1] = imageChannels[0]->next;
+                imageChannels[2] = imageChannels[1]->next;
+                imageChannels[3] = layerDescriptor->transparency;
                 break;
             default:
-                return filterBadMode;
+                throw OSErrException(filterBadMode);
             }
 
-            filterRecord->inColumnBytes = filterRecord->inPlaneBytes;
-            filterRecord->inputRate = int2fixed(1);
-            int32 tileRowBytes;
-
-            if (!TryMultiplyInt32(tileWidth, filterRecord->inColumnBytes, tileRowBytes))
+            for (int32 i = 0; i < numberOfChannels; i++)
             {
-                // The multiplication would have resulted in an integer overflow / underflow.
-                return memFullErr;
-            }
+                dest.bitOffset = i * dest.depth;
 
-            BufferID imageDataBufferID;
-            int32 imageDataBufferSize;
-
-            if (!TryMultiplyInt32(tileHeight, tileRowBytes, imageDataBufferSize))
-            {
-                // The multiplication would have resulted in an integer overflow / underflow.
-                return memFullErr;
-            }
-
-            err = filterRecord->bufferProcs->allocateProc(imageDataBufferSize, &imageDataBufferID);
-
-            if (err == noErr)
-            {
-                void* imageDataBuffer = filterRecord->bufferProcs->lockProc(imageDataBufferID, false);
-
-                PixelMemoryDesc dest{};
-                dest.data = imageDataBuffer;
-                dest.depth = filterRecord->depth;
-
-                if (!TryMultiplyInt32(filterRecord->inColumnBytes, dest.depth, dest.colBits))
+                for (int32 y = 0; y < height; y += tileHeight)
                 {
-                    // The multiplication would have resulted in an integer overflow / underflow.
-                    err = memFullErr;
-                }
+                    VRect writeRect{};
+                    writeRect.top = y;
+                    writeRect.bottom = std::min(y + tileHeight, imageSize.v);
 
-                if (err == noErr)
-                {
-                    ReadChannelDesc* imageChannels[4] = { nullptr, nullptr, nullptr, nullptr };
+                    const int32 rowCount = writeRect.bottom - writeRect.top;
 
-                    switch (filterRecord->imageMode)
+                    for (int32 x = 0; x < width; x += tileWidth)
                     {
-                    case plugInModeGrayScale:
-                    case plugInModeGray16:
-                        imageChannels[0] = layerDescriptor->compositeChannelsList;
-                        imageChannels[1] = layerDescriptor->transparency;
-                        break;
-                    case plugInModeRGBColor:
-                    case plugInModeRGB48:
-                        imageChannels[0] = layerDescriptor->compositeChannelsList;
-                        imageChannels[1] = imageChannels[0]->next;
-                        imageChannels[2] = imageChannels[1]->next;
-                        imageChannels[3] = layerDescriptor->transparency;
-                        break;
-                    default:
-                        err = filterBadMode;
-                        break;
-                    }
+                        writeRect.left = x;
+                        writeRect.right = std::min(x + tileWidth, imageSize.h);
 
-                    if (err == noErr)
-                    {
-                        for (int32 i = 0; i < numberOfChannels; i++)
+                        const int32 columnCount = writeRect.right - writeRect.left;
+                        tileRowBytes = columnCount * filterRecord->inColumnBytes;
+
+                        if (!TryMultiplyInt32(tileRowBytes, dest.depth, dest.rowBits))
                         {
-                            dest.bitOffset = i * dest.depth;
-
-                            for (int32 y = 0; y < height; y += tileHeight)
-                            {
-                                VRect writeRect{};
-                                writeRect.top = y;
-                                writeRect.bottom = std::min(y + tileHeight, imageSize.v);
-
-                                const int32 rowCount = writeRect.bottom - writeRect.top;
-
-                                for (int32 x = 0; x < width; x += tileWidth)
-                                {
-                                    writeRect.left = x;
-                                    writeRect.right = std::min(x + tileWidth, imageSize.h);
-
-                                    const int32 columnCount = writeRect.right - writeRect.left;
-                                    tileRowBytes = columnCount * filterRecord->inColumnBytes;
-
-                                    if (!TryMultiplyInt32(tileRowBytes, dest.depth, dest.rowBits))
-                                    {
-                                        err = memFullErr;
-                                        goto error;
-                                    }
-
-                                    PSScaling scaling{};
-                                    scaling.sourceRect = scaling.destinationRect = writeRect;
-
-                                    VRect wroteRect;
-
-                                    err = filterRecord->channelPortProcs->readPixelsProc(imageChannels[i]->port, &scaling, &writeRect, &dest, &wroteRect);
-
-                                    if (err != noErr)
-                                    {
-                                        goto error;
-                                    }
-
-                                    if (wroteRect.top != writeRect.top ||
-                                        wroteRect.left != writeRect.left ||
-                                        wroteRect.bottom != writeRect.bottom ||
-                                        wroteRect.right != writeRect.right)
-                                    {
-                                        err = readErr;
-                                        goto error;
-                                    }
-
-                                    if (bitDepth == 16)
-                                    {
-                                        ScaleSixteenBitDataToOutputRange(dest.data, width, rowCount, tileRowBytes);
-                                    }
-
-                                    err = WriteFile(fileHandle, imageDataBuffer, static_cast<size_t>(rowCount) * tileRowBytes);
-
-                                    if (err != noErr)
-                                    {
-                                        goto error;
-                                    }
-                                }
-                            }
+                            throw OSErrException(memFullErr);
                         }
+
+                        PSScaling scaling{};
+                        scaling.sourceRect = scaling.destinationRect = writeRect;
+
+                        VRect wroteRect;
+
+                        OSErrException::ThrowIfError(filterRecord->channelPortProcs->readPixelsProc(
+                            imageChannels[i]->port,
+                            &scaling,
+                            &writeRect,
+                            &dest,
+                            &wroteRect));
+
+                        if (wroteRect.top != writeRect.top ||
+                            wroteRect.left != writeRect.left ||
+                            wroteRect.bottom != writeRect.bottom ||
+                            wroteRect.right != writeRect.right)
+                        {
+                            throw OSErrException(readErr);
+                        }
+
+                        if (bitDepth == 16)
+                        {
+                            ScaleSixteenBitDataToOutputRange(dest.data, width, rowCount, tileRowBytes);
+                        }
+
+                        WriteFile(fileHandle, imageDataBuffer, static_cast<size_t>(rowCount) * tileRowBytes);
                     }
                 }
-            error:
-
-                filterRecord->bufferProcs->unlockProc(imageDataBufferID);
-                filterRecord->bufferProcs->freeProc(imageDataBufferID);
             }
         }
-
-        SetInputRect(filterRecord, 0, 0, 0, 0);
-        filterRecord->inData = nullptr;
-
-        return err;
     }
 }
 
-OSErr WritePixelsFromCallback(
+void WritePixelsFromCallback(
     int32 width,
     int32 height,
     int32 numberOfChannels,
@@ -438,184 +388,119 @@ OSErr WritePixelsFromCallback(
 {
     if (writeCallback == nullptr)
     {
-        return nilHandleErr;
+        throw std::runtime_error("Null write callback.");
     }
 
-    OSErr err = noErr;
+    std::unique_ptr<FileHandle> file = OpenFile(outputPath, FileOpenMode::Write);
 
-    std::unique_ptr<FileHandle> file;
+    Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, planar, tileWidth, tileHeight);
 
-    err = OpenFile(outputPath, FileOpenMode::Write, file);
+    WriteFile(file.get(), &fileHeader, sizeof(fileHeader));
 
-    if (err == noErr)
-    {
-        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, planar, tileWidth, tileHeight);
-
-        err = WriteFile(file.get(), &fileHeader, sizeof(fileHeader));
-
-        if (err == noErr)
-        {
-            err = writeCallback(
-                file.get(),
-                width,
-                height,
-                numberOfChannels,
-                bitsPerChannel,
-                writeCallbackUserState);
-        }
-    }
-
-    return err;
+    writeCallback(
+        file.get(),
+        width,
+        height,
+        numberOfChannels,
+        bitsPerChannel,
+        writeCallbackUserState);
 }
 
-OSErr SaveActiveLayer(
+void SaveActiveLayer(
     const boost::filesystem::path& outputDir,
     InputLayerIndex* index,
     FilterRecordPtr filterRecord)
 {
-    OSErr err = noErr;
+    boost::filesystem::path activeLayerPath = GetTemporaryFileName(outputDir, ".g8i");
 
-    try
+    std::unique_ptr<FileHandle> file = OpenFile(activeLayerPath, FileOpenMode::Write);
+
+    SaveActiveLayerImpl(filterRecord, file.get());
+
+    const VPoint imageSize = GetImageSize(filterRecord);
+
+    int32 layerWidth = imageSize.h;
+    int32 layerHeight = imageSize.v;
+    bool layerIsVisible = true;
+    std::string layerName;
+
+    if (!TryGetLayerNameAsUTF8String(filterRecord, layerName))
     {
-        boost::filesystem::path activeLayerPath;
-
-        err = GetTemporaryFileName(outputDir, activeLayerPath, ".g8i");
-
-        if (err == noErr)
-        {
-            std::unique_ptr<FileHandle> file;
-
-            err = OpenFile(activeLayerPath, FileOpenMode::Write, file);
-
-            if (err == noErr)
-            {
-                err = SaveActiveLayerImpl(filterRecord, file.get());
-
-                if (err == noErr)
-                {
-                    const VPoint imageSize = GetImageSize(filterRecord);
-
-                    int32 layerWidth = imageSize.h;
-                    int32 layerHeight = imageSize.v;
-                    bool layerIsVisible = true;
-                    std::string layerName;
-
-                    if (!TryGetLayerNameAsUTF8String(filterRecord, layerName))
-                    {
-                        layerName = "Layer 0";
-                    }
-
-                    err = index->AddFile(activeLayerPath, layerWidth, layerHeight, layerIsVisible, layerName);
-                }
-            }
-        }
-    }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
+        layerName = "Layer 0";
     }
 
-    return err;
+    index->AddFile(activeLayerPath, layerWidth, layerHeight, layerIsVisible, layerName);
 }
 
 #ifdef PSSDK_HAS_LAYER_SUPPORT
-OSErr SaveAllLayers(
+void SaveAllLayers(
     const boost::filesystem::path& outputDir,
     InputLayerIndex* index,
     int32 targetLayerIndex,
     FilterRecordPtr filterRecord)
 {
-    OSErr err = noErr;
+    ReadLayerDesc* layerDescriptor = filterRecord->documentInfo->layersDescriptor;
 
-    try
+    int32 activeLayerIndex = 0;
+    int32 pixelBasedLayerCount = 0;
+    int32 layerIndex = 0;
+    char layerNameBuffer[128]{};
+
+    while (layerDescriptor != nullptr)
     {
-        ReadLayerDesc* layerDescriptor = filterRecord->documentInfo->layersDescriptor;
-
-        int32 activeLayerIndex = 0;
-        int32 pixelBasedLayerCount = 0;
-        int32 layerIndex = 0;
-        char layerNameBuffer[128]{};
-
-        while (layerDescriptor != nullptr && err == noErr)
+        // Skip over any vector layers.
+        if (layerDescriptor->isPixelBased)
         {
-            // Skip over any vector layers.
-            if (layerDescriptor->isPixelBased)
+            boost::filesystem::path imagePath = GetTemporaryFileName(outputDir, ".g8i");
+
+            std::unique_ptr<FileHandle> file = OpenFile(imagePath, FileOpenMode::Write);
+
+            SaveDocumentLayer(filterRecord, layerDescriptor, file.get());
+
+            const VPoint imageSize = GetImageSize(filterRecord);
+
+            int32 layerWidth = imageSize.h;
+            int32 layerHeight = imageSize.v;
+            bool layerIsVisible = true;
+            std::string utf8Name;
+
+            if (layerDescriptor->maxVersion >= 2)
             {
-                boost::filesystem::path imagePath;
+                layerIsVisible = layerDescriptor->isVisible;
 
-                err = GetTemporaryFileName(outputDir, imagePath, ".g8i");
-
-                if (err == noErr)
+                if (layerDescriptor->unicodeName != nullptr)
                 {
-                    std::unique_ptr<FileHandle> file;
-
-                    err = OpenFile(imagePath, FileOpenMode::Write, file);
-
-                    if (err == noErr)
-                    {
-                        err = SaveDocumentLayer(filterRecord, layerDescriptor, file.get());
-
-                        if (err == noErr)
-                        {
-                            const VPoint imageSize = GetImageSize(filterRecord);
-
-                            int32 layerWidth = imageSize.h;
-                            int32 layerHeight = imageSize.v;
-                            bool layerIsVisible = true;
-                            std::string utf8Name;
-
-                            if (layerDescriptor->maxVersion >= 2)
-                            {
-                                layerIsVisible = layerDescriptor->isVisible;
-
-                                if (layerDescriptor->unicodeName != nullptr)
-                                {
-                                    utf8Name = ConvertLayerNameToUTF8(layerDescriptor->unicodeName);
-                                }
-                            }
-
-                            if (utf8Name.empty())
-                            {
-                                int written = std::snprintf(layerNameBuffer, sizeof(layerNameBuffer), "Layer %d", pixelBasedLayerCount);
-
-                                if (written > 0)
-                                {
-                                    utf8Name.assign(layerNameBuffer, layerNameBuffer + written);
-                                }
-                                else
-                                {
-                                    err = writErr;
-                                }
-                            }
-
-                            if (err == noErr)
-                            {
-                                err = index->AddFile(imagePath, layerWidth, layerHeight, layerIsVisible, utf8Name);
-                            }
-                        }
-                    }
+                    utf8Name = ConvertLayerNameToUTF8(layerDescriptor->unicodeName);
                 }
-
-                if (layerIndex == targetLayerIndex)
-                {
-                    activeLayerIndex = pixelBasedLayerCount;
-                }
-
-                pixelBasedLayerCount++;
             }
 
-            layerDescriptor = layerDescriptor->next;
-            layerIndex++;
+            if (utf8Name.empty())
+            {
+                int written = std::snprintf(layerNameBuffer, sizeof(layerNameBuffer), "Layer %d", pixelBasedLayerCount);
+
+                if (written <= 0)
+                {
+                    throw std::runtime_error("Unable to write the layer name.");
+                }
+
+                utf8Name.assign(layerNameBuffer, layerNameBuffer + written);
+            }
+
+            index->AddFile(imagePath, layerWidth, layerHeight, layerIsVisible, utf8Name);
+
+            if (layerIndex == targetLayerIndex)
+            {
+                activeLayerIndex = pixelBasedLayerCount;
+            }
+
+            pixelBasedLayerCount++;
         }
 
-        index->SetActiveLayerIndex(activeLayerIndex);
-    }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
+        layerDescriptor = layerDescriptor->next;
+        layerIndex++;
     }
 
-    return err;
+    index->SetActiveLayerIndex(activeLayerIndex);
 }
 
 #endif // PSSDK_HAS_LAYER_SUPPORT

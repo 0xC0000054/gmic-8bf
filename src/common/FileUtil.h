@@ -46,24 +46,24 @@ protected:
     FileHandle operator=(FileHandle&&) = delete;
 };
 
-OSErr GetGmicQtPath(boost::filesystem::path& path);
+boost::filesystem::path GetGmicQtPath();
 
-OSErr GetInputDirectory(boost::filesystem::path& path);
+boost::filesystem::path GetInputDirectory();
 
-OSErr GetOutputDirectory(boost::filesystem::path& path);
+boost::filesystem::path GetOutputDirectory();
 
-OSErr GetIOSettingsPath(boost::filesystem::path& path);
+boost::filesystem::path GetIOSettingsPath();
 
-OSErr GetTemporaryFileName(const boost::filesystem::path& dir, boost::filesystem::path& path, const char* const fileExtension);
+boost::filesystem::path GetTemporaryFileName(const boost::filesystem::path& dir, const char* const fileExtension);
 
-OSErr OpenFile(const boost::filesystem::path& path, FileOpenMode mode, std::unique_ptr<FileHandle>& fileHandle);
+std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOpenMode mode);
 
-OSErr ReadFile(const FileHandle* fileHandle, void* data, size_t dataSize);
+void ReadFile(const FileHandle* fileHandle, void* data, size_t dataSize);
 
-OSErr SetFileLength(const FileHandle* fileHandle, int64 length);
+void SetFileLength(const FileHandle* fileHandle, int64 length);
 
-OSErr SetFilePosition(const FileHandle* fileHandle, int16 posMode, int64 posOffset);
+void SetFilePosition(const FileHandle* fileHandle, int16 posMode, int64 posOffset);
 
-OSErr WriteFile(const FileHandle* fileHandle, const void* data, size_t dataSize);
+void WriteFile(const FileHandle* fileHandle, const void* data, size_t dataSize);
 
 #endif // !FILEUTIL_H

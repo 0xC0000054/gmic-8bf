@@ -64,13 +64,17 @@ void CenterDialog(HWND hDlg)
     SetWindowPos(hDlg, NULL, xOrigin, yOrigin, nWidth, nHeight, SWP_NOZORDER);
 }
 
-OSErr ShowErrorMessageNative(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode)
+OSErr ShowErrorMessageNative(
+    const char* message,
+    const char* caption,
+    const FilterRecordPtr filterRecord,
+    OSErr fallbackErrorCode)
 {
     PlatformData* platformData = static_cast<PlatformData*>(filterRecord->platformData);
 
     HWND parent = platformData != nullptr ? reinterpret_cast<HWND>(platformData->hwnd) : nullptr;
 
-    if (MessageBoxA(parent, message, "G'MIC-Qt filter", MB_OK | MB_ICONERROR) == IDOK)
+    if (MessageBoxA(parent, message, caption, MB_OK | MB_ICONERROR) == IDOK)
     {
         // Any positive number is a plug-in handled error message.
         return 1;

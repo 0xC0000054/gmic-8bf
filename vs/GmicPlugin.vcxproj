@@ -204,6 +204,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\common\ScopedBufferSuite.h" />
     <ClInclude Include="..\src\common\ClipboardUtil.h" />
     <ClInclude Include="..\src\common\FileUtil.h" />
     <ClInclude Include="..\src\common\FolderBrowser.h" />
@@ -215,6 +216,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\common\ImageSaveDialog.h" />
     <ClInclude Include="..\src\common\InputLayerIndex.h" />
     <ClInclude Include="..\src\common\InputLayerInfo.h" />
+    <ClInclude Include="..\src\common\OSErrException.h" />
     <ClInclude Include="..\src\common\PngWarningHandler.h" />
     <ClInclude Include="..\src\common\version.h" />
     <ClInclude Include="..\src\win\ClipboardUtilWin.h" />

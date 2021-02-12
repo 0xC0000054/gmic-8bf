@@ -15,23 +15,18 @@
 
 namespace
 {
-    OSErr WriteString(const FileHandle* fileHandle, std::string value)
+    void WriteString(const FileHandle* fileHandle, std::string value)
     {
         if (value.size() > static_cast<size_t>(std::numeric_limits<int32>::max()))
         {
-            return ioErr;
+            throw std::runtime_error("The string length exceeds 2GB.");
         }
 
         boost::endian::little_int32_t stringLength = static_cast<int32>(value.size());
 
-        OSErr err = WriteFile(fileHandle, &stringLength, sizeof(stringLength));
+        WriteFile(fileHandle, &stringLength, sizeof(stringLength));
 
-        if (err == noErr)
-        {
-            err = WriteFile(fileHandle, value.data(), value.size());
-        }
-
-        return err;
+        WriteFile(fileHandle, value.data(), value.size());
     }
 
     struct IndexLayerInfoHeader
@@ -59,21 +54,12 @@ InputLayerInfo::~InputLayerInfo()
 {
 }
 
-OSErr InputLayerInfo::Write(const FileHandle* fileHandle)
+void InputLayerInfo::Write(const FileHandle* fileHandle)
 {
     IndexLayerInfoHeader header(layerWidth, layerHeight, layerIsVisible);
 
-    OSErr err = WriteFile(fileHandle, &header, sizeof(header));
+    WriteFile(fileHandle, &header, sizeof(header));
 
-    if (err == noErr)
-    {
-        err = WriteString(fileHandle, utf8LayerName);
-
-        if (err == noErr)
-        {
-            err = WriteString(fileHandle, imagePath.string());
-        }
-    }
-
-    return err;
+    WriteString(fileHandle, utf8LayerName);
+    WriteString(fileHandle, imagePath.string());
 }

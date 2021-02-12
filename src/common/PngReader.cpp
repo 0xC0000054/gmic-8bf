@@ -25,7 +25,7 @@ namespace
         FileHandle* fileHandle;
 
         PngReaderState(FileHandle* handle)
-            : fileHandle(handle), readError(noErr), pngErrorSet(false), errorMessage()
+            : fileHandle(handle), readError(noErr), errorMessageSet(false), errorMessage()
         {
         }
 
@@ -39,19 +39,28 @@ namespace
             return errorMessage;
         }
 
-        void SetFileReadError(OSErr err) noexcept
+        void SetFileReadError(const char* message)
         {
-            if (err != noErr)
+            if (!errorMessageSet)
             {
-                readError = err;
+                errorMessageSet = true;
+                readError = ioErr;
+
+                try
+                {
+                    errorMessage = message;
+                }
+                catch (...)
+                {
+                }
             }
         }
 
         void SetPngError(png_const_charp errorDescription)
         {
-            if (!pngErrorSet)
+            if (!errorMessageSet)
             {
-                pngErrorSet = true;
+                errorMessageSet = true;
                 readError = ioErr;
 
                 try
@@ -66,7 +75,7 @@ namespace
 
     private:
         OSErr readError;
-        bool pngErrorSet;
+        bool errorMessageSet;
         std::string errorMessage;
     };
 
@@ -86,7 +95,18 @@ namespace
     {
         PngReaderState* state = static_cast<PngReaderState*>(png_get_io_ptr(png_ptr));
 
-        state->SetFileReadError(ReadFile(state->fileHandle, data, length));
+        try
+        {
+            ReadFile(state->fileHandle, data, length);
+        }
+        catch (const std::exception& e)
+        {
+            state->SetFileReadError(e.what());
+        }
+        catch (...)
+        {
+            state->SetFileReadError("An unspecified error occurred when reading the PNG input.");
+        }
     }
 
     OSErr CopyDataFromPngEightBitsPerChannel(
@@ -695,62 +715,57 @@ namespace
         }
 
         png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
-        // Do not set the FilterRecord data pointers to NULL, some hosts
-        // (e.g. XnView) will crash if they are set to NULL by a plug-in.
-        SetOutputRect(filterRecord, 0, 0, 0, 0);
-        SetMaskRect(filterRecord, 0, 0, 0, 0);
 
         return err;
     }
 }
 
-OSErr PngImageSizeMatchesDocument(
+bool PngImageSizeMatchesDocument(
     const boost::filesystem::path& path,
-    const VPoint& documentSize,
-    bool& imageSizeMatchesDocument)
+    const VPoint& documentSize)
 {
-    OSErr err = noErr;
+    bool imageSizeMatchesDocument = false;
 
-    try
+    std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
+    std::unique_ptr<PngReaderState> readerState = std::make_unique<PngReaderState>(file.get());
+
+    OSErr err = ImageSizeMatchesDocument(documentSize, readerState.get(), imageSizeMatchesDocument);
+
+    if (err != noErr)
     {
-        std::unique_ptr<FileHandle> file;
+        std::string errorMessage = readerState->GetErrorMessage();
 
-        err = OpenFile(path, FileOpenMode::Read, file);
-
-        if (err == noErr)
+        if (errorMessage.empty())
         {
-            std::unique_ptr<PngReaderState> readerState = std::make_unique<PngReaderState>(file.get());
-
-            err = ImageSizeMatchesDocument(documentSize, readerState.get(), imageSizeMatchesDocument);
+            throw OSErrException(err);
+        }
+        else
+        {
+            throw std::runtime_error(errorMessage.c_str());
         }
     }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
-    }
 
-    return err;
+    return imageSizeMatchesDocument;
 }
 
-OSErr LoadPngImage(const boost::filesystem::path& path, FilterRecord* filterRecord)
+void LoadPngImage(const boost::filesystem::path& path, FilterRecord* filterRecord)
 {
-    std::unique_ptr<FileHandle> file;
+    std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
+    std::unique_ptr<PngReaderState> readerState = std::make_unique<PngReaderState>(file.get());
 
-    OSErr err = OpenFile(path, FileOpenMode::Read, file);
+    OSErr err = ReadPngImage(filterRecord, readerState.get());
 
-    if (err == noErr)
+    if (err != noErr)
     {
-        try
-        {
-            std::unique_ptr<PngReaderState> readerState = std::make_unique<PngReaderState>(file.get());
+        std::string errorMessage = readerState->GetErrorMessage();
 
-            err = ReadPngImage(filterRecord, readerState.get());
-        }
-        catch (const std::bad_alloc&)
+        if (errorMessage.empty())
         {
-            err = memFullErr;
+            throw OSErrException(err);
+        }
+        else
+        {
+            throw std::runtime_error(errorMessage.c_str());
         }
     }
-
-    return err;
 }

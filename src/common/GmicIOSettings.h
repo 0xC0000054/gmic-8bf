@@ -45,9 +45,9 @@ public:
 
     void SetSecondInputImagePath(const boost::filesystem::path& filePath);
 
-    OSErr Load(const boost::filesystem::path& path);
+    void Load(const boost::filesystem::path& path);
 
-    OSErr Save(const boost::filesystem::path& path);
+    void Save(const boost::filesystem::path& path);
 
 private:
 

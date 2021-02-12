@@ -18,34 +18,9 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 #include <new>
-#include <stdexcept>
 
 namespace
 {
-    class OSErrException : public std::exception
-    {
-    public:
-        OSErrException(OSErr err) : error(err)
-        {
-        }
-
-        OSErr GetErrorCode() const
-        {
-            return error;
-        }
-
-        static void ThrowIfError(OSErr err)
-        {
-            if (err != noErr)
-            {
-                throw OSErrException(err);
-            }
-        }
-
-    private:
-        OSErr error;
-    };
-
     WICPixelFormatGUID GetTargetFormat(
         const WICPixelFormatGUID& format,
         int& bitsPerChannel,
@@ -106,7 +81,7 @@ namespace
         {
         }
 
-        static OSErr WriteCallback(
+        static void WriteCallback(
             const FileHandle* file,
             int32 imageWidth,
             int32 imageHeight,
@@ -116,12 +91,12 @@ namespace
         {
             if (file == nullptr || callbackState == nullptr)
             {
-                return nilHandleErr;
+                throw std::runtime_error("A required pointer was null.");
             }
 
             GmicOutputWriter* instance = static_cast<GmicOutputWriter*>(callbackState);
 
-            return instance->WritePixels(file, imageWidth, imageHeight, numberOfChannels, bitsPerChannel);
+            instance->WritePixels(file, imageWidth, imageHeight, numberOfChannels, bitsPerChannel);
         }
 
         int32 GetTileHeight() const
@@ -136,7 +111,7 @@ namespace
 
     private:
 
-        OSErr WritePixels(
+        void WritePixels(
             const FileHandle* file,
             int32 imageWidth,
             int32 imageHeight,
@@ -161,27 +136,15 @@ namespace
 
                     wil::com_ptr<IWICBitmapLock> bitmapLock;
 
-                    HRESULT hr = image->Lock(&lockRect, WICBitmapLockRead, &bitmapLock);
-                    if (FAILED(hr))
-                    {
-                        return ioErr;
-                    }
+                    THROW_IF_FAILED(image->Lock(&lockRect, WICBitmapLockRead, &bitmapLock));
 
                     UINT wicStride;
-                    hr = bitmapLock->GetStride(&wicStride);
-                    if (FAILED(hr))
-                    {
-                        return ioErr;
-                    }
+                    THROW_IF_FAILED(bitmapLock->GetStride(&wicStride));
 
                     UINT wicBufferSize;
                     BYTE* bufferStart;
 
-                    hr = bitmapLock->GetDataPointer(&wicBufferSize, &bufferStart);
-                    if (FAILED(hr))
-                    {
-                        return ioErr;
-                    }
+                    THROW_IF_FAILED(bitmapLock->GetDataPointer(&wicBufferSize, &bufferStart));
 
                     INT columnCount = lockRect.Width;
 
@@ -192,12 +155,7 @@ namespace
                         // If the WIC image stride matches the output image stride
                         // we can write the buffer directly.
 
-                        OSErr err = WriteFile(file, bufferStart, static_cast<size_t>(wicBufferSize));
-
-                        if (err != noErr)
-                        {
-                            return err;
-                        }
+                        WriteFile(file, bufferStart, static_cast<size_t>(wicBufferSize));
                     }
                     else
                     {
@@ -205,18 +163,11 @@ namespace
                         {
                             BYTE* row = bufferStart + (static_cast<size_t>(i) * wicStride);
 
-                            OSErr err = WriteFile(file, row, outputStride);
-
-                            if (err != noErr)
-                            {
-                                return err;
-                            }
+                            WriteFile(file, row, outputStride);
                         }
                     }
                 }
             }
-
-            return noErr;
         }
 
         IWICBitmap* image;
@@ -281,7 +232,7 @@ namespace
             static_cast<int32>(uiWidth),
             static_cast<int32>(uiHeight));
 
-        OSErrException::ThrowIfError(WritePixelsFromCallback(
+        WritePixelsFromCallback(
             static_cast<int32>(uiWidth),
             static_cast<int32>(uiHeight),
             numberOfChannels,
@@ -291,7 +242,7 @@ namespace
             writer.GetTileHeight(),
             &GmicOutputWriter::WriteCallback,
             &writer,
-            output));
+            output);
     }
 }
 
@@ -339,9 +290,13 @@ OSErr ConvertImageToGmicInputFormatNative(
             err = ShowErrorMessage(e.what(), filterRecord, ioErr);
         }
     }
+    catch (const std::exception& e)
+    {
+        err = ShowErrorMessage(e.what(), filterRecord, ioErr);
+    }
     catch (...)
     {
-        err = ioErr;
+        err = ShowErrorMessage("An unspecified error occurred when converting the second input image.", filterRecord, ioErr);
     }
 
     return err;
@@ -393,9 +348,13 @@ OSErr ConvertImageToGmicInputFormatNative(
             err = ShowErrorMessage(e.what(), filterRecord, ioErr);
         }
     }
+    catch (const std::exception& e)
+    {
+        err = ShowErrorMessage(e.what(), filterRecord, ioErr);
+    }
     catch (...)
     {
-        err = ioErr;
+        err = ShowErrorMessage("An unspecified error occurred when converting the second input image.", filterRecord, ioErr);
     }
 
     return err;

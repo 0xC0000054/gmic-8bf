@@ -29,7 +29,7 @@ public:
 
     ~InputLayerIndex();
 
-    OSErr AddFile(
+    void AddFile(
         const boost::filesystem::path& path,
         int32 width,
         int32 height,
@@ -38,7 +38,7 @@ public:
 
     void SetActiveLayerIndex(int32 index);
 
-    OSErr Write(
+    void Write(
         const boost::filesystem::path& path,
         const FilterRecordPtr filterRecord,
         const GmicIOSettings& settings);

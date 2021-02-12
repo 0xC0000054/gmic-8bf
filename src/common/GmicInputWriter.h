@@ -20,7 +20,7 @@
 #include "FileUtil.h"
 #include <boost/filesystem.hpp>
 
-typedef OSErr(*WritePixelsCallback)(
+typedef void(*WritePixelsCallback)(
     const FileHandle* file,
     int32 imageWidth,
     int32 imageHeight,
@@ -34,7 +34,7 @@ typedef OSErr(*WritePixelsCallback)(
 // Grayscale, Alpha
 // Red, Green, Blue
 // Red, Green, Blue, Alpha
-OSErr WritePixelsFromCallback(
+void WritePixelsFromCallback(
     int32 width,
     int32 height,
     int32 numberOfChannels,
@@ -46,13 +46,13 @@ OSErr WritePixelsFromCallback(
     void* writeCallbackUserState,
     const boost::filesystem::path& outputPath);
 
-OSErr SaveActiveLayer(
+void SaveActiveLayer(
     const boost::filesystem::path& outputDir,
     InputLayerIndex* index,
     FilterRecordPtr filterRecord);
 
 #if PSSDK_HAS_LAYER_SUPPORT
-OSErr SaveAllLayers(
+void SaveAllLayers(
     const boost::filesystem::path& outputDir,
     InputLayerIndex* index,
     int32 targetLayerIndex,

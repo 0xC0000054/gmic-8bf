@@ -32,7 +32,7 @@ public:
 
     ~InputLayerInfo();
 
-    OSErr Write(const FileHandle* fileHandle);
+    void Write(const FileHandle* fileHandle);
 
 private:
     boost::filesystem::path imagePath;

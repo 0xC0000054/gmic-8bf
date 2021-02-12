@@ -40,30 +40,39 @@ OSErr WriteGmicFiles(
             HostSupportsReadingFromMultipleLayers(filterRecord) &&
             TryGetTargetLayerIndex(filterRecord, targetLayerIndex))
         {
-            err = SaveAllLayers(inputDir, inputLayerIndex.get(), targetLayerIndex, filterRecord);
+            SaveAllLayers(inputDir, inputLayerIndex.get(), targetLayerIndex, filterRecord);
         }
         else
 #endif
 
         {
-            err = SaveActiveLayer(inputDir, inputLayerIndex.get(), filterRecord);
+            SaveActiveLayer(inputDir, inputLayerIndex.get(), filterRecord);
         }
 
-        if (err == noErr)
-        {
-            err = GetTemporaryFileName(inputDir, indexFilePath, ".idx");
+        indexFilePath = GetTemporaryFileName(inputDir, ".idx");
 
-            if (err == noErr)
-            {
-                err = inputLayerIndex->Write(indexFilePath, filterRecord, settings);
-            }
-        }
-
+        inputLayerIndex->Write(indexFilePath, filterRecord, settings);
     }
     catch (const std::bad_alloc&)
     {
         err = memFullErr;
     }
+    catch (const OSErrException& e)
+    {
+        err = e.GetErrorCode();
+    }
+    catch (const std::exception& e)
+    {
+        err = ShowErrorMessage(e.what(), filterRecord, writErr);
+    }
+    catch (...)
+    {
+        err = ShowErrorMessage("An unspecified error occurred when writing the G'MIC-Qt input.", filterRecord, writErr);
+    }
+
+    // Do not set the FilterRecord data pointers to NULL, some hosts
+    // (e.g. XnView) will crash if they are set to NULL by a plug-in.
+    SetInputRect(filterRecord, 0, 0, 0, 0);
 
     return err;
 }

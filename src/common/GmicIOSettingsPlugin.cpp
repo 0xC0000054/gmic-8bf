@@ -20,6 +20,19 @@ OSErr GmicIOSettingsDoStart();
 OSErr GmicIOSettingsDoContinue();
 OSErr GmicIOSettingsDoFinish();
 
+namespace
+{
+    OSErr LaunderOSErrResult(OSErr err, const FilterRecordPtr filterRecord)
+    {
+        return LaunderOSErrResult(err, "Input/Output Settings for G'MIC-Qt", filterRecord);
+    }
+
+    OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode)
+    {
+        return ShowErrorMessage(message, "Input/Output Settings for G'MIC-Qt", filterRecord, fallbackErrorCode);
+    }
+}
+
 DLLExport MACPASCAL void Gmic_IO_Settings_Entry_Point(
     const int16 selector,
     FilterRecordPtr filterRecord,
@@ -39,19 +52,19 @@ DLLExport MACPASCAL void Gmic_IO_Settings_Entry_Point(
             *result = noErr;
             break;
         case filterSelectorParameters:
-            *result = GmicIOSettingsDoParameters(filterRecord);
+            *result = LaunderOSErrResult(GmicIOSettingsDoParameters(filterRecord), filterRecord);
             break;
         case filterSelectorPrepare:
-            *result = GmicIOSettingsDoPrepare();
+            *result = LaunderOSErrResult(GmicIOSettingsDoPrepare(), filterRecord);
             break;
         case filterSelectorStart:
-            *result = GmicIOSettingsDoStart();
+            *result = LaunderOSErrResult(GmicIOSettingsDoStart(), filterRecord);
             break;
         case filterSelectorContinue:
-            *result = GmicIOSettingsDoContinue();
+            *result = LaunderOSErrResult(GmicIOSettingsDoContinue(), filterRecord);
             break;
         case filterSelectorFinish:
-            *result = GmicIOSettingsDoFinish();
+            *result = LaunderOSErrResult(GmicIOSettingsDoFinish(), filterRecord);
             break;
         default:
             *result = filterBadParameters;
@@ -90,12 +103,12 @@ OSErr GmicIOSettingsDoParameters(FilterRecord* filterRecord)
     DebugOut("Host signature: 0x%X (%s)", filterRecord->hostSig, sig.c_str());
 #endif // DEBUG_BUILD
 
-    boost::filesystem::path settingsPath;
+    OSErr err = noErr;
 
-    OSErr err = GetIOSettingsPath(settingsPath);
-
-    if (err == noErr)
+    try
     {
+        boost::filesystem::path settingsPath = GetIOSettingsPath();
+
         GmicIOSettings settings;
         settings.Load(settingsPath);
 
@@ -103,14 +116,27 @@ OSErr GmicIOSettingsDoParameters(FilterRecord* filterRecord)
 
         if (err == noErr)
         {
-            err = settings.Save(settingsPath);
+            settings.Save(settingsPath);
 
-            if (err == noErr)
-            {
-                // Prevent the settings plug-in from appearing in the "Last Filter" menu.
-                err = userCanceledErr;
-            }
+            // Prevent the settings plug-in from appearing in the "Last Filter" menu.
+            err = userCanceledErr;
         }
+    }
+    catch (const std::bad_alloc&)
+    {
+        err = memFullErr;
+    }
+    catch (const OSErrException& e)
+    {
+        err = e.GetErrorCode();
+    }
+    catch (const std::exception& e)
+    {
+        err = ShowErrorMessage(e.what(), filterRecord, readErr);
+    }
+    catch (...)
+    {
+        err = ShowErrorMessage("An unspecified error occurred.", filterRecord, ioErr);
     }
 
     return err;

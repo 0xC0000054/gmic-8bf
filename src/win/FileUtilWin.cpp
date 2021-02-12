@@ -91,22 +91,30 @@ boost::filesystem::path GetPluginDataDirectoryNative()
     {
         wil::unique_cotaskmem_string appDataPath;
 
-        if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &appDataPath)))
-        {
-            path = appDataPath.get();
-            path /= L"Gmic8bfPlugin";
-        }
+        THROW_IF_FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &appDataPath));
+
+        path = appDataPath.get();
+        path /= L"Gmic8bfPlugin";
     }
-    catch (...)
+    catch (const wil::ResultException& e)
     {
-        path.clear();
+        if (e.GetErrorCode() == E_OUTOFMEMORY)
+        {
+            throw std::bad_alloc();
+        }
+        else
+        {
+            throw std::runtime_error(e.what());
+        }
     }
 
     return path;
 }
 
-OSErr GetPluginInstallDirectoryNative(boost::filesystem::path& path)
+boost::filesystem::path GetPluginInstallDirectoryNative()
 {
+    boost::filesystem::path path;
+
     try
     {
         wil::unique_cotaskmem_string dllPath = wil::GetModuleFileNameW(wil::GetModuleInstanceHandle());
@@ -115,125 +123,156 @@ OSErr GetPluginInstallDirectoryNative(boost::filesystem::path& path)
 
         path = temp.parent_path();
     }
-    catch (...)
+    catch (const wil::ResultException& e)
     {
-        return ioErr;
-    }
-
-    return noErr;
-}
-
-OSErr OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode, std::unique_ptr<FileHandle>& fileHandle)
-{
-    OSErr err = noErr;
-
-    try
-    {
-        fileHandle = std::make_unique<FileHandleWin>(path, mode);
-    }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
-    }
-    catch (const std::invalid_argument&)
-    {
-        err = paramErr;
-    }
-    catch (const wil::ResultException&)
-    {
-        err = ioErr;
-    }
-
-    return err;
-}
-
-OSErr ReadFileNative(const FileHandle* fileHandle, void* data, size_t dataSize)
-{
-    if (!fileHandle)
-    {
-        return paramErr;
-    }
-
-    size_t bytesRemaining = dataSize;
-    BYTE* buffer = static_cast<BYTE*>(data);
-
-    HANDLE hFile = static_cast<const FileHandleWin*>(fileHandle)->get();
-
-    while (bytesRemaining > 0)
-    {
-        DWORD numBytesToRead = 0x80000000UL;
-
-        if (bytesRemaining < numBytesToRead)
+        if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            numBytesToRead = static_cast<DWORD>(bytesRemaining);
-        }
-
-        DWORD bytesRead = 0;
-
-        if (!ReadFile(hFile, buffer, numBytesToRead, &bytesRead, nullptr))
-        {
-            return readErr;
-        }
-
-        if (bytesRead != numBytesToRead)
-        {
-            return bytesRead == 0 ? eofErr : readErr;
-        }
-
-        buffer += bytesRead;
-        bytesRemaining -= bytesRead;
-    }
-
-    return noErr;
-}
-
-OSErr SetFileLengthNative(const FileHandle* fileHandle, int64 length)
-{
-    OSErr err = SetFilePositionNative(fileHandle, FILE_BEGIN, length);
-
-    if (err == noErr)
-    {
-        if (SetEndOfFile(static_cast<const FileHandleWin*>(fileHandle)->get()))
-        {
-            err = SetFilePositionNative(fileHandle, FILE_BEGIN, 0);
+            throw std::bad_alloc();
         }
         else
         {
-            err = ioErr;
+            throw std::runtime_error(e.what());
         }
     }
 
-    return err;
+    return path;
 }
 
-OSErr SetFilePositionNative(const FileHandle* fileHandle, int16 posMode, int64 posOffset)
+std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode)
+{
+    try
+    {
+        return std::make_unique<FileHandleWin>(path, mode);
+    }
+    catch (const wil::ResultException& e)
+    {
+        if (e.GetErrorCode() == E_OUTOFMEMORY)
+        {
+            throw std::bad_alloc();
+        }
+        else
+        {
+            throw std::runtime_error(e.what());
+        }
+    }
+}
+
+void ReadFileNative(const FileHandle* fileHandle, void* data, size_t dataSize)
 {
     if (!fileHandle)
     {
-        return paramErr;
+        throw std::runtime_error("Null file handle");
     }
 
-    LARGE_INTEGER distanceToMove = {};
-
-    distanceToMove.QuadPart = posOffset;
-
-    if (!SetFilePointerEx(
-        static_cast<const FileHandleWin*>(fileHandle)->get(),
-        distanceToMove,
-        nullptr,
-        static_cast<DWORD>(posMode)))
+    try
     {
-        return ioErr;
-    }
+        size_t bytesRemaining = dataSize;
+        BYTE* buffer = static_cast<BYTE*>(data);
 
-    return noErr;
+        HANDLE hFile = static_cast<const FileHandleWin*>(fileHandle)->get();
+
+        while (bytesRemaining > 0)
+        {
+            DWORD numBytesToRead = 0x80000000UL;
+
+            if (bytesRemaining < numBytesToRead)
+            {
+                numBytesToRead = static_cast<DWORD>(bytesRemaining);
+            }
+
+            DWORD bytesRead = 0;
+
+            THROW_IF_WIN32_BOOL_FALSE(ReadFile(hFile, buffer, numBytesToRead, &bytesRead, nullptr));
+
+            if (bytesRead != numBytesToRead)
+            {
+                if (bytesRead == 0)
+                {
+                    throw std::runtime_error("Attempted to read beyond the end of the file.");
+                }
+                else
+                {
+                    throw std::runtime_error("An unspecified error occurred when reading from the file.");
+                }
+            }
+
+            buffer += bytesRead;
+            bytesRemaining -= bytesRead;
+        }
+    }
+    catch (const wil::ResultException& e)
+    {
+        if (e.GetErrorCode() == E_OUTOFMEMORY)
+        {
+            throw std::bad_alloc();
+        }
+        else
+        {
+            throw std::runtime_error(e.what());
+        }
+    }
 }
 
-OSErr WriteFileNative(const FileHandle* fileHandle, const void* data, size_t dataSize)
+void SetFileLengthNative(const FileHandle* fileHandle, int64 length)
+{
+    try
+    {
+        SetFilePositionNative(fileHandle, FILE_BEGIN, length);
+
+        THROW_IF_WIN32_BOOL_FALSE(SetEndOfFile(static_cast<const FileHandleWin*>(fileHandle)->get()));
+
+        SetFilePositionNative(fileHandle, FILE_BEGIN, 0);
+    }
+    catch (const wil::ResultException& e)
+    {
+        if (e.GetErrorCode() == E_OUTOFMEMORY)
+        {
+            throw std::bad_alloc();
+        }
+        else
+        {
+            throw std::runtime_error(e.what());
+        }
+    }
+}
+
+void SetFilePositionNative(const FileHandle* fileHandle, int16 posMode, int64 posOffset)
 {
     if (!fileHandle)
     {
-        return paramErr;
+        throw std::runtime_error("Null file handle");
+    }
+
+    try
+    {
+        LARGE_INTEGER distanceToMove = {};
+
+        distanceToMove.QuadPart = posOffset;
+
+        THROW_IF_WIN32_BOOL_FALSE(SetFilePointerEx(
+            static_cast<const FileHandleWin*>(fileHandle)->get(),
+            distanceToMove,
+            nullptr,
+            static_cast<DWORD>(posMode)));
+    }
+    catch (const wil::ResultException& e)
+    {
+        if (e.GetErrorCode() == E_OUTOFMEMORY)
+        {
+            throw std::bad_alloc();
+        }
+        else
+        {
+            throw std::runtime_error(e.what());
+        }
+    }
+}
+
+void WriteFileNative(const FileHandle* fileHandle, const void* data, size_t dataSize)
+{
+    if (!fileHandle)
+    {
+        throw std::runtime_error("Null file handle");
     }
 
     size_t bytesRemaining = dataSize;
@@ -241,30 +280,39 @@ OSErr WriteFileNative(const FileHandle* fileHandle, const void* data, size_t dat
 
     HANDLE hFile = static_cast<const FileHandleWin*>(fileHandle)->get();
 
-    while (bytesRemaining > 0)
+    try
     {
-        DWORD numBytesToWrite = 0x80000000UL;
-
-        if (bytesRemaining < numBytesToWrite)
+        while (bytesRemaining > 0)
         {
-            numBytesToWrite = static_cast<DWORD>(bytesRemaining);
+            DWORD numBytesToWrite = 0x80000000UL;
+
+            if (bytesRemaining < numBytesToWrite)
+            {
+                numBytesToWrite = static_cast<DWORD>(bytesRemaining);
+            }
+
+            DWORD bytesWritten = 0;
+
+            THROW_IF_WIN32_BOOL_FALSE(WriteFile(hFile, buffer, numBytesToWrite, &bytesWritten, nullptr));
+
+            if (bytesWritten != numBytesToWrite)
+            {
+                throw std::runtime_error("Unable to write all of the data to the file.");
+            }
+
+            buffer += bytesWritten;
+            bytesRemaining -= bytesWritten;
         }
-
-        DWORD bytesWritten = 0;
-
-        if (!WriteFile(hFile, buffer, numBytesToWrite, &bytesWritten, nullptr))
-        {
-            return writErr;
-        }
-
-        if (bytesWritten != numBytesToWrite)
-        {
-            return writErr;
-        }
-
-        buffer += bytesWritten;
-        bytesRemaining -= bytesWritten;
     }
-
-    return noErr;
+    catch (const wil::ResultException& e)
+    {
+        if (e.GetErrorCode() == E_OUTOFMEMORY)
+        {
+            throw std::bad_alloc();
+        }
+        else
+        {
+            throw std::runtime_error(e.what());
+        }
+    }
 }

@@ -45,6 +45,7 @@ OSErr ReadGmicOutput(
     const boost::filesystem::path& outputDir,
     FilterRecord* filterRecord,
     const GmicIOSettings& settings);
+OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode);
 OSErr WriteGmicFiles(
     const boost::filesystem::path& inputDir,
     boost::filesystem::path& indexFilePath,
