@@ -217,7 +217,6 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\common\InputLayerIndex.h" />
     <ClInclude Include="..\src\common\InputLayerInfo.h" />
     <ClInclude Include="..\src\common\OSErrException.h" />
-    <ClInclude Include="..\src\common\PngWarningHandler.h" />
     <ClInclude Include="..\src\common\version.h" />
     <ClInclude Include="..\src\win\ClipboardUtilWin.h" />
     <ClInclude Include="..\src\win\CommonUIWin.h" />
@@ -249,7 +248,6 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\src\common\InputLayerIndex.cpp" />
     <ClCompile Include="..\src\common\InputLayerInfo.cpp" />
     <ClCompile Include="..\src\common\Memory.cpp" />
-    <ClCompile Include="..\src\common\PngWarningHandler.cpp" />
     <ClCompile Include="..\src\common\Read.cpp" />
     <ClCompile Include="..\src\common\Utilities.cpp" />
     <ClCompile Include="..\src\common\Write.cpp" />
