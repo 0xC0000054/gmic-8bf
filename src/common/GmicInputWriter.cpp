@@ -82,6 +82,28 @@ namespace
         }
     }
 
+    void PreallocateFile(
+        const FileHandle* fileHandle,
+        int32 width,
+        int32 height,
+        int32 numberOfChannels,
+        int32 bitsPerChannel)
+    {
+        uint64 imageDataLength = static_cast<uint64>(width) * static_cast<uint64>(height) * static_cast<uint64>(numberOfChannels);
+
+        if (bitsPerChannel == 16)
+        {
+            imageDataLength *= 2;
+        }
+
+        uint64 fileLength = sizeof(Gmic8bfInputImageHeader) + imageDataLength;
+
+        if (fileLength <= static_cast<uint64>(std::numeric_limits<int64>::max()))
+        {
+            SetFileLength(fileHandle, static_cast<int64>(fileLength));
+        }
+    }
+
     void SaveActiveLayerImpl(FilterRecordPtr filterRecord, const FileHandle* fileHandle)
     {
         const bool hasTransparency = filterRecord->inLayerPlanes != 0 && filterRecord->inTransparencyMask != 0;
@@ -122,6 +144,8 @@ namespace
         default:
             throw OSErrException(filterBadMode);
         }
+
+        PreallocateFile(fileHandle, width, height, numberOfChannels, bitDepth);
 
         const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
         const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
@@ -240,6 +264,8 @@ namespace
         default:
             throw OSErrException(filterBadMode);
         }
+
+        PreallocateFile(fileHandle, width, height, numberOfChannels, bitDepth);
 
         const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
         const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
@@ -392,6 +418,8 @@ void WritePixelsFromCallback(
     }
 
     std::unique_ptr<FileHandle> file = OpenFile(outputPath, FileOpenMode::Write);
+
+    PreallocateFile(file.get(), width, height, numberOfChannels, bitsPerChannel);
 
     Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, planar, tileWidth, tileHeight);
 
