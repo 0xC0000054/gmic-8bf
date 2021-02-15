@@ -104,11 +104,9 @@ namespace
         }
     }
 
-    void SaveActiveLayerImpl(FilterRecordPtr filterRecord, const FileHandle* fileHandle)
+    void SaveActiveLayerImpl(FilterRecordPtr filterRecord, const VPoint& imageSize, const FileHandle* fileHandle)
     {
         const bool hasTransparency = filterRecord->inLayerPlanes != 0 && filterRecord->inTransparencyMask != 0;
-
-        const VPoint imageSize = GetImageSize(filterRecord);
 
         int32 width = imageSize.h;
         int32 height = imageSize.v;
@@ -224,11 +222,11 @@ namespace
 
     void SaveDocumentLayer(
         FilterRecordPtr filterRecord,
+        const VPoint& imageSize,
         const ReadLayerDesc* layerDescriptor,
         const FileHandle* fileHandle)
     {
         const bool hasTransparency = layerDescriptor->transparency != nullptr;
-        const VPoint imageSize = GetImageSize(filterRecord);
 
         int32 width = imageSize.h;
         int32 height = imageSize.v;
@@ -443,9 +441,9 @@ void SaveActiveLayer(
 
     std::unique_ptr<FileHandle> file = OpenFile(activeLayerPath, FileOpenMode::Write);
 
-    SaveActiveLayerImpl(filterRecord, file.get());
-
     const VPoint imageSize = GetImageSize(filterRecord);
+
+    SaveActiveLayerImpl(filterRecord, imageSize, file.get());
 
     int32 layerWidth = imageSize.h;
     int32 layerHeight = imageSize.v;
@@ -474,6 +472,8 @@ void SaveAllLayers(
     int32 layerIndex = 0;
     char layerNameBuffer[128]{};
 
+    const VPoint imageSize = GetImageSize(filterRecord);
+
     while (layerDescriptor != nullptr)
     {
         // Skip over any vector layers.
@@ -483,9 +483,7 @@ void SaveAllLayers(
 
             std::unique_ptr<FileHandle> file = OpenFile(imagePath, FileOpenMode::Write);
 
-            SaveDocumentLayer(filterRecord, layerDescriptor, file.get());
-
-            const VPoint imageSize = GetImageSize(filterRecord);
+            SaveDocumentLayer(filterRecord, imageSize, layerDescriptor, file.get());
 
             int32 layerWidth = imageSize.h;
             int32 layerHeight = imageSize.v;
