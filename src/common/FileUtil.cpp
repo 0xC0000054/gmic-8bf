@@ -96,10 +96,7 @@ namespace
 
 boost::filesystem::path GetGmicQtPath()
 {
-    boost::filesystem::path path = GetPluginInstallDirectoryNative();
-
-    path /= "gmic";
-    path /= ExecutableName;
+    static boost::filesystem::path path = GetGmicQtPathNative();
 
     return path;
 }

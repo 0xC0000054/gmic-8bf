@@ -21,6 +21,36 @@
 #include <wil/win32_helpers.h>
 #include <boost/filesystem.hpp>
 
+namespace
+{
+    boost::filesystem::path GetPluginInstallDirectory()
+    {
+        boost::filesystem::path path;
+
+        try
+        {
+            wil::unique_cotaskmem_string dllPath = wil::GetModuleFileNameW(wil::GetModuleInstanceHandle());
+
+            boost::filesystem::path temp(dllPath.get());
+
+            path = temp.parent_path();
+        }
+        catch (const wil::ResultException& e)
+        {
+            if (e.GetErrorCode() == E_OUTOFMEMORY)
+            {
+                throw std::bad_alloc();
+            }
+            else
+            {
+                throw std::runtime_error(e.what());
+            }
+        }
+
+        return path;
+    }
+}
+
 class FileHandleWin : public FileHandle
 {
 public:
@@ -83,6 +113,16 @@ private:
     wil::unique_hfile hFile;
 };
 
+boost::filesystem::path GetGmicQtPathNative()
+{
+    boost::filesystem::path path = GetPluginInstallDirectory();
+
+    path /= "gmic";
+    path /= "gmic_8bf_qt.exe";
+
+    return path;
+}
+
 boost::filesystem::path GetPluginDataDirectoryNative()
 {
     boost::filesystem::path path;
@@ -95,33 +135,6 @@ boost::filesystem::path GetPluginDataDirectoryNative()
 
         path = appDataPath.get();
         path /= L"Gmic8bfPlugin";
-    }
-    catch (const wil::ResultException& e)
-    {
-        if (e.GetErrorCode() == E_OUTOFMEMORY)
-        {
-            throw std::bad_alloc();
-        }
-        else
-        {
-            throw std::runtime_error(e.what());
-        }
-    }
-
-    return path;
-}
-
-boost::filesystem::path GetPluginInstallDirectoryNative()
-{
-    boost::filesystem::path path;
-
-    try
-    {
-        wil::unique_cotaskmem_string dllPath = wil::GetModuleFileNameW(wil::GetModuleInstanceHandle());
-
-        boost::filesystem::path temp(dllPath.get());
-
-        path = temp.parent_path();
     }
     catch (const wil::ResultException& e)
     {

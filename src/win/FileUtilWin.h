@@ -17,11 +17,9 @@
 
 #include <boost/filesystem.hpp>
 
-constexpr inline const char ExecutableName[] = "gmic_8bf_qt.exe";
+boost::filesystem::path GetGmicQtPathNative();
 
 boost::filesystem::path GetPluginDataDirectoryNative();
-
-boost::filesystem::path GetPluginInstallDirectoryNative();
 
 std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode);
 
