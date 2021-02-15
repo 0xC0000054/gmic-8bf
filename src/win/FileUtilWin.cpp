@@ -217,11 +217,14 @@ void SetFileLengthNative(const FileHandle* fileHandle, int64 length)
 {
     try
     {
-        SetFilePositionNative(fileHandle, FILE_BEGIN, length);
+        FILE_END_OF_FILE_INFO endOfFileInfo;
+        endOfFileInfo.EndOfFile.QuadPart = length;
 
-        THROW_IF_WIN32_BOOL_FALSE(SetEndOfFile(static_cast<const FileHandleWin*>(fileHandle)->get()));
-
-        SetFilePositionNative(fileHandle, FILE_BEGIN, 0);
+        THROW_IF_WIN32_BOOL_FALSE(SetFileInformationByHandle(
+            static_cast<const FileHandleWin*>(fileHandle)->get(),
+            FileEndOfFileInfo,
+            &endOfFileInfo,
+            sizeof(endOfFileInfo)));
     }
     catch (const wil::ResultException& e)
     {
