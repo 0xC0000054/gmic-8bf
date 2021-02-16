@@ -64,16 +64,35 @@ namespace
 
             int exitCode = child.exit_code();
 
-            if (exitCode != 0)
+            switch (exitCode)
             {
-                if (exitCode == 5)
+            case 0:
+                // No error
+                break;
+            case 1:
+            case 2:
+            case 3:
+                err = ShowErrorMessage("A G'MIC-Qt argument is invalid.", filterRecord, ioErr);
+                break;
+            case 4:
+                err = ShowErrorMessage("An error occurred when loading the G'MIC-Qt input images.", filterRecord, ioErr);
+                break;
+            case 5:
+                err = userCanceledErr;
+                break;
+            default:
+
+                char buffer[1024] = { 0 };
+
+                if (std::snprintf(buffer, sizeof(buffer), "An unspecified error occurred when running G'MIC-Qt, exit code=%d.", exitCode) > 0)
                 {
-                    err = userCanceledErr;
+                    err = ShowErrorMessage(buffer, filterRecord, ioErr);
                 }
                 else
                 {
                     err = ShowErrorMessage("An unspecified error occurred when running G'MIC-Qt.", filterRecord, ioErr);
                 }
+                break;
             }
         }
         catch (const std::bad_alloc&)
