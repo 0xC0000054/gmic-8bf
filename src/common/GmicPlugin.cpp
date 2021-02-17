@@ -75,10 +75,25 @@ namespace
                 err = ShowErrorMessage("A G'MIC-Qt argument is invalid.", filterRecord, ioErr);
                 break;
             case 4:
-                err = ShowErrorMessage("An error occurred when loading the G'MIC-Qt input images.", filterRecord, ioErr);
+                err = ShowErrorMessage("An unspecified error occurred when reading the G'MIC-Qt input images.", filterRecord, ioErr);
                 break;
             case 5:
                 err = userCanceledErr;
+                break;
+            case 6:
+                err = ShowErrorMessage("Unable to open one of the G'MIC-Qt input images.", filterRecord, ioErr);
+                break;
+            case 7:
+                err = ShowErrorMessage("The G'MIC-Qt input images use an unknown format.", filterRecord, ioErr);
+                break;
+            case 8:
+                err = ShowErrorMessage("The G'MIC-Qt input images have an unsupported file version.", filterRecord, ioErr);
+                break;
+            case 9:
+                err = memFullErr;
+                break;
+            case 10:
+                err = ShowErrorMessage("Attempted to read past the end of the file.", filterRecord, eofErr);
                 break;
             default:
 
