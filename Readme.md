@@ -33,6 +33,11 @@ When the *G'MIC-Qt* menu item is clicked it will start the G'MIC-Qt user interfa
 
 ![G'MIC-Qt UI](images/GmicQt-UI-Small.png)
 
+While the plug-in supports the Grayscale image modes, many G'MIC effects will only work correctly in the RGB image modes
+(e.g. the various Colorize effects).
+When the G'MIC plug-in is run in the Grayscale image modes any RGB images that G'MIC creates will be converted to Grayscale
+when they are returned to the host.
+
 You can "layer" multiple G'MIC effects in a single session by clicking the Apply button.
 Note that only the most recently applied effect will be used when the plug-in is invoked
 through the "Last Filter" or "Repeat Filter" commands.
