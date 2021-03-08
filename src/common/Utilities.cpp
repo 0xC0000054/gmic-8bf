@@ -551,19 +551,19 @@ int32 GetImagePlaneCount(int16 imageMode, int32 layerPlanes, int32 transparencyP
 
 VPoint GetImageSize(const FilterRecordPtr filterRecord)
 {
+    VPoint imageSize;
+
     if (filterRecord->bigDocumentData != nullptr && filterRecord->bigDocumentData->PluginUsing32BitCoordinates)
     {
-        return filterRecord->bigDocumentData->imageSize32;
+        imageSize = filterRecord->bigDocumentData->imageSize32;
     }
     else
     {
-        VPoint point{};
-
-        point.h = filterRecord->imageSize.h;
-        point.v = filterRecord->imageSize.v;
-
-        return point;
+        imageSize.h = filterRecord->imageSize.h;
+        imageSize.v = filterRecord->imageSize.v;
     }
+
+    return imageSize;
 }
 
 int32 GetTileHeight(int16 suggestedTileHeight)
