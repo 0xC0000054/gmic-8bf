@@ -311,6 +311,7 @@ namespace
             void* imageDataBuffer = buffer.Lock();
 
             PixelMemoryDesc dest{};
+            dest.bitOffset = 0;
             dest.data = imageDataBuffer;
             dest.depth = filterRecord->depth;
 
@@ -342,8 +343,6 @@ namespace
 
             for (int32 i = 0; i < numberOfChannels; i++)
             {
-                dest.bitOffset = i * dest.depth;
-
                 for (int32 y = 0; y < height; y += tileHeight)
                 {
                     VRect writeRect{};
