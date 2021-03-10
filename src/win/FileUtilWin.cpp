@@ -123,7 +123,7 @@ boost::filesystem::path GetGmicQtPathNative()
     return path;
 }
 
-boost::filesystem::path GetPluginDataDirectoryNative()
+boost::filesystem::path GetPluginSettingsDirectoryNative()
 {
     boost::filesystem::path path;
 
@@ -135,6 +135,36 @@ boost::filesystem::path GetPluginDataDirectoryNative()
 
         path = appDataPath.get();
         path /= L"Gmic8bfPlugin";
+        path /= L"settings";
+    }
+    catch (const wil::ResultException& e)
+    {
+        if (e.GetErrorCode() == E_OUTOFMEMORY)
+        {
+            throw std::bad_alloc();
+        }
+        else
+        {
+            throw std::runtime_error(e.what());
+        }
+    }
+
+    return path;
+}
+
+boost::filesystem::path GetSessionDirectoriesRootNative()
+{
+    boost::filesystem::path path;
+
+    try
+    {
+        wil::unique_cotaskmem_string programDataPath;
+
+        THROW_IF_FAILED(SHGetKnownFolderPath(FOLDERID_ProgramData, 0, nullptr, &programDataPath));
+
+        path = programDataPath.get();
+        path /= L"Gmic8bfPlugin";
+        path /= L"SessionData";
     }
     catch (const wil::ResultException& e)
     {

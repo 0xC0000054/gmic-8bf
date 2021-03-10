@@ -60,34 +60,17 @@ namespace
         boost::filesystem::path path;
     };
 
-    boost::filesystem::path GetPluginDataDirectory()
-    {
-        static boost::filesystem::path pluginDataDir = GetPluginDataDirectoryNative();
-
-        return pluginDataDir;
-    }
-
-    boost::filesystem::path GetSessionDirectoriesRoot()
-    {
-        boost::filesystem::path path = GetPluginDataDirectory();
-
-        path /= "SessionData";
-
-        return path;
-    }
-
     boost::filesystem::path GetSessionDirectory()
     {
-        static std::unique_ptr<TempDirectory> sessionDir = std::make_unique<TempDirectory>(GetSessionDirectoriesRoot());
+        static std::unique_ptr<TempDirectory> sessionDir = std::make_unique<TempDirectory>(GetSessionDirectoriesRootNative());
 
         return sessionDir->Get();
     }
 
     boost::filesystem::path GetSettingsDirectory()
     {
-        boost::filesystem::path path = GetPluginDataDirectory();
+        boost::filesystem::path path = GetPluginSettingsDirectoryNative();
 
-        path /= "settings";
         boost::filesystem::create_directories(path);
 
         return path;

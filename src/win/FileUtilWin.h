@@ -19,7 +19,9 @@
 
 boost::filesystem::path GetGmicQtPathNative();
 
-boost::filesystem::path GetPluginDataDirectoryNative();
+boost::filesystem::path GetPluginSettingsDirectoryNative();
+
+boost::filesystem::path GetSessionDirectoriesRootNative();
 
 std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode);
 
