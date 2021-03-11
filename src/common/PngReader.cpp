@@ -603,28 +603,12 @@ namespace
                     }
                 }
 
+#if BOOST_ENDIAN_LITTLE_BYTE
                 if (bitDepth == 16)
                 {
-                    filterRecord->outPlaneBytes = 2;
-
-#if BOOST_ENDIAN_LITTLE_BYTE
                     png_set_swap(pngPtr);
+                }
 #endif
-                }
-                else
-                {
-                    filterRecord->outPlaneBytes = 1;
-                }
-
-                filterRecord->outColumnBytes = filterRecord->outPlaneBytes;
-
-                if (!TryMultiplyInt32(width, filterRecord->outColumnBytes, filterRecord->outRowBytes))
-                {
-                    // The multiplication would have resulted in an integer overflow / underflow.
-                    png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
-
-                    return memFullErr;
-                }
 
                 const bool premultiplyAlpha = pngHasAlphaChannel && !canEditLayerTransparency;
                 const int32 pngColumnStep = png_get_channels(pngPtr, infoPtr);
