@@ -12,7 +12,6 @@
 
 #include "stdafx.h"
 #include "GmicPlugin.h"
-#include "FileUtil.h"
 #include "FileUtilWin.h"
 #include <objbase.h>
 #include <ShlObj.h>

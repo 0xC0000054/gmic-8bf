@@ -15,7 +15,7 @@
 #ifndef FILEUTILWIN_H
 #define FILEUTILWIN_H
 
-#include <boost/filesystem.hpp>
+#include "FileUtil.h"
 
 boost::filesystem::path GetGmicQtPathNative();
 
