@@ -214,8 +214,6 @@ namespace
         {
             static const std::vector<uint16> pngToHostLUT = BuildSixteenBitPngToHostLUT();
 
-            const int32 outRowWords = filterRecord->outRowBytes / 2;
-
             SetOutputRect(filterRecord, top, left, bottom, right);
 
             if (filterRecord->haveMask)
@@ -233,13 +231,13 @@ namespace
                     break;
                 }
 
-                uint16* outData = static_cast<uint16*>(filterRecord->outData);
+                uint8* outData = static_cast<uint8*>(filterRecord->outData);
                 const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
 
                 for (int32 y = 0; y < imageHeight; y++)
                 {
                     const uint16* pngPixel = reinterpret_cast<const uint16*>(pngBuffer + (static_cast<int64>(y) * pngStride));
-                    uint16* pixel = outData + (static_cast<int64>(y) * outRowWords);
+                    uint16* pixel = reinterpret_cast<uint16*>(outData + (static_cast<int64>(y) * filterRecord->outRowBytes));
                     const uint8* mask = filterRecord->haveMask ? maskData + (static_cast<int64>(y) * filterRecord->maskRowBytes) : nullptr;
 
                     for (int32 x = 0; x < imageWidth; x++)
@@ -390,14 +388,14 @@ namespace
     void SetAlphaChannelToOpaqueSixteenBitsPerChannel(
         int32 tileWidth,
         int32 tileHeight,
-        uint16* outData,
+        uint8* outData,
         int32 outDataStride,
         const uint8* maskData,
         int32 maskDataStride)
     {
         for (int32 y = 0; y < tileHeight; y++)
         {
-            uint16* pixel = outData + (static_cast<int64>(y) * outDataStride);
+            uint16* pixel = reinterpret_cast<uint16*>(outData + (static_cast<int64>(y) * outDataStride));
             const uint8* mask = maskData != nullptr ? maskData + (static_cast<int64>(y) * maskDataStride) : nullptr;
 
             for (int32 x = 0; x < tileWidth; x++)
@@ -489,8 +487,8 @@ namespace
                     SetAlphaChannelToOpaqueSixteenBitsPerChannel(
                         columnCount,
                         rowCount,
-                        static_cast<uint16*>(filterRecord->outData),
-                        filterRecord->outRowBytes / 2,
+                        static_cast<uint8*>(filterRecord->outData),
+                        filterRecord->outRowBytes,
                         maskData,
                         filterRecord->maskRowBytes);
                     break;
