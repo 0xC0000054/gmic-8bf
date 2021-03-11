@@ -358,6 +358,151 @@ namespace
         return err;
     }
 
+    void SetAlphaChannelToOpaqueEightBitsPerChannel(
+        int32 tileWidth,
+        int32 tileHeight,
+        uint8* outData,
+        int32 outDataStride,
+        const uint8* maskData,
+        int32 maskDataStride)
+    {
+        for (int32 y = 0; y < tileHeight; y++)
+        {
+            uint8* pixel = outData + (static_cast<int64>(y) * outDataStride);
+            const uint8* mask = maskData != nullptr ? maskData + (static_cast<int64>(y) * maskDataStride) : nullptr;
+
+            for (int32 x = 0; x < tileWidth; x++)
+            {
+                if (mask == nullptr || *mask != 0)
+                {
+                    *pixel = 255;
+                }
+
+                pixel++;
+                if (mask != nullptr)
+                {
+                    mask++;
+                }
+            }
+        }
+    }
+
+    void SetAlphaChannelToOpaqueSixteenBitsPerChannel(
+        int32 tileWidth,
+        int32 tileHeight,
+        uint16* outData,
+        int32 outDataStride,
+        const uint8* maskData,
+        int32 maskDataStride)
+    {
+        for (int32 y = 0; y < tileHeight; y++)
+        {
+            uint16* pixel = outData + (static_cast<int64>(y) * outDataStride);
+            const uint8* mask = maskData != nullptr ? maskData + (static_cast<int64>(y) * maskDataStride) : nullptr;
+
+            for (int32 x = 0; x < tileWidth; x++)
+            {
+                if (mask == nullptr || *mask != 0)
+                {
+                    *pixel = 32768;
+                }
+
+                pixel++;
+                if (mask != nullptr)
+                {
+                    mask++;
+                }
+            }
+        }
+    }
+
+    OSErr SetAlphaChannelToOpaque(FilterRecord* filterRecord, const VPoint& imageSize)
+    {
+        int16 alphaChannelPlane;
+        switch (filterRecord->imageMode)
+        {
+        case plugInModeGrayScale:
+        case plugInModeGray16:
+            alphaChannelPlane = 1;
+            break;
+        case plugInModeRGBColor:
+        case plugInModeRGB48:
+            alphaChannelPlane = 3;
+            break;
+        default:
+            return paramErr;
+        }
+
+        filterRecord->outLoPlane = filterRecord->outHiPlane = alphaChannelPlane;
+
+        const int32 tileWidth = std::min(GetTileWidth(filterRecord->outTileWidth), imageSize.h);
+        const int32 tileHeight = std::min(GetTileHeight(filterRecord->outTileHeight), imageSize.v);
+
+        if (filterRecord->haveMask)
+        {
+            filterRecord->maskRate = int2fixed(1);
+        }
+
+        for (int32 y = 0; y < imageSize.v; y += tileHeight)
+        {
+            const int32 top = y;
+            const int32 bottom = std::min(y + tileHeight, imageSize.v);
+
+            const int32 rowCount = bottom - top;
+
+            for (int32 x = 0; x < imageSize.h; x += tileWidth)
+            {
+                const int32 left = x;
+                const int32 right = std::min(x + tileWidth, imageSize.h);
+
+                const int32 columnCount = right - left;
+
+                SetOutputRect(filterRecord, top, left, bottom, right);
+
+                if (filterRecord->haveMask)
+                {
+                    SetMaskRect(filterRecord, top, left, bottom, right);
+                }
+
+                OSErr err = filterRecord->advanceState();
+                if (err != noErr)
+                {
+                    return err;
+                }
+
+                const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
+
+                switch (filterRecord->imageMode)
+                {
+                case plugInModeGrayScale:
+                case plugInModeRGBColor:
+                    SetAlphaChannelToOpaqueEightBitsPerChannel(
+                        columnCount,
+                        rowCount,
+                        static_cast<uint8*>(filterRecord->outData),
+                        filterRecord->outRowBytes,
+                        maskData,
+                        filterRecord->maskRowBytes);
+                    break;
+                case plugInModeGray16:
+                case plugInModeRGB48:
+                    SetAlphaChannelToOpaqueSixteenBitsPerChannel(
+                        columnCount,
+                        rowCount,
+                        static_cast<uint16*>(filterRecord->outData),
+                        filterRecord->outRowBytes / 2,
+                        maskData,
+                        filterRecord->maskRowBytes);
+                    break;
+                default:
+                    return paramErr;
+                }
+            }
+        }
+
+        return noErr;
+    }
+
     OSErr ReadPngImage(FilterRecordPtr filterRecord, PngReaderState* readerState)
     {
         OSErr err = noErr;
@@ -447,6 +592,18 @@ namespace
 
                 const int32 maxWidth = std::min(imageSize.h, width);
                 const int32 maxHeight = std::min(imageSize.v, height);
+
+                if (!pngHasAlphaChannel && canEditLayerTransparency)
+                {
+                    err = SetAlphaChannelToOpaque(filterRecord, imageSize);
+
+                    if (err != noErr)
+                    {
+                        png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
+
+                        return err;
+                    }
+                }
 
                 if (bitDepth == 16)
                 {
