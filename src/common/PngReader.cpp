@@ -501,6 +501,20 @@ namespace
         return noErr;
     }
 
+    bool TryCastNativePngRowBytesToInt32(png_size_t pngNativeRowBytes, int32& pngRowBytesAsInt32)
+    {
+        if (pngNativeRowBytes > static_cast<png_size_t>(std::numeric_limits<int32>::max()))
+        {
+            // The cast to an int32 would have resulted in an integer overflow.
+            return false;
+        }
+        else
+        {
+            pngRowBytesAsInt32 = static_cast<int32>(pngNativeRowBytes);
+            return true;
+        }
+    }
+
     OSErr ReadPngImage(FilterRecordPtr filterRecord, PngReaderState* readerState)
     {
         OSErr err = noErr;
@@ -613,23 +627,12 @@ namespace
                 const bool premultiplyAlpha = pngHasAlphaChannel && !canEditLayerTransparency;
                 const int32 pngColumnStep = png_get_channels(pngPtr, infoPtr);
                 int32 pngRowBytes;
-                if (!TryMultiplyInt32(width, pngColumnStep, pngRowBytes))
+                if (!TryCastNativePngRowBytesToInt32(png_get_rowbytes(pngPtr, infoPtr), pngRowBytes))
                 {
-                    // The multiplication would have resulted in an integer overflow / underflow.
+                    // The cast to an int32 would have resulted in an integer overflow.
                     png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
 
                     return memFullErr;
-                }
-
-                if (bitDepth == 16)
-                {
-                    if (!TryMultiplyInt32(pngRowBytes, 2, pngRowBytes))
-                    {
-                        // The multiplication would have resulted in an integer overflow / underflow.
-                        png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
-
-                        return memFullErr;
-                    }
                 }
 
                 if (interlaceType == PNG_INTERLACE_NONE)
