@@ -148,23 +148,23 @@ OSErr ReadGmicOutput(
                     boost::filesystem::copy_file(filePath, outputFileName, boost::filesystem::copy_options::overwrite_existing);
                 }
             }
-        }
-        else
-        {
-            boost::filesystem::path outputFolder;
-
-            OSErrException::ThrowIfError(GetOutputFolder(filterRecord, settings, outputFolder));
-
-            boost::filesystem::create_directories(outputFolder);
-
-            for (size_t i = 0; i < filePaths.size(); i++)
+            else
             {
-                const boost::filesystem::path& oldPath = filePaths[i];
+                boost::filesystem::path outputFolder;
 
-                boost::filesystem::path newPath = outputFolder;
-                newPath /= oldPath.filename();
+                OSErrException::ThrowIfError(GetOutputFolder(filterRecord, settings, outputFolder));
 
-                boost::filesystem::copy_file(oldPath, newPath, boost::filesystem::copy_options::overwrite_existing);
+                boost::filesystem::create_directories(outputFolder);
+
+                for (size_t i = 0; i < filePaths.size(); i++)
+                {
+                    const boost::filesystem::path& oldPath = filePaths[i];
+
+                    boost::filesystem::path newPath = outputFolder;
+                    newPath /= oldPath.filename();
+
+                    boost::filesystem::copy_file(oldPath, newPath, boost::filesystem::copy_options::overwrite_existing);
+                }
             }
         }
     }
