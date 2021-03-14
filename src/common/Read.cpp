@@ -127,7 +127,11 @@ OSErr ReadGmicOutput(
     {
         std::vector<boost::filesystem::path> filePaths = GetOutputFiles(outputDir);
 
-        if (!filePaths.empty())
+        if (filePaths.empty())
+        {
+            throw std::runtime_error("G'MIC did not produce any output images.");
+        }
+        else
         {
             if (filePaths.size() == 1)
             {
