@@ -153,7 +153,7 @@ OSErr GmicIOSettingsDoStart()
 {
     PrintFunctionName();
 
-    return noErr;
+    return userCanceledErr;
 }
 
 OSErr GmicIOSettingsDoContinue()
