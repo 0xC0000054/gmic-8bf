@@ -31,7 +31,7 @@ namespace
 {
     bool ShowUI(FilterRecordPtr filterRecord)
     {
-        bool showUI = false;
+        bool showUI = true;
 
         if (filterRecord->descriptorParameters != nullptr)
         {
