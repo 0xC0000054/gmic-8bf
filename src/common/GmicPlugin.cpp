@@ -17,8 +17,6 @@
 #include "FileUtil.h"
 #include "resource.h"
 #include <stdexcept>
-#include <wil/resource.h>
-#include <wil/result.h>
 #include <boost/process.hpp>
 
 OSErr DoParameters(FilterRecord* filterRecord);
