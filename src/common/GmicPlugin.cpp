@@ -33,13 +33,20 @@ namespace
     {
         bool showUI = false;
 
-        FilterParameters* parameters = LockParameters(filterRecord);
-
-        if (parameters != nullptr)
+        if (filterRecord->descriptorParameters != nullptr)
         {
-            showUI = parameters->showUI;
+            showUI = filterRecord->descriptorParameters->playInfo == plugInDialogDisplay;
+        }
+        else
+        {
+            FilterParameters* parameters = LockParameters(filterRecord);
 
-            UnlockParameters(filterRecord);
+            if (parameters != nullptr)
+            {
+                showUI = parameters->showUI;
+
+                UnlockParameters(filterRecord);
+            }
         }
 
         return showUI;

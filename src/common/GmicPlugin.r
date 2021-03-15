@@ -49,6 +49,7 @@ resource 'PiPL' ( 16000, "GmicPlugin", purgeable )
 		/* Limit large documents to 100,000 x 100,000 pixels. */
 		PlugInMaxSize { 100000, 100000 },
 
+		FilterLayerSupport { doesSupportFilterLayers },
 
 		FilterCaseInfo
 		{
@@ -136,6 +137,7 @@ resource 'PiPL' ( 16001, "GmicOutputSettingsPlugin", purgeable )
 		/* Limit large documents to 100,000 x 100,000 pixels. */
 		PlugInMaxSize { 100000, 100000 },
 
+		FilterLayerSupport { doesSupportFilterLayers },
 
 		FilterCaseInfo
 		{
