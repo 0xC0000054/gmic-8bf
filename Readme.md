@@ -18,7 +18,7 @@ The latest version can be downloaded from the [Releases](https://github.com/0xC0
 
 ### Installing in Specific Hosts
 
-The gmic-8bf project wiki provides installation instructions fro several popular hosts.
+The gmic-8bf project wiki provides installation instructions for several popular hosts.
 
 Affinity Photo: [Installing in Affinity Photo](https://github.com/0xC0000054/gmic-8bf/wiki/Installing-in-Affinity-Photo)   
 Photoshop: [Installing in Photoshop](https://github.com/0xC0000054/gmic-8bf/wiki/Installing-in-Photoshop)       
