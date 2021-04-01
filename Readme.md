@@ -16,6 +16,14 @@ The latest version can be downloaded from the [Releases](https://github.com/0xC0
 3. Restart your host application.
 4. The plug-in will now be available as the G'MIC-Qt menu item in the GMIC category.
 
+### Installing in Specific Hosts
+
+The gmic-8bf project wiki provides installation instructions fro several popular hosts.
+
+Affinity Photo: [Installing in Affinity Photo](https://github.com/0xC0000054/gmic-8bf/wiki/Installing-in-Affinity-Photo)   
+Photoshop: [Installing in Photoshop](https://github.com/0xC0000054/gmic-8bf/wiki/Installing-in-Photoshop)       
+XnView: [Installing in XnView](https://github.com/0xC0000054/gmic-8bf/wiki/Installing-in-XnView)   
+
 ### Updating
 
 Follow the installation instructions above and allow any existing files to be replaced. 
@@ -101,6 +109,7 @@ See [License.txt](License.txt) for more information.
 
 ```
 * Adobe and Photoshop are either registered trademarks or trademarks of Adobe Systems Incorporated in the United States and/or other countries.
- Windows is a registered trademark of Microsoft Corporation in the United States and other countries.
+ Windows is a registered trademark of Microsoft Corporation in the United States and other countries.   
+ All other trademarks are the property of their respective owners.
 ```
 
