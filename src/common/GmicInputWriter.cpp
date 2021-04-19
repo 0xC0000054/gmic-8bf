@@ -315,7 +315,7 @@ namespace
             dest.data = imageDataBuffer;
             dest.depth = filterRecord->depth;
 
-            if (!TryMultiplyInt32(filterRecord->inColumnBytes, dest.depth, dest.colBits))
+            if (!TryMultiplyInt32(filterRecord->inColumnBytes, 8, dest.colBits))
             {
                 // The multiplication would have resulted in an integer overflow / underflow.
                 throw OSErrException(memFullErr);
@@ -359,7 +359,7 @@ namespace
                         const int32 columnCount = writeRect.right - writeRect.left;
                         tileRowBytes = columnCount * filterRecord->inColumnBytes;
 
-                        if (!TryMultiplyInt32(tileRowBytes, dest.depth, dest.rowBits))
+                        if (!TryMultiplyInt32(tileRowBytes, 8, dest.rowBits))
                         {
                             throw OSErrException(memFullErr);
                         }
@@ -386,7 +386,7 @@ namespace
 
                         if (bitDepth == 16)
                         {
-                            ScaleSixteenBitDataToOutputRange(dest.data, width, rowCount, tileRowBytes);
+                            ScaleSixteenBitDataToOutputRange(dest.data, columnCount, rowCount, tileRowBytes);
                         }
 
                         WriteFile(fileHandle, imageDataBuffer, static_cast<size_t>(rowCount) * tileRowBytes);
