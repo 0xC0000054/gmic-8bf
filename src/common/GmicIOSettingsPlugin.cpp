@@ -13,6 +13,7 @@
 #include "GmicIOSettingsPlugin.h"
 #include "GmicIOSettings.h"
 #include "FileUtil.h"
+#include "version.h"
 
 OSErr GmicIOSettingsDoParameters(FilterRecord* filterRecord);
 OSErr GmicIOSettingsDoPrepare();
@@ -22,14 +23,16 @@ OSErr GmicIOSettingsDoFinish();
 
 namespace
 {
+    constexpr const char* FilterNameWithVersion = "Input/Output Settings for G'MIC-Qt filter v" VI_VERSION_STR;
+
     OSErr LaunderOSErrResult(OSErr err, const FilterRecordPtr filterRecord)
     {
-        return LaunderOSErrResult(err, "Input/Output Settings for G'MIC-Qt", filterRecord);
+        return LaunderOSErrResult(err, FilterNameWithVersion, filterRecord);
     }
 
     OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode)
     {
-        return ShowErrorMessage(message, "Input/Output Settings for G'MIC-Qt", filterRecord, fallbackErrorCode);
+        return ShowErrorMessage(message, FilterNameWithVersion, filterRecord, fallbackErrorCode);
     }
 }
 

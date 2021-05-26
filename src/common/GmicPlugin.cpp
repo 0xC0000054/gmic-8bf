@@ -16,6 +16,7 @@
 #include <vector>
 #include "FileUtil.h"
 #include "resource.h"
+#include "version.h"
 #include <stdexcept>
 #include <boost/process.hpp>
 
@@ -24,6 +25,8 @@ OSErr DoPrepare(FilterRecord* filterRecord) noexcept;
 OSErr DoStart(FilterRecord* filterRecord);
 OSErr DoContinue() noexcept;
 OSErr DoFinish();
+
+constexpr const char* FilterNameWithVersion = "G'MIC-Qt filter v" VI_VERSION_STR;
 
 namespace
 {
@@ -189,7 +192,7 @@ namespace
 
     OSErr LaunderOSErrResult(OSErr err, const FilterRecordPtr filterRecord)
     {
-        return LaunderOSErrResult(err, "G'MIC-Qt filter", filterRecord);
+        return LaunderOSErrResult(err, FilterNameWithVersion, filterRecord);
     }
 }
 
@@ -439,5 +442,5 @@ void UnlockParameters(FilterRecordPtr filterRecord)
 
 OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode)
 {
-    return ShowErrorMessage(message, "G'MIC-Qt filter", filterRecord, fallbackErrorCode);
+    return ShowErrorMessage(message, FilterNameWithVersion, filterRecord, fallbackErrorCode);
 }
