@@ -136,6 +136,7 @@
       <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <UseFullPaths>false</UseFullPaths>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -186,6 +187,7 @@
       <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <UseFullPaths>false</UseFullPaths>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
