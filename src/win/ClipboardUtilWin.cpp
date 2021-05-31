@@ -161,7 +161,7 @@ namespace
             throw std::runtime_error("Unable to lock the clipboard data handle.");
         }
 
-        PBITMAPINFOHEADER pbih = static_cast<PBITMAPINFOHEADER>(lockedData.get());
+        const PBITMAPINFOHEADER pbih = static_cast<PBITMAPINFOHEADER>(lockedData.get());
 
         uint64_t imageDataSize = static_cast<uint64_t>(pbih->biSizeImage);
 
