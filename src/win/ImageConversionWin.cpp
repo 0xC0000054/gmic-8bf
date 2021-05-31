@@ -246,13 +246,10 @@ namespace
     }
 }
 
-OSErr ConvertImageToGmicInputFormatNative(
-    const FilterRecordPtr filterRecord,
+void ConvertImageToGmicInputFormatNative(
     const boost::filesystem::path& input,
     const boost::filesystem::path& output)
 {
-    OSErr err = noErr;
-
     try
     {
         auto comCleanup = wil::CoInitializeEx(COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -271,45 +268,24 @@ OSErr ConvertImageToGmicInputFormatNative(
 
         DoGmicInputFormatConversion(output, factory.get(), decoder.get());
     }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
-    }
-    catch (const OSErrException& e)
-    {
-        err = e.GetErrorCode();
-    }
     catch (const wil::ResultException& e)
     {
         if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            err = memFullErr;
+            throw std::bad_alloc();
         }
         else
         {
-            err = ShowErrorMessage(e.what(), filterRecord, ioErr);
+            throw std::runtime_error(e.what());
         }
     }
-    catch (const std::exception& e)
-    {
-        err = ShowErrorMessage(e.what(), filterRecord, ioErr);
-    }
-    catch (...)
-    {
-        err = ShowErrorMessage("An unspecified error occurred when converting the second input image.", filterRecord, ioErr);
-    }
-
-    return err;
 }
 
-OSErr ConvertImageToGmicInputFormatNative(
-    const FilterRecordPtr filterRecord,
+void ConvertImageToGmicInputFormatNative(
     const void* input,
     size_t inputLength,
     const boost::filesystem::path& output)
 {
-    OSErr err = noErr;
-
     try
     {
         auto comCleanup = wil::CoInitializeEx(COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -329,33 +305,15 @@ OSErr ConvertImageToGmicInputFormatNative(
 
         DoGmicInputFormatConversion(output, factory.get(), decoder.get());
     }
-    catch (const std::bad_alloc&)
-    {
-        err = memFullErr;
-    }
-    catch (const OSErrException& e)
-    {
-        err = e.GetErrorCode();
-    }
     catch (const wil::ResultException& e)
     {
         if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            err = memFullErr;
+            throw std::bad_alloc();
         }
         else
         {
-            err = ShowErrorMessage(e.what(), filterRecord, ioErr);
+            throw std::runtime_error(e.what());
         }
-    }
-    catch (const std::exception& e)
-    {
-        err = ShowErrorMessage(e.what(), filterRecord, ioErr);
-    }
-    catch (...)
-    {
-        err = ShowErrorMessage("An unspecified error occurred when converting the second input image.", filterRecord, ioErr);
-    }
-
-    return err;
+    }   
 }

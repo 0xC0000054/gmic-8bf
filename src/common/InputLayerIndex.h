@@ -40,7 +40,6 @@ public:
 
     void Write(
         const boost::filesystem::path& path,
-        const FilterRecordPtr filterRecord,
         const GmicIOSettings& settings);
 
 private:

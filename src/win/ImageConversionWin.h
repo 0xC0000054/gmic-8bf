@@ -17,13 +17,11 @@
 
 #include "Common.h"
 
-OSErr ConvertImageToGmicInputFormatNative(
-    const FilterRecordPtr filterRecord,
+void ConvertImageToGmicInputFormatNative(
     const boost::filesystem::path& input,
     const boost::filesystem::path& output);
 
-OSErr ConvertImageToGmicInputFormatNative(
-    const FilterRecordPtr filterRecord,
+void ConvertImageToGmicInputFormatNative(
     const void* input,
     size_t inputLength,
     const boost::filesystem::path& output);

@@ -76,7 +76,6 @@ namespace
 
     void WriteAlternateInputImageData(
         const FileHandle* fileHandle,
-        const FilterRecordPtr filterRecord,
         const GmicIOSettings& settings)
     {
         const SecondInputImageSource source = settings.GetSecondInputImageSource();
@@ -95,14 +94,13 @@ namespace
 
             if (source == SecondInputImageSource::Clipboard)
             {
-                OSErrException::ThrowIfError(ConvertClipboardImageToGmicInput(filterRecord, secondGmicInputImage));
+                ConvertClipboardImageToGmicInput(secondGmicInputImage);
             }
             else if (source == SecondInputImageSource::File)
             {
-                OSErrException::ThrowIfError(ConvertImageToGmicInputFormat(
-                    filterRecord,
+                ConvertImageToGmicInputFormat(
                     settings.GetSecondInputImagePath(),
-                    secondGmicInputImage));
+                    secondGmicInputImage);
             }
 
             WriteAlternateInputImagePath(fileHandle, secondGmicInputImage);
@@ -140,7 +138,6 @@ void InputLayerIndex::SetActiveLayerIndex(int32 index)
 
 void InputLayerIndex::Write(
     const boost::filesystem::path& path,
-    const FilterRecordPtr filterRecord,
     const GmicIOSettings& settings)
 {
     if (inputFiles.size() > static_cast<size_t>(std::numeric_limits<int32>().max()))
@@ -170,6 +167,6 @@ void InputLayerIndex::Write(
 
     if (inputFiles.size() == 1)
     {
-        WriteAlternateInputImageData(file.get(), filterRecord, settings);
+        WriteAlternateInputImageData(file.get(), settings);
     }
 }

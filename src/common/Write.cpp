@@ -51,7 +51,7 @@ OSErr WriteGmicFiles(
 
         indexFilePath = GetTemporaryFileName(inputDir, ".idx");
 
-        inputLayerIndex->Write(indexFilePath, filterRecord, settings);
+        inputLayerIndex->Write(indexFilePath, settings);
     }
     catch (const std::bad_alloc&)
     {

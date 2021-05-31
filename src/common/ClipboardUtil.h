@@ -17,8 +17,6 @@
 
 #include "Common.h"
 
-OSErr ConvertClipboardImageToGmicInput(
-    const FilterRecordPtr filterRecord,
-    const boost::filesystem::path& clipboardImagePath);
+void ConvertClipboardImageToGmicInput(const boost::filesystem::path& clipboardImagePath);
 
 #endif // !CLIPBOARDUTIL_H

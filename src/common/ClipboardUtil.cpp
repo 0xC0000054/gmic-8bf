@@ -18,9 +18,7 @@
 #error "Missing a ClipboardUtil header for this platform."
 #endif
 
-OSErr ConvertClipboardImageToGmicInput(
-    const FilterRecordPtr filterRecord,
-    const boost::filesystem::path& gmicInputPath)
+void ConvertClipboardImageToGmicInput(const boost::filesystem::path& gmicInputPath)
 {
-    return ConvertClipboardImageToGmicInputNative(filterRecord, gmicInputPath);
+    ConvertClipboardImageToGmicInputNative(gmicInputPath);
 }

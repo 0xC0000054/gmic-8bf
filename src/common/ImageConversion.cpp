@@ -18,19 +18,17 @@
 #error "Missing a ImageConversion header for this platform."
 #endif
 
-OSErr ConvertImageToGmicInputFormat(
-    const FilterRecordPtr filterRecord,
+void ConvertImageToGmicInputFormat(
     const boost::filesystem::path& input,
     const boost::filesystem::path& output)
 {
-    return ConvertImageToGmicInputFormatNative(filterRecord, input, output);
+    ConvertImageToGmicInputFormatNative(input, output);
 }
 
-OSErr ConvertImageToGmicInputFormat(
-    const FilterRecordPtr filterRecord,
+void ConvertImageToGmicInputFormat(
     const void* input,
     size_t inputLength,
     const boost::filesystem::path& output)
 {
-    return ConvertImageToGmicInputFormatNative(filterRecord, input, inputLength, output);
+    ConvertImageToGmicInputFormatNative(input, inputLength, output);
 }
