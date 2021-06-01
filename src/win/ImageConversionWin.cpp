@@ -315,5 +315,5 @@ void ConvertImageToGmicInputFormatNative(
         {
             throw std::runtime_error(e.what());
         }
-    }   
+    }
 }
