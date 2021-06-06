@@ -15,6 +15,7 @@
 #ifndef FILEUTIL_H
 #define FILEUTIL_H
 
+#include <PITypes.h>
 #include <boost/filesystem.hpp>
 #include <new>
 
