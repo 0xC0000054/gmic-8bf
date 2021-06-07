@@ -12,15 +12,15 @@
 
 #pragma once
 
-#ifndef PNGREADER_H
-#define PNGREADER_H
+#ifndef PNGWRITER_H
+#define PNGWRITER_H
 
 #include "GmicPlugin.h"
+#include <boost/filesystem.hpp>
 
-bool PngImageSizeMatchesDocument(
-    const boost::filesystem::path& path,
-    const VPoint& documentSize);
+void ConvertGmic8bfImageToPng(
+    const FilterRecordPtr filterRecord,
+    const boost::filesystem::path& inputFilePath,
+    const boost::filesystem::path& outputFilePath);
 
-void LoadPngImage(const boost::filesystem::path& path, FilterRecord* filterRecord);
-
-#endif // !PNGREADER_H
+#endif // !PNGWRITER_H

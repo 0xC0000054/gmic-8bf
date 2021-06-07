@@ -10,52 +10,15 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "GmicInputWriter.h"
+#include "Gmic8bfImageWriter.h"
+#include "Gmic8bfImageHeader.h"
 #include "ScopedBufferSuite.h"
 #include "FileUtil.h"
 #include "InputLayerIndex.h"
-#include <boost/endian.hpp>
 #include <string>
 
 namespace
 {
-    struct Gmic8bfInputImageHeader
-    {
-        Gmic8bfInputImageHeader(
-            int32 imageWidth,
-            int32 imageHeight,
-            int32 imageNumberOfChannels,
-            int32 imageBitsPerChannel,
-            bool planarChannelOrder,
-            int32 imageTileWidth,
-            int32 imageTileHeight)
-        {
-            // G8II = GMIC 8BF input image
-            signature[0] = 'G';
-            signature[1] = '8';
-            signature[2] = 'I';
-            signature[3] = 'I';
-            version = 2;
-            width = imageWidth;
-            height = imageHeight;
-            numberOfChannels = imageNumberOfChannels;
-            bitsPerChannel = imageBitsPerChannel;
-            flags = planarChannelOrder ? 1 : 0;
-            tileWidth = imageTileWidth;
-            tileHeight = imageTileHeight;
-        }
-
-        char signature[4];
-        boost::endian::little_int32_t version;
-        boost::endian::little_int32_t width;
-        boost::endian::little_int32_t height;
-        boost::endian::little_int32_t numberOfChannels;
-        boost::endian::little_int32_t bitsPerChannel;
-        boost::endian::little_int32_t flags;
-        boost::endian::little_int32_t tileWidth;
-        boost::endian::little_int32_t tileHeight;
-    };
-
     uint16 Normalize16BitRange(uint16 value)
     {
         // The host provides 16-bit data in the range of [0, 32768], convert it to the
@@ -96,7 +59,7 @@ namespace
             imageDataLength *= 2;
         }
 
-        uint64 fileLength = sizeof(Gmic8bfInputImageHeader) + imageDataLength;
+        uint64 fileLength = sizeof(Gmic8bfImageHeader) + imageDataLength;
 
         if (fileLength <= static_cast<uint64>(std::numeric_limits<int64>::max()))
         {
@@ -148,7 +111,7 @@ namespace
         const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
         const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
 
-        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
+        Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
 
         WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
@@ -268,7 +231,7 @@ namespace
         const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
         const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
 
-        Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
+        Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
 
         WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
@@ -418,7 +381,7 @@ void WritePixelsFromCallback(
 
     PreallocateFile(file.get(), width, height, numberOfChannels, bitsPerChannel);
 
-    Gmic8bfInputImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, planar, tileWidth, tileHeight);
+    Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, planar, tileWidth, tileHeight);
 
     WriteFile(file.get(), &fileHeader, sizeof(fileHeader));
 

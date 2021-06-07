@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "ImageConversionWin.h"
-#include "GmicInputWriter.h"
+#include "Gmic8bfImageWriter.h"
 #include "ReadOnlyMemoryStream.h"
 #include <boost/filesystem.hpp>
 #include <wincodec.h>

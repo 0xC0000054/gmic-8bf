@@ -14,7 +14,7 @@
 #include "GmicPlugin.h"
 #include "FileUtil.h"
 #include "InputLayerIndex.h"
-#include "GmicInputWriter.h"
+#include "Gmic8bfImageWriter.h"
 #include "resource.h"
 #include <string>
 #include <wil\result.h>

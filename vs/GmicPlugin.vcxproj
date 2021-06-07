@@ -208,11 +208,14 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\common\Gmic8bfImageHeader.h" />
+    <ClInclude Include="..\src\common\Gmic8bfImageReader.h" />
+    <ClInclude Include="..\src\common\Gmic8bfImageWriter.h" />
+    <ClInclude Include="..\src\common\PngWriter.h" />
     <ClInclude Include="..\src\common\ScopedBufferSuite.h" />
     <ClInclude Include="..\src\common\ClipboardUtil.h" />
     <ClInclude Include="..\src\common\FileUtil.h" />
     <ClInclude Include="..\src\common\FolderBrowser.h" />
-    <ClInclude Include="..\src\common\GmicInputWriter.h" />
     <ClInclude Include="..\src\common\GmicIOSettingsPlugin.h" />
     <ClInclude Include="..\src\common\GmicPlugin.h" />
     <ClInclude Include="..\src\common\ImageConversion.h" />
@@ -226,7 +229,6 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\win\CommonUIWin.h" />
     <ClInclude Include="..\src\win\FileUtilWin.h" />
     <ClInclude Include="..\src\win\FolderBrowserWin.h" />
-    <ClInclude Include="..\src\common\PngReader.h" />
     <ClInclude Include="..\src\win\ImageConversionWin.h" />
     <ClInclude Include="..\src\win\ImageLoadDialogWin.h" />
     <ClInclude Include="..\src\win\ImageSaveDialogWin.h" />
@@ -243,7 +245,9 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\src\common\Common.cpp" />
     <ClCompile Include="..\src\common\FileUtil.cpp" />
     <ClCompile Include="..\src\common\FolderBrowser.cpp" />
-    <ClCompile Include="..\src\common\GmicInputWriter.cpp" />
+    <ClCompile Include="..\src\common\Gmic8bfImageHeader.cpp" />
+    <ClCompile Include="..\src\common\Gmic8bfImageReader.cpp" />
+    <ClCompile Include="..\src\common\Gmic8bfImageWriter.cpp" />
     <ClCompile Include="..\src\common\GmicIOSettingsPlugin.cpp" />
     <ClCompile Include="..\src\common\GmicPlugin.cpp" />
     <ClCompile Include="..\src\common\ImageConversion.cpp" />
@@ -252,6 +256,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\src\common\InputLayerIndex.cpp" />
     <ClCompile Include="..\src\common\InputLayerInfo.cpp" />
     <ClCompile Include="..\src\common\Memory.cpp" />
+    <ClCompile Include="..\src\common\PngWriter.cpp" />
     <ClCompile Include="..\src\common\Read.cpp" />
     <ClCompile Include="..\src\common\Utilities.cpp" />
     <ClCompile Include="..\src\common\Write.cpp" />
@@ -260,7 +265,6 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\src\win\dllmain.cpp" />
     <ClCompile Include="..\src\win\FileUtilWin.cpp" />
     <ClCompile Include="..\src\win\FolderBrowserWin.cpp" />
-    <ClCompile Include="..\src\common\PngReader.cpp" />
     <ClCompile Include="..\src\win\GmicIOSettingsUIWin.cpp" />
     <ClCompile Include="..\src\win\GmicPluginUIWin.cpp" />
     <ClCompile Include="..\src\win\ImageConversionWin.cpp" />

@@ -15,7 +15,8 @@
 #include "GmicIOSettings.h"
 #include "FolderBrowser.h"
 #include "ImageSaveDialog.h"
-#include "PngReader.h"
+#include "Gmic8bfImageReader.h"
+#include "PngWriter.h"
 #include "resource.h"
 #include <algorithm>
 #include <memory>
@@ -133,23 +134,29 @@ OSErr ReadGmicOutput(
         }
         else
         {
+            const char* const outputFileExtension = ".png";
+
             if (filePaths.size() == 1)
             {
                 const boost::filesystem::path& filePath = filePaths[0];
                 const VPoint& documentSize = GetImageSize(filterRecord);
-                bool imageSizeMatchesDocument = PngImageSizeMatchesDocument(filePath, documentSize);
+                bool imageSizeMatchesDocument = ImageSizeMatchesDocument(filePath, documentSize);
 
                 if (imageSizeMatchesDocument)
                 {
-                    LoadPngImage(filePath, filterRecord);
+                    CopyImageToActiveLayer(filePath, filterRecord);
                 }
                 else
                 {
-                    boost::filesystem::path outputFileName;
+                    boost::filesystem::path outputFilePath;
 
-                    OSErrException::ThrowIfError(GetResizedImageOutputPath(filterRecord, settings, filePath.filename(), outputFileName));
+                    OSErrException::ThrowIfError(GetResizedImageOutputPath(
+                        filterRecord,
+                        settings,
+                        filePath.filename().replace_extension(outputFileExtension),
+                        outputFilePath));
 
-                    boost::filesystem::copy_file(filePath, outputFileName, boost::filesystem::copy_options::overwrite_existing);
+                    ConvertGmic8bfImageToPng(filterRecord, filePath, outputFilePath);
                 }
             }
             else
@@ -162,12 +169,12 @@ OSErr ReadGmicOutput(
 
                 for (size_t i = 0; i < filePaths.size(); i++)
                 {
-                    const boost::filesystem::path& oldPath = filePaths[i];
+                    const boost::filesystem::path& inputFilePath = filePaths[i];
 
-                    boost::filesystem::path newPath = outputFolder;
-                    newPath /= oldPath.filename();
+                    boost::filesystem::path outputFilePath = outputFolder;
+                    outputFilePath /= inputFilePath.filename().replace_extension(outputFileExtension);
 
-                    boost::filesystem::copy_file(oldPath, newPath, boost::filesystem::copy_options::overwrite_existing);
+                    ConvertGmic8bfImageToPng(filterRecord, inputFilePath, outputFilePath);
                 }
             }
         }

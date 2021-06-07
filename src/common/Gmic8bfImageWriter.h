@@ -12,8 +12,8 @@
 
 #pragma once
 
-#ifndef GMICINPUTWRITER_H
-#define GMICINPUTWRITER_H
+#ifndef GMIC8BFIMAGEWRITER_H
+#define GMIC8BFIMAGEWRITER_H
 
 #include "GmicPlugin.h"
 #include "InputLayerIndex.h"
@@ -59,4 +59,4 @@ void SaveAllLayers(
     FilterRecordPtr filterRecord);
 #endif // PSSDK_HAS_LAYER_SUPPORT
 
-#endif // !GMICINPUTWRITER_H
+#endif // !GMIC8BFIMAGEWRITER_H
