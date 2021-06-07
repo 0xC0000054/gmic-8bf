@@ -16,9 +16,11 @@
 #define COMMON_H
 
 #ifdef _MSC_VER
-// Suppress C4121: 'FilterRecord': alignment of a member was sensitive to packing
 #pragma warning(push)
+// Suppress C4121: 'FilterRecord': alignment of a member was sensitive to packing
 #pragma warning(disable: 4121)
+// Suppress C26495: Variable '%variable%' is uninitialized.
+#pragma warning(disable: 26495)
 #endif // _MSC_VER
 
 #include "PIDefines.h"
