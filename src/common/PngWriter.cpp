@@ -13,7 +13,6 @@
 #include "PngWriter.h"
 #include "FileUtil.h"
 #include "Gmic8bfImageHeader.h"
-#include <boost/endian.hpp>
 #include <new>
 #include <string>
 #include <setjmp.h>
