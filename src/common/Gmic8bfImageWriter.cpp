@@ -74,17 +74,17 @@ namespace
         int32 width = imageSize.h;
         int32 height = imageSize.v;
 
-        int32 bitDepth;
+        int32 bitsPerChannel;
 
         switch (filterRecord->imageMode)
         {
         case plugInModeGrayScale:
         case plugInModeRGBColor:
-            bitDepth = 8;
+            bitsPerChannel = 8;
             break;
         case plugInModeGray16:
         case plugInModeRGB48:
-            bitDepth = 16;
+            bitsPerChannel = 16;
             break;
         default:
             throw OSErrException(filterBadMode);
@@ -106,12 +106,12 @@ namespace
             throw OSErrException(filterBadMode);
         }
 
-        PreallocateFile(fileHandle, width, height, numberOfChannels, bitDepth);
+        PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
 
         const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
         const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
 
-        Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
+        Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, /* planar */ true, tileWidth, tileHeight);
 
         WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
@@ -156,7 +156,7 @@ namespace
 
                     int32 outputStride = columnCount;
 
-                    if (bitDepth == 16)
+                    if (bitsPerChannel == 16)
                     {
                         outputStride *= 2;
                         ScaleSixteenBitDataToOutputRange(filterRecord->inData, columnCount, rowCount, filterRecord->inRowBytes);
@@ -194,17 +194,17 @@ namespace
         int32 width = imageSize.h;
         int32 height = imageSize.v;
 
-        int32 bitDepth;
+        int32 bitsPerChannel;
 
         switch (filterRecord->imageMode)
         {
         case plugInModeGrayScale:
         case plugInModeRGBColor:
-            bitDepth = 8;
+            bitsPerChannel = 8;
             break;
         case plugInModeGray16:
         case plugInModeRGB48:
-            bitDepth = 16;
+            bitsPerChannel = 16;
             break;
         default:
             throw OSErrException(filterBadMode);
@@ -226,12 +226,12 @@ namespace
             throw OSErrException(filterBadMode);
         }
 
-        PreallocateFile(fileHandle, width, height, numberOfChannels, bitDepth);
+        PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
 
         const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
         const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
 
-        Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitDepth, /* planar */ true, tileWidth, tileHeight);
+        Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, /* planar */ true, tileWidth, tileHeight);
 
         WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
@@ -347,7 +347,7 @@ namespace
                             throw OSErrException(readErr);
                         }
 
-                        if (bitDepth == 16)
+                        if (bitsPerChannel == 16)
                         {
                             ScaleSixteenBitDataToOutputRange(dest.data, columnCount, rowCount, tileRowBytes);
                         }
