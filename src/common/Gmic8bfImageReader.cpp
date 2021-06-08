@@ -16,7 +16,6 @@
 #include "ScopedBufferSuite.h"
 #include <algorithm>
 #include <new>
-#include <boost/endian.hpp>
 
 namespace
 {
@@ -91,7 +90,7 @@ namespace
                 // Clip the output to the mask, if one is present.
                 if (mask == nullptr || *mask != 0)
                 {
-                    dstPixel[0] = sixteenBitToHostLUT[boost::endian::little_to_native(srcPixel[0])];
+                    dstPixel[0] = sixteenBitToHostLUT[srcPixel[0]];
                 }
 
                 srcPixel++;

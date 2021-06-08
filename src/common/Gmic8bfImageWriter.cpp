@@ -39,7 +39,7 @@ namespace
             for (int32 x = 0; x < width; x++)
             {
                 // We always store 16-bit data in little-endian.
-                *row = boost::endian::native_to_little(Normalize16BitRange(*row));
+                *row = Normalize16BitRange(*row);
                 row++;
             }
         }

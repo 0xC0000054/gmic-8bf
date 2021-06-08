@@ -11,7 +11,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "InputLayerInfo.h"
-#include <boost/endian.hpp>
 
 namespace
 {
@@ -22,7 +21,7 @@ namespace
             throw std::runtime_error("The string length exceeds 2GB.");
         }
 
-        boost::endian::little_int32_t stringLength = static_cast<int32>(value.size());
+        int32_t stringLength = static_cast<int32>(value.size());
 
         WriteFile(fileHandle, &stringLength, sizeof(stringLength));
 
@@ -38,9 +37,9 @@ namespace
             layerIsVisible = visible ? 1 : 0;
         }
 
-        boost::endian::little_int32_t layerWidth;
-        boost::endian::little_int32_t layerHeight;
-        boost::endian::little_int32_t layerIsVisible;
+        int32_t layerWidth;
+        int32_t layerHeight;
+        int32_t layerIsVisible;
     };
 }
 

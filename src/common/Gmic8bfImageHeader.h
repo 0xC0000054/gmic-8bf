@@ -16,7 +16,6 @@
 #pragma once
 
 #include "FileUtil.h"
-#include <boost/endian.hpp>
 
 struct Gmic8bfImageHeader
 {
@@ -50,14 +49,15 @@ struct Gmic8bfImageHeader
 private:
 
     char signature[4];
-    boost::endian::little_int32_t version;
-    boost::endian::little_int32_t width;
-    boost::endian::little_int32_t height;
-    boost::endian::little_int32_t numberOfChannels;
-    boost::endian::little_int32_t bitsPerChannel;
-    boost::endian::little_int32_t flags;
-    boost::endian::little_int32_t tileWidth;
-    boost::endian::little_int32_t tileHeight;
+    char endian[4]; // This field is 4 bytes to maintain structure alignment.
+    int32_t version;
+    int32_t width;
+    int32_t height;
+    int32_t numberOfChannels;
+    int32_t bitsPerChannel;
+    int32_t flags;
+    int32_t tileWidth;
+    int32_t tileHeight;
 };
 
 #endif // !GMIC8BFIMAGEHEADER_H

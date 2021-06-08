@@ -103,6 +103,9 @@ namespace
             case 10:
                 err = ShowErrorMessage("Attempted to read past the end of the file.", filterRecord, eofErr);
                 break;
+            case 11:
+                err = ShowErrorMessage("The Qt platform byte order does not match the plug-in.", filterRecord, ioErr);
+                break;
             default:
 
                 char buffer[1024] = { 0 };

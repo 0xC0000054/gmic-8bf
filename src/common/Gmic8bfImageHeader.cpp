@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "Gmic8bfImageHeader.h"
+#include <boost/predef.h>
 
 #ifdef _MSC_VER
 // Suppress C26495: Always initialize a member variable.
@@ -26,6 +27,19 @@ Gmic8bfImageHeader::Gmic8bfImageHeader(const FileHandle* fileHandle)
     if (strncmp(signature, "G8IM", 4) != 0)
     {
         throw std::runtime_error("The Gmic8bfImage has an invalid file signature.");
+    }
+
+#if BOOST_ENDIAN_BIG_BYTE
+    const char* const platformEndian = "BEDN";
+#elif BOOST_ENDIAN_LITTLE_BYTE
+    const char* const platformEndian = "LEDN";
+#else
+#error "Unknown endianness on this platform."
+#endif
+
+    if (strncmp(endian, platformEndian, 4) != 0)
+    {
+        throw std::runtime_error("The Gmic8bfImage endianess does not match the current platform.");
     }
 }
 
@@ -47,6 +61,19 @@ Gmic8bfImageHeader::Gmic8bfImageHeader(
     signature[1] = '8';
     signature[2] = 'I';
     signature[3] = 'M';
+#if BOOST_ENDIAN_BIG_BYTE
+    endian[0] = 'B';
+    endian[1] = 'E';
+    endian[2] = 'D';
+    endian[3] = 'N';
+#elif BOOST_ENDIAN_LITTLE_BYTE
+    endian[0] = 'L';
+    endian[1] = 'E';
+    endian[2] = 'D';
+    endian[3] = 'N';
+#else
+#error "Unknown endianness on this platform."
+#endif
     version = 1;
     width = imageWidth;
     height = imageHeight;

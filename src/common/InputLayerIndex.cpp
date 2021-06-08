@@ -17,7 +17,7 @@
 #include "FileUtil.h"
 #include <codecvt>
 #include <locale>
-#include <boost/endian.hpp>
+#include <boost/predef.h>
 
 namespace
 {
@@ -29,12 +29,25 @@ namespace
             bool isGrayScale,
             bool isSixteenBitsPerChannel)
         {
-            // G8IX = GMIC 8BF index
+            // G8LI = GMIC 8BF layer index
             signature[0] = 'G';
             signature[1] = '8';
-            signature[2] = 'I';
-            signature[3] = 'X';
-            version = 3;
+            signature[2] = 'L';
+            signature[3] = 'I';
+#if BOOST_ENDIAN_BIG_BYTE
+            endian[0] = 'B';
+            endian[1] = 'E';
+            endian[2] = 'D';
+            endian[3] = 'N';
+#elif BOOST_ENDIAN_LITTLE_BYTE
+            endian[0] = 'L';
+            endian[1] = 'E';
+            endian[2] = 'D';
+            endian[3] = 'N';
+#else
+#error "Unknown endianness on this platform."
+#endif
+            version = 1;
             layerCount = numberOfLayers;
             activeLayerIndex = activeLayer;
             documentFlags = 0;
@@ -51,10 +64,11 @@ namespace
         }
 
         char signature[4];
-        boost::endian::little_int32_t version;
-        boost::endian::little_int32_t layerCount;
-        boost::endian::little_int32_t activeLayerIndex;
-        boost::endian::little_int32_t documentFlags;
+        char endian[4]; // This field is 4 bytes to maintain structure alignment.
+        int32_t version;
+        int32_t layerCount;
+        int32_t activeLayerIndex;
+        int32_t documentFlags;
     };
 
     void WriteAlternateInputImagePath(const FileHandle* fileHandle, const boost::filesystem::path& path)
@@ -67,7 +81,7 @@ namespace
             throw std::runtime_error("The string length exceeds 2GB.");
         }
 
-        boost::endian::little_int32_t stringLength = static_cast<int32>(value.size());
+        int32_t stringLength = static_cast<int32>(value.size());
 
         WriteFile(fileHandle, &stringLength, sizeof(stringLength));
 
