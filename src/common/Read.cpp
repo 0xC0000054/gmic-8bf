@@ -18,6 +18,7 @@
 #include "Gmic8bfImageReader.h"
 #include "PngWriter.h"
 #include "resource.h"
+#include "Utilities.h"
 #include <algorithm>
 #include <memory>
 #include <vector>

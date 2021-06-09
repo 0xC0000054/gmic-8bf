@@ -15,9 +15,9 @@
 #ifndef GMIC8BFIMAGEWRITER_H
 #define GMIC8BFIMAGEWRITER_H
 
-#include "GmicPlugin.h"
 #include "InputLayerIndex.h"
 #include "FileUtil.h"
+#include "Utilities.h"
 #include <boost/filesystem.hpp>
 
 typedef void(*WritePixelsCallback)(

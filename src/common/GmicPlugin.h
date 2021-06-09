@@ -17,7 +17,6 @@
 
 #include "Common.h" // Common definitions that are shared between plug-ins
 #include "PIAbout.h"
-#include "PIProperties.h"
 #include "GmicIOSettings.h"
 
 // A 4-byte Boolean used in the FilterParameters structure for alignment purposes.
@@ -28,13 +27,6 @@ struct FilterParameters
     GPBoolean lastSelectorWasParameters;
     GPBoolean showUI;
 };
-
-// Support compiling with the 7.0 and earlier SDKs.
-#if defined(kCurrentMaxVersReadLayerDesc) && defined(propNumberOfLayers) && defined(propTargetLayerIndex)
-#define PSSDK_HAS_LAYER_SUPPORT 1
-#else
-#define PSSDK_HAS_LAYER_SUPPORT 0
-#endif
 
 FilterParameters* LockParameters(FilterRecordPtr filterRecord);
 void UnlockParameters(FilterRecordPtr filterRecord);
@@ -56,29 +48,5 @@ constexpr Fixed int2fixed(int value)
 {
     return value << 16;
 }
-
-OSErr NewPIHandle(const FilterRecordPtr filterRecord, int32 size, Handle* handle);
-void DisposePIHandle(const FilterRecordPtr filterRecord, Handle handle);
-Ptr LockPIHandle(const FilterRecordPtr filterRecord, Handle handle, Boolean moveHigh);
-void UnlockPIHandle(const FilterRecordPtr filterRecord, Handle handle);
-
-bool HandleSuiteIsAvailable(const FilterRecord* filterRecord);
-bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName);
-bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
-int32 GetImagePlaneCount(int16 imageMode, int32 layerPlanes, int32 transparencyPlanes);
-VPoint GetImageSize(const FilterRecordPtr filterRecord);
-int32 GetTileHeight(int16 suggestedTileHeight);
-int32 GetTileWidth(int16 suggestedTileWidth);
-void SetInputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
-void SetOutputRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
-void SetMaskRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bottom, int32 right);
-bool TryMultiplyInt32(int32 a, int32 x, int32& result);
-
-#if PSSDK_HAS_LAYER_SUPPORT
-std::string ConvertLayerNameToUTF8(const uint16* layerName);
-bool DocumentHasMultipleLayers(const FilterRecord* filterRecord);
-bool HostSupportsReadingFromMultipleLayers(const FilterRecord* filterRecord);
-bool TryGetTargetLayerIndex(const FilterRecord* filterRecord, int32& targetLayerIndex);
-#endif // PSSDK_HAS_LAYER_SUPPORT
 
 #endif // !GMICPLUGIN_H

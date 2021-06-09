@@ -211,6 +211,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\common\Gmic8bfImageHeader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageReader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageWriter.h" />
+    <ClInclude Include="..\src\common\Memory.h" />
     <ClInclude Include="..\src\common\PngWriter.h" />
     <ClInclude Include="..\src\common\ScopedBufferSuite.h" />
     <ClInclude Include="..\src\common\ClipboardUtil.h" />
@@ -224,6 +225,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\common\InputLayerIndex.h" />
     <ClInclude Include="..\src\common\InputLayerInfo.h" />
     <ClInclude Include="..\src\common\OSErrException.h" />
+    <ClInclude Include="..\src\common\Utilities.h" />
     <ClInclude Include="..\src\common\version.h" />
     <ClInclude Include="..\src\win\ClipboardUtilWin.h" />
     <ClInclude Include="..\src\win\CommonUIWin.h" />

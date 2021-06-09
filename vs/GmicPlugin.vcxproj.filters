@@ -108,6 +108,12 @@
     <ClInclude Include="..\src\common\PngWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\common\Utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\common\Memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\common\FileUtil.cpp">

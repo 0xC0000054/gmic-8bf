@@ -16,6 +16,7 @@
 #include "InputLayerIndex.h"
 #include "Gmic8bfImageWriter.h"
 #include "resource.h"
+#include "Utilities.h"
 #include <string>
 #include <wil\result.h>
 

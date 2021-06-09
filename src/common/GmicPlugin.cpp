@@ -15,7 +15,9 @@
 #include "GmicIOSettings.h"
 #include <vector>
 #include "FileUtil.h"
+#include "Memory.h"
 #include "resource.h"
+#include "Utilities.h"
 #include "version.h"
 #include <stdexcept>
 #include <boost/process.hpp>

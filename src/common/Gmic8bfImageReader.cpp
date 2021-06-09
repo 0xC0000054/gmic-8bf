@@ -14,6 +14,7 @@
 #include "Gmic8bfImageHeader.h"
 #include "FileUtil.h"
 #include "ScopedBufferSuite.h"
+#include "Utilities.h"
 #include <algorithm>
 #include <new>
 

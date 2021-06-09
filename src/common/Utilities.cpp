@@ -10,7 +10,7 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "GmicPlugin.h"
+#include "Utilities.h"
 #include <codecvt>
 #include <locale>
 #include <string>

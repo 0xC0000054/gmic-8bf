@@ -10,7 +10,8 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "GmicPlugin.h"
+#include "Memory.h"
+#include "Utilities.h"
 
 #if __PIWin__
 #include "MemoryWin.h"

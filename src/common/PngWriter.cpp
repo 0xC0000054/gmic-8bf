@@ -13,6 +13,7 @@
 #include "PngWriter.h"
 #include "FileUtil.h"
 #include "Gmic8bfImageHeader.h"
+#include "Utilities.h"
 #include <new>
 #include <string>
 #include <setjmp.h>
