@@ -21,7 +21,7 @@ class unique_buffer_suite_buffer
 {
 public:
     explicit unique_buffer_suite_buffer(FilterRecordPtr filterRecord, int32 bufferSize)
-        : bufferID(), filterRecord(filterRecord), bufferIDValid(false)
+        : bufferID(), bufferDataPtr(nullptr), filterRecord(filterRecord), bufferIDValid(false)
     {
         OSErrException::ThrowIfError(filterRecord->bufferProcs->allocateProc(bufferSize, &bufferID));
         bufferIDValid = true;
@@ -32,18 +32,37 @@ public:
         if (bufferIDValid)
         {
             bufferIDValid = false;
-            filterRecord->bufferProcs->unlockProc(bufferID);
+            if (bufferDataPtr != nullptr)
+            {
+                filterRecord->bufferProcs->unlockProc(bufferID);
+            }
             filterRecord->bufferProcs->freeProc(bufferID);
         }
     }
 
     void* Lock()
     {
-        return filterRecord->bufferProcs->lockProc(bufferID, false);
+        if (!bufferIDValid)
+        {
+            throw std::runtime_error("Cannot Lock an invalid buffer.");
+        }
+
+        if (bufferDataPtr == nullptr)
+        {
+            bufferDataPtr = filterRecord->bufferProcs->lockProc(bufferID, false);
+
+            if (bufferDataPtr == nullptr)
+            {
+                throw std::runtime_error("Unable to lock the BufferSuite buffer.");
+            }
+        }
+
+        return bufferDataPtr;
     }
 
 private:
     BufferID bufferID;
+    void* bufferDataPtr;
     FilterRecordPtr filterRecord;
     bool bufferIDValid;
 };
