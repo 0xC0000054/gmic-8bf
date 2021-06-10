@@ -240,7 +240,7 @@ namespace
                     result = true;
                 }
 
-                filterRecord->sSPBasic->ReleaseSuite(kPSActionDescriptorSuite, 2);
+                filterRecord->sSPBasic->ReleaseSuite(kASZStringSuite, 1);
             }
         }
 
