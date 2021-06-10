@@ -428,8 +428,9 @@ OSErr GmicQtParameters::ReadFilterInputMode(
 
         if (stringLength == 0)
         {
+            // This should never happen, but if it does we just release the allocated ZString.
+            // The class constructor already set the input mode to its default value.
             zstringSuite->Release(zstr);
-            inputMode = std::string();
         }
         else
         {
