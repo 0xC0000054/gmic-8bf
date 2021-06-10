@@ -58,6 +58,8 @@ namespace
     OSErr ExecuteGmicQt(
         const boost::filesystem::path& indexFilePath,
         const boost::filesystem::path& outputDir,
+        const boost::filesystem::path& gmicParametersFilePath,
+        bool showFullUI,
         FilterRecordPtr filterRecord)
     {
         OSErr err = noErr;
@@ -66,9 +68,9 @@ namespace
         {
             boost::filesystem::path gmicExecutablePath = GetGmicQtPath();
 
-            boost::filesystem::path reapply = ShowUI(filterRecord) ? "" : "reapply";
+            boost::filesystem::path reapply = showFullUI ? "" : "reapply";
 
-            boost::process::child child(gmicExecutablePath, indexFilePath, outputDir, reapply);
+            boost::process::child child(gmicExecutablePath, indexFilePath, outputDir, gmicParametersFilePath, reapply);
 
             child.wait();
 
@@ -400,18 +402,36 @@ OSErr DoStart(FilterRecord* filterRecord)
         if (err == noErr)
         {
             boost::filesystem::path indexFilePath;
+            boost::filesystem::path gmicParametersFilePath;
 
-            err = WriteGmicFiles(inputDir, indexFilePath, filterRecord, settings);
+            err = WriteGmicFiles(
+                inputDir,
+                indexFilePath,
+                gmicParametersFilePath,
+                filterRecord,
+                settings);
             DebugOut("After WriteGmicFiles err=%d", err);
 
             if (err == noErr)
             {
-                err = ExecuteGmicQt(indexFilePath, outputDir, filterRecord);
+                const bool showFullUI = ShowUI(filterRecord);
+
+                err = ExecuteGmicQt(
+                    indexFilePath,
+                    outputDir,
+                    gmicParametersFilePath,
+                    showFullUI,
+                    filterRecord);
                 DebugOut("After ExecuteGmicQt err=%d", err);
 
                 if (err == noErr)
                 {
-                    err = ReadGmicOutput(outputDir, filterRecord, settings);
+                    err = ReadGmicOutput(
+                        outputDir,
+                        gmicParametersFilePath,
+                        showFullUI,
+                        filterRecord,
+                        settings);
                     DebugOut("After ReadGmicOutput err=%d", err);
                 }
             }

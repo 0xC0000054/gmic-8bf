@@ -26,6 +26,7 @@
 #endif
 
 bool HandleSuiteIsAvailable(const FilterRecord* filterRecord);
+bool SPBasicSuiteIsAvailable(const FilterRecord* filterRecord);
 bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName);
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
 int32 GetImagePlaneCount(int16 imageMode, int32 layerPlanes, int32 transparencyPlanes);

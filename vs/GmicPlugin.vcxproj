@@ -211,6 +211,8 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\common\Gmic8bfImageHeader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageReader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageWriter.h" />
+    <ClInclude Include="..\src\common\GmicPluginTerminology.h" />
+    <ClInclude Include="..\src\common\GmicQtParameters.h" />
     <ClInclude Include="..\src\common\Memory.h" />
     <ClInclude Include="..\src\common\PngWriter.h" />
     <ClInclude Include="..\src\common\ScopedBufferSuite.h" />
@@ -252,6 +254,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\src\common\Gmic8bfImageWriter.cpp" />
     <ClCompile Include="..\src\common\GmicIOSettingsPlugin.cpp" />
     <ClCompile Include="..\src\common\GmicPlugin.cpp" />
+    <ClCompile Include="..\src\common\GmicQtParameters.cpp" />
     <ClCompile Include="..\src\common\ImageConversion.cpp" />
     <ClCompile Include="..\src\common\ImageLoadDialog.cpp" />
     <ClCompile Include="..\src\common\ImageSaveDialog.cpp" />

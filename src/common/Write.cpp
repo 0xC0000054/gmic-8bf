@@ -15,22 +15,31 @@
 #include "FileUtil.h"
 #include "InputLayerIndex.h"
 #include "Gmic8bfImageWriter.h"
+#include "GmicQtParameters.h"
 #include "resource.h"
 #include "Utilities.h"
 #include <string>
 #include <wil\result.h>
 
-OSErr WriteGmicFiles(
-    const boost::filesystem::path& inputDir,
-    boost::filesystem::path& indexFilePath,
-    FilterRecord* filterRecord,
-    const GmicIOSettings& settings)
+namespace
 {
-    PrintFunctionName();
+    void WriteGmicParametersFile(
+        const boost::filesystem::path& gmicParametersFilePath,
+        FilterRecord* filterRecord)
+    {
+        GmicQtParameters parameters(filterRecord);
 
-    OSErr err = noErr;
+        if (parameters.IsValid())
+        {
+            parameters.SaveToFile(gmicParametersFilePath);
+        }
+    }
 
-    try
+    void WriteLayerIndexFile(
+        const boost::filesystem::path& inputDir,
+        const boost::filesystem::path& indexFilePath,
+        FilterRecord* filterRecord,
+        const GmicIOSettings& settings)
     {
         std::unique_ptr<InputLayerIndex> inputLayerIndex = std::make_unique<InputLayerIndex>(filterRecord->imageMode);
 
@@ -50,9 +59,30 @@ OSErr WriteGmicFiles(
             SaveActiveLayer(inputDir, inputLayerIndex.get(), filterRecord);
         }
 
+        inputLayerIndex->Write(indexFilePath, settings);
+    }
+}
+
+OSErr WriteGmicFiles(
+    const boost::filesystem::path& inputDir,
+    boost::filesystem::path& indexFilePath,
+    boost::filesystem::path& gmicParametersFilePath,
+    FilterRecord* filterRecord,
+    const GmicIOSettings& settings)
+{
+    PrintFunctionName();
+
+    OSErr err = noErr;
+
+    try
+    {
         indexFilePath = GetTemporaryFileName(inputDir, ".idx");
 
-        inputLayerIndex->Write(indexFilePath, settings);
+        WriteLayerIndexFile(inputDir, indexFilePath, filterRecord, settings);
+
+        gmicParametersFilePath = GetTemporaryFileName(inputDir, ".g8p");
+
+        WriteGmicParametersFile(gmicParametersFilePath, filterRecord);
     }
     catch (const std::bad_alloc&)
     {

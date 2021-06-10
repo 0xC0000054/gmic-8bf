@@ -458,6 +458,28 @@ namespace
 
         return propertySuiteAvailable;
     }
+
+    bool HostSPBasicSuiteAvailable(SPBasicSuite* proc)
+    {
+        bool available = true;
+
+        if (proc == nullptr)
+        {
+            available = false;
+        }
+        else if (proc->AcquireSuite == nullptr ||
+                 proc->ReleaseSuite == nullptr ||
+                 proc->IsEqual == nullptr ||
+                 proc->AllocateBlock == nullptr ||
+                 proc->FreeBlock == nullptr ||
+                 proc->ReallocateBlock == nullptr ||
+                 proc->Undefined == nullptr)
+        {
+            available = false;
+        }
+
+        return available;
+    }
 }
 
 bool HandleSuiteIsAvailable(const FilterRecord* filterRecord)
@@ -465,6 +487,13 @@ bool HandleSuiteIsAvailable(const FilterRecord* filterRecord)
     static bool handleProcsAvailable = HostHandleProcsAvailable(filterRecord);
 
     return handleProcsAvailable;
+}
+
+bool SPBasicSuiteIsAvailable(const FilterRecord* filterRecord)
+{
+    static bool spBasicSuiteAvailable = HostSPBasicSuiteAvailable(filterRecord->sSPBasic);
+
+    return spBasicSuiteAvailable;
 }
 
 bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName)

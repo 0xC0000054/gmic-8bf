@@ -16,6 +16,7 @@
 #include "FolderBrowser.h"
 #include "ImageSaveDialog.h"
 #include "Gmic8bfImageReader.h"
+#include "GmicQtParameters.h"
 #include "PngWriter.h"
 #include "resource.h"
 #include "Utilities.h"
@@ -114,10 +115,24 @@ namespace
             return GetNewImageFileName(filterRecord, originalFileName, outputFileName);
         }
     }
+
+    void ReadGmicParametersFile(
+        const boost::filesystem::path& gmicParametersFilePath,
+        FilterRecord* filterRecord)
+    {
+        GmicQtParameters parameters(gmicParametersFilePath);
+
+        if (parameters.IsValid())
+        {
+            parameters.SaveToDescriptor(filterRecord);
+        }
+    }
 }
 
 OSErr ReadGmicOutput(
     const boost::filesystem::path& outputDir,
+    const boost::filesystem::path& gmicParametersFilePath,
+    bool fullUIWasShown,
     FilterRecord* filterRecord,
     const GmicIOSettings& settings)
 {
@@ -177,6 +192,11 @@ OSErr ReadGmicOutput(
 
                     ConvertGmic8bfImageToPng(filterRecord, inputFilePath, outputFilePath);
                 }
+            }
+
+            if (fullUIWasShown)
+            {
+                ReadGmicParametersFile(gmicParametersFilePath, filterRecord);
             }
         }
     }

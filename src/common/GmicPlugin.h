@@ -35,12 +35,15 @@ OSErr DoAbout(const AboutRecord* aboutRecord) noexcept;
 
 OSErr ReadGmicOutput(
     const boost::filesystem::path& outputDir,
+    const boost::filesystem::path& gmicParametersFilePath,
+    bool fullUIWasShown,
     FilterRecord* filterRecord,
     const GmicIOSettings& settings);
 OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode);
 OSErr WriteGmicFiles(
     const boost::filesystem::path& inputDir,
     boost::filesystem::path& indexFilePath,
+    boost::filesystem::path& gmicParametersFilePath,
     FilterRecord* filterRecord,
     const GmicIOSettings& settings);
 

@@ -10,7 +10,7 @@
 
 #endif
 
-#include "PIActions.h"
+#include "GmicPluginTerminology.h"
 
 resource 'PiPL' ( 16000, "GmicPlugin", purgeable )
 {
@@ -34,6 +34,15 @@ resource 'PiPL' ( 16000, "GmicPlugin", purgeable )
 				CodeWin32X86 { "Gmic_Entry_Point" },
 			#endif
 		#endif
+
+		HasTerminology
+		{
+			plugInClassID,				// Class ID
+			plugInEventID,				// Event ID
+			16000,						// AETE ID
+			// Unique string or empty for AppleScript compliant:
+			"94310818-5BEB-4DBF-A9D5-6C0FD0B809FA"
+		},
 
 		SupportedModes
 		{
@@ -184,6 +193,56 @@ resource 'PiPL' ( 16001, "GmicOutputSettingsPlugin", purgeable )
 				filtersLayerMasks, worksWithBlankData,
 				copySourceToDestination
 			}
+		}
+	}
+};
+
+//-------------------------------------------------------------------------------
+//	Dictionary (scripting) resource
+//-------------------------------------------------------------------------------
+
+resource 'aete' (16000, plugInName "GmicPlugin dictionary", purgeable)
+{
+	1, 0, english, roman,									/* aete version and language specifiers */
+	{
+		"GmicPlugin developers",							/* vendor suite name */
+		"",													/* optional description */
+		plugInSuiteID,										/* suite ID */
+		1,													/* suite code, must be 1 */
+		1,													/* suite level, must be 1 */
+		{													/* structure for filters */
+			"G'MIC-Qt filter",										/* unique filter name */
+			"",												/* optional description */
+			plugInClassID,									/* class ID, must be unique or Suite ID */
+			plugInEventID,									/* event ID, must be unique to class ID */
+
+			NO_REPLY,										/* never a reply */
+			IMAGE_DIRECT_PARAMETER,							/* direct parameter, used by Photoshop */
+			{												/* parameters here, if any */
+				"Filter Name",								/* parameter name */
+				keyFilterName,								/* parameter key ID */
+				typeChar,									/* parameter type ID */
+				"",											/* optional description */
+				flagsSingleParameter,						/* parameter flags */
+
+				"Input Mode",								// second parameter
+				keyFilterInputMode,							// parameter key ID
+				typeChar,									// parameter type ID
+				"",											// optional description
+				flagsSingleParameter,						// parameter flags
+
+				"G'MIC-Qt Data",							// third parameter
+				keyFilterOpaqueData,						// parameter key ID
+				typeRawData,								// parameter type ID
+				"",											// optional description
+				flagsSingleParameter,						// parameter flags
+			}
+		},
+		{													/* non-filter plug-in class here */
+		},
+		{													/* comparison ops (not supported) */
+		},
+		{													/* any enumerations */
 		}
 	}
 };
