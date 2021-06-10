@@ -232,7 +232,7 @@ namespace
             {
                 // Ensure that the structure function pointer are not null.
                 if (suite != nullptr &&
-                    suite->MakeFromCString != nullptr &&
+                    suite->MakeFromUnicode != nullptr &&
                     suite->Release != nullptr &&
                     suite->LengthAsCString != nullptr &&
                     suite->AsCString != nullptr)
