@@ -17,6 +17,7 @@
 #include "ImageSaveDialog.h"
 #include "Gmic8bfImageReader.h"
 #include "GmicQtParameters.h"
+#include "ExrWriter.h"
 #include "PngWriter.h"
 #include "resource.h"
 #include "Utilities.h"
@@ -127,6 +128,23 @@ namespace
             parameters.SaveToDescriptor(filterRecord);
         }
     }
+
+    const char* GetOutputFileExtension(const FilterRecord* filterRecord)
+    {
+        switch (filterRecord->imageMode)
+        {
+        case plugInModeGrayScale:
+        case plugInModeRGBColor:
+        case plugInModeGray16:
+        case plugInModeRGB48:
+            return ".png";
+        case plugInModeGray32:
+        case plugInModeRGB96:
+            return ".exr";
+        default:
+            throw std::runtime_error("Unsupported image mode.");
+        }
+    }
 }
 
 OSErr ReadGmicOutput(
@@ -150,7 +168,7 @@ OSErr ReadGmicOutput(
         }
         else
         {
-            const char* const outputFileExtension = ".png";
+            const char* const outputFileExtension = GetOutputFileExtension(filterRecord);
 
             if (filePaths.size() == 1)
             {
@@ -172,7 +190,21 @@ OSErr ReadGmicOutput(
                         filePath.filename().replace_extension(outputFileExtension),
                         outputFilePath));
 
-                    ConvertGmic8bfImageToPng(filterRecord, filePath, outputFilePath);
+                    switch (filterRecord->imageMode)
+                    {
+                    case plugInModeGrayScale:
+                    case plugInModeRGBColor:
+                    case plugInModeGray16:
+                    case plugInModeRGB48:
+                        ConvertGmic8bfImageToPng(filterRecord, filePath, outputFilePath);
+                        break;
+                    case plugInModeGray32:
+                    case plugInModeRGB96:
+                        ConvertGmic8bfImageToExr(filterRecord, filePath, outputFilePath);
+                        break;
+                    default:
+                        throw std::runtime_error("Unsupported image mode.");
+                    }
                 }
             }
             else
@@ -190,7 +222,21 @@ OSErr ReadGmicOutput(
                     boost::filesystem::path outputFilePath = outputFolder;
                     outputFilePath /= inputFilePath.filename().replace_extension(outputFileExtension);
 
-                    ConvertGmic8bfImageToPng(filterRecord, inputFilePath, outputFilePath);
+                    switch (filterRecord->imageMode)
+                    {
+                    case plugInModeGrayScale:
+                    case plugInModeRGBColor:
+                    case plugInModeGray16:
+                    case plugInModeRGB48:
+                        ConvertGmic8bfImageToPng(filterRecord, inputFilePath, outputFilePath);
+                        break;
+                    case plugInModeGray32:
+                    case plugInModeRGB96:
+                        ConvertGmic8bfImageToExr(filterRecord, inputFilePath, outputFilePath);
+                        break;
+                    default:
+                        throw std::runtime_error("Unsupported image mode.");
+                    }
                 }
             }
 

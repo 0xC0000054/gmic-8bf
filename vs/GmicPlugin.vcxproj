@@ -208,6 +208,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\common\ExrWriter.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageHeader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageReader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageWriter.h" />
@@ -247,6 +248,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
   <ItemGroup>
     <ClCompile Include="..\src\common\ClipboardUtil.cpp" />
     <ClCompile Include="..\src\common\Common.cpp" />
+    <ClCompile Include="..\src\common\ExrWriter.cpp" />
     <ClCompile Include="..\src\common\FileUtil.cpp" />
     <ClCompile Include="..\src\common\FolderBrowser.cpp" />
     <ClCompile Include="..\src\common\Gmic8bfImageHeader.cpp" />

@@ -54,9 +54,19 @@ namespace
     {
         uint64 imageDataLength = static_cast<uint64>(width) * static_cast<uint64>(height) * static_cast<uint64>(numberOfChannels);
 
-        if (bitsPerChannel == 16)
+        switch (bitsPerChannel)
         {
+        case 8:
+            // Nothing to do.
+            break;
+        case 16:
             imageDataLength *= 2;
+            break;
+        case 32:
+            imageDataLength *= 4;
+            break;
+        default:
+            throw std::runtime_error("Unknown image bit depth.");
         }
 
         uint64 fileLength = sizeof(Gmic8bfImageHeader) + imageDataLength;
@@ -86,6 +96,10 @@ namespace
         case plugInModeRGB48:
             bitsPerChannel = 16;
             break;
+        case plugInModeGray32:
+        case plugInModeRGB96:
+            bitsPerChannel = 32;
+            break;
         default:
             throw OSErrException(filterBadMode);
         }
@@ -96,10 +110,12 @@ namespace
         {
         case plugInModeGrayScale:
         case plugInModeGray16:
+        case plugInModeGray32:
             numberOfChannels = hasTransparency ? 2 : 1;
             break;
         case plugInModeRGBColor:
         case plugInModeRGB48:
+        case plugInModeRGB96:
             numberOfChannels = hasTransparency ? 4 : 3;
             break;
         default:
@@ -124,6 +140,10 @@ namespace
         case plugInModeGray16:
         case plugInModeRGB48:
             filterRecord->inPlaneBytes = 2;
+            break;
+        case plugInModeGray32:
+        case plugInModeRGB96:
+            filterRecord->inPlaneBytes = 4;
             break;
         default:
             throw OSErrException(filterBadMode);
@@ -154,12 +174,25 @@ namespace
 
                     OSErrException::ThrowIfError(filterRecord->advanceState());
 
-                    int32 outputStride = columnCount;
+                    int32 outputStride;
 
-                    if (bitsPerChannel == 16)
+                    switch (filterRecord->imageMode)
                     {
-                        outputStride *= 2;
+                    case plugInModeGrayScale:
+                    case plugInModeRGBColor:
+                        outputStride = width;
+                        break;
+                    case plugInModeGray16:
+                    case plugInModeRGB48:
+                        outputStride = width * 2;
                         ScaleSixteenBitDataToOutputRange(filterRecord->inData, columnCount, rowCount, filterRecord->inRowBytes);
+                        break;
+                    case plugInModeGray32:
+                    case plugInModeRGB96:
+                        outputStride = width * 4;
+                        break;
+                    default:
+                        throw OSErrException(filterBadMode);
                     }
 
                     if (outputStride == filterRecord->inRowBytes)
@@ -206,6 +239,10 @@ namespace
         case plugInModeRGB48:
             bitsPerChannel = 16;
             break;
+        case plugInModeGray32:
+        case plugInModeRGB96:
+            bitsPerChannel = 32;
+            break;
         default:
             throw OSErrException(filterBadMode);
         }
@@ -216,10 +253,12 @@ namespace
         {
         case plugInModeGrayScale:
         case plugInModeGray16:
+        case plugInModeGray32:
             numberOfChannels = hasTransparency ? 2 : 1;
             break;
         case plugInModeRGBColor:
         case plugInModeRGB48:
+        case plugInModeRGB96:
             numberOfChannels = hasTransparency ? 4 : 3;
             break;
         default:
@@ -244,6 +283,10 @@ namespace
         case plugInModeGray16:
         case plugInModeRGB48:
             filterRecord->inPlaneBytes = 2;
+            break;
+        case plugInModeGray32:
+        case plugInModeRGB96:
+            filterRecord->inPlaneBytes = 4;
             break;
         default:
             throw OSErrException(filterBadMode);
@@ -290,11 +333,13 @@ namespace
             {
             case plugInModeGrayScale:
             case plugInModeGray16:
+            case plugInModeGray32:
                 imageChannels[0] = layerDescriptor->compositeChannelsList;
                 imageChannels[1] = layerDescriptor->transparency;
                 break;
             case plugInModeRGBColor:
             case plugInModeRGB48:
+            case plugInModeRGB96:
                 imageChannels[0] = layerDescriptor->compositeChannelsList;
                 imageChannels[1] = imageChannels[0]->next;
                 imageChannels[2] = imageChannels[1]->next;

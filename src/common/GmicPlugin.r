@@ -53,7 +53,7 @@ resource 'PiPL' ( 16000, "GmicPlugin", purgeable )
 			noDuotone, noLABColor
 		},
 
-		EnableInfo { "in (PSHOP_ImageMode, RGBMode, GrayScaleMode, RGB48Mode, Gray16Mode)" },
+		EnableInfo { "in (PSHOP_ImageMode, RGBMode, GrayScaleMode, RGB48Mode, Gray16Mode, RGB96Mode, Gray32Mode)" },
 
 		/* Limit large documents to 100,000 x 100,000 pixels. */
 		PlugInMaxSize { 100000, 100000 },
@@ -141,7 +141,7 @@ resource 'PiPL' ( 16001, "GmicOutputSettingsPlugin", purgeable )
 			noDuotone, noLABColor
 		},
 
-		EnableInfo { "in (PSHOP_ImageMode, RGBMode, GrayScaleMode, RGB48Mode, Gray16Mode)" },
+		EnableInfo { "in (PSHOP_ImageMode, RGBMode, GrayScaleMode, RGB48Mode, Gray16Mode, RGB96Mode, Gray32Mode)" },
 
 		/* Limit large documents to 100,000 x 100,000 pixels. */
 		PlugInMaxSize { 100000, 100000 },

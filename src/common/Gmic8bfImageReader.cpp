@@ -104,6 +104,40 @@ namespace
         }
     }
 
+    void CopyTileDataToHostThirtyTwoBitsPerChannel(
+        const uint8* const tileBuffer,
+        int32 tileBufferRowBytes,
+        int32 tileWidth,
+        int32 tileHeight,
+        uint8* outData,
+        int32 outRowBytes,
+        const uint8* maskData,
+        int32 maskRowBytes)
+    {
+        for (int32 y = 0; y < tileHeight; y++)
+        {
+            const float* srcPixel = reinterpret_cast<const float*>(tileBuffer + (static_cast<int64>(y) * tileBufferRowBytes));
+            float* dstPixel = reinterpret_cast<float*>(outData + (static_cast<int64>(y) * outRowBytes));
+            const uint8* mask = maskData != nullptr ? maskData + (static_cast<int64>(y) * maskRowBytes) : nullptr;
+
+            for (int32 x = 0; x < tileWidth; x++)
+            {
+                // Clip the output to the mask, if one is present.
+                if (mask == nullptr || *mask != 0)
+                {
+                    dstPixel[0] = srcPixel[0];
+                }
+
+                srcPixel++;
+                dstPixel++;
+                if (mask != nullptr)
+                {
+                    mask++;
+                }
+            }
+        }
+    }
+
     void PremultiplyAlphaEightBitsPerChannel(
         const uint8* const alphaData,
         int32 alphaRowBytes,
@@ -202,6 +236,55 @@ namespace
         }
     }
 
+    void PremultiplyAlphaThirtyTwoBitsPerChannel(
+        const uint8* const alphaData,
+        int32 alphaRowBytes,
+        int32 tileWidth,
+        int32 tileHeight,
+        uint8* outData,
+        int32 outRowBytes,
+        int32 outColumnStep,
+        const uint8* maskData,
+        int32 maskRowBytes)
+    {
+        for (int32 y = 0; y < tileHeight; y++)
+        {
+            const float* alphaPixel = reinterpret_cast<const float*>(alphaData + (static_cast<int64>(y) * alphaRowBytes));
+            float* pixel = reinterpret_cast<float*>(outData + (static_cast<int64>(y) * outRowBytes));
+            const uint8* mask = maskData != nullptr ? maskData + (static_cast<int64>(y) * maskRowBytes) : nullptr;
+
+            for (int32 x = 0; x < tileWidth; x++)
+            {
+                // Clip the output to the mask, if one is present.
+                if (mask == nullptr || *mask != 0)
+                {
+                    float alpha = std::clamp(*alphaPixel, 0.0f, 1.0f);
+
+                    switch (outColumnStep)
+                    {
+                    case 1:
+                        pixel[0] = pixel[0] * alpha;
+                        break;
+                    case 3:
+                        pixel[0] = pixel[0] * alpha;
+                        pixel[1] = pixel[1] * alpha;
+                        pixel[2] = pixel[2] * alpha;
+                        break;
+                    default:
+                        throw std::runtime_error("Unsupported image mode.");
+                    }
+                }
+
+                alphaPixel++;
+                pixel += outColumnStep;
+                if (mask != nullptr)
+                {
+                    mask++;
+                }
+            }
+        }
+    }
+
     void PremultiplyAlpha(
         const FileHandle* fileHandle,
         uint8* tileBuffer,
@@ -214,10 +297,12 @@ namespace
         {
         case plugInModeGrayScale:
         case plugInModeGray16:
+        case plugInModeGray32:
             filterRecord->outLoPlane = filterRecord->outHiPlane = 0;
             break;
         case plugInModeRGBColor:
         case plugInModeRGB48:
+        case plugInModeRGB96:
             filterRecord->outLoPlane = 0;
             filterRecord->outHiPlane = 2;
             break;
@@ -280,6 +365,19 @@ namespace
                 case plugInModeGray16:
                 case plugInModeRGB48:
                     PremultiplyAlphaSixteenBitsPerChannel(
+                        tileBuffer,
+                        tileBufferRowBytes,
+                        columnCount,
+                        rowCount,
+                        static_cast<uint8*>(filterRecord->outData),
+                        filterRecord->outRowBytes,
+                        outColumnStep,
+                        maskData,
+                        filterRecord->maskRowBytes);
+                    break;
+                case plugInModeGray32:
+                case plugInModeRGB96:
+                    PremultiplyAlphaThirtyTwoBitsPerChannel(
                         tileBuffer,
                         tileBufferRowBytes,
                         columnCount,
@@ -355,6 +453,35 @@ namespace
         }
     }
 
+    void SetAlphaChannelToOpaqueThirtyTwoBitsPerChannel(
+        int32 tileWidth,
+        int32 tileHeight,
+        uint8* outData,
+        int32 outDataStride,
+        const uint8* maskData,
+        int32 maskDataStride)
+    {
+        for (int32 y = 0; y < tileHeight; y++)
+        {
+            float* pixel = reinterpret_cast<float*>(outData + (static_cast<int64>(y) * outDataStride));
+            const uint8* mask = maskData != nullptr ? maskData + (static_cast<int64>(y) * maskDataStride) : nullptr;
+
+            for (int32 x = 0; x < tileWidth; x++)
+            {
+                if (mask == nullptr || *mask != 0)
+                {
+                    *pixel = 1.0f;
+                }
+
+                pixel++;
+                if (mask != nullptr)
+                {
+                    mask++;
+                }
+            }
+        }
+    }
+
     void SetAlphaChannelToOpaque(FilterRecord* filterRecord, const VPoint& imageSize)
     {
         int16 alphaChannelPlane;
@@ -362,10 +489,12 @@ namespace
         {
         case plugInModeGrayScale:
         case plugInModeGray16:
+        case plugInModeGray32:
             alphaChannelPlane = 1;
             break;
         case plugInModeRGBColor:
         case plugInModeRGB48:
+        case plugInModeRGB96:
             alphaChannelPlane = 3;
             break;
         default:
@@ -422,6 +551,16 @@ namespace
                 case plugInModeGray16:
                 case plugInModeRGB48:
                     SetAlphaChannelToOpaqueSixteenBitsPerChannel(
+                        columnCount,
+                        rowCount,
+                        static_cast<uint8*>(filterRecord->outData),
+                        filterRecord->outRowBytes,
+                        maskData,
+                        filterRecord->maskRowBytes);
+                    break;
+                case plugInModeGray32:
+                case plugInModeRGB96:
+                    SetAlphaChannelToOpaqueThirtyTwoBitsPerChannel(
                         columnCount,
                         rowCount,
                         static_cast<uint8*>(filterRecord->outData),
@@ -535,6 +674,9 @@ namespace
                         case 16:
                             tileBufferRowBytes = columnCount * 2;
                             break;
+                        case 32:
+                            tileBufferRowBytes = columnCount * 4;
+                            break;
                         default:
                             throw std::runtime_error("Unsupported bit depth.");
                         }
@@ -571,6 +713,18 @@ namespace
                         case plugInModeGray16:
                         case plugInModeRGB48:
                             CopyTileDataToHostSixteenBitsPerChannel(
+                                tileBuffer,
+                                tileBufferRowBytes,
+                                columnCount,
+                                rowCount,
+                                static_cast<uint8*>(filterRecord->outData),
+                                filterRecord->outRowBytes,
+                                maskData,
+                                filterRecord->maskRowBytes);
+                            break;
+                        case plugInModeGray32:
+                        case plugInModeRGB96:
+                            CopyTileDataToHostThirtyTwoBitsPerChannel(
                                 tileBuffer,
                                 tileBufferRowBytes,
                                 columnCount,

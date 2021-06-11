@@ -149,7 +149,9 @@ namespace
         if (filterRecord->imageMode != plugInModeRGBColor &&
             filterRecord->imageMode != plugInModeGrayScale &&
             filterRecord->imageMode != plugInModeRGB48 &&
-            filterRecord->imageMode != plugInModeGray16)
+            filterRecord->imageMode != plugInModeGray16 &&
+            filterRecord->imageMode != plugInModeRGB96 &&
+            filterRecord->imageMode != plugInModeGray32)
         {
             DebugOut("Unsupported imageMode: %d", filterRecord->imageMode);
 
