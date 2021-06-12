@@ -26,8 +26,7 @@ namespace
         IndexFileHeader(
             int32 numberOfLayers,
             int32 activeLayer,
-            bool isGrayScale,
-            bool isSixteenBitsPerChannel)
+            int16 imageMode)
         {
             // G8LI = GMIC 8BF layer index
             signature[0] = 'G';
@@ -50,17 +49,28 @@ namespace
             version = 1;
             layerCount = numberOfLayers;
             activeLayerIndex = activeLayer;
-            documentFlags = 0;
 
-            if (isGrayScale)
+            switch (imageMode)
             {
-                documentFlags |= (1 << 0);
+            case plugInModeGrayScale:
+            case plugInModeRGBColor:
+                grayScale = imageMode == plugInModeGrayScale;
+                bitsPerChannel = 8;
+                break;
+            case plugInModeGray16:
+            case plugInModeRGB48:
+                grayScale = imageMode == plugInModeGray16;
+                bitsPerChannel = 16;
+                break;
+            case plugInModeGray32:
+            case plugInModeRGB96:
+                grayScale = imageMode == plugInModeGray32;
+                bitsPerChannel = 32;
+                break;
+            default:
+                throw std::runtime_error("Unsupported image mode.");
             }
-
-            if (isSixteenBitsPerChannel)
-            {
-                documentFlags |= (1 << 1);
-            }
+            padding = 0;
         }
 
         char signature[4];
@@ -68,7 +78,9 @@ namespace
         int32_t version;
         int32_t layerCount;
         int32_t activeLayerIndex;
-        int32_t documentFlags;
+        uint8_t grayScale;
+        uint8_t bitsPerChannel;
+        uint16_t padding; // Required due to the 4-byte structure alignment.
     };
 
     void WriteAlternateInputImagePath(const FileHandle* fileHandle, const boost::filesystem::path& path)
@@ -123,9 +135,7 @@ namespace
 }
 
 InputLayerIndex::InputLayerIndex(int16 imageMode)
-    : inputFiles(), activeLayerIndex(0),
-    grayScale(imageMode == plugInModeGrayScale || imageMode == plugInModeGray16),
-    sixteenBitsPerChannel(imageMode == plugInModeGray16 || imageMode == plugInModeRGB48)
+    : inputFiles(), activeLayerIndex(0), imageMode(imageMode)
 {
 }
 
@@ -169,8 +179,7 @@ void InputLayerIndex::Write(
     IndexFileHeader header(
         static_cast<int32>(inputFiles.size()),
         activeLayerIndex,
-        grayScale,
-        sixteenBitsPerChannel);
+        imageMode);
 
     WriteFile(file.get(), &header, sizeof(header));
 

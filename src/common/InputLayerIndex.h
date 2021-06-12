@@ -46,8 +46,7 @@ private:
 
     std::vector<InputLayerInfo> inputFiles;
     int32 activeLayerIndex;
-    bool grayScale;
-    bool sixteenBitsPerChannel;
+    int16 imageMode;
 };
 
 #endif // !INPUTLAYERINDEX_H
