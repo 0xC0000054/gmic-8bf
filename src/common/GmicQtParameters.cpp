@@ -117,7 +117,7 @@ namespace
 
         try
         {
-            std::wstring_convert<std::codecvt<ASUnicode, char, std::mbstate_t>, ASUnicode> convert;
+            std::wstring_convert<std::codecvt_utf8_utf16<ASUnicode>, ASUnicode> convert;
 
             auto unicodeStr = convert.from_bytes(utf8Str);
 
