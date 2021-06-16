@@ -171,7 +171,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;uxtheme.lib;Windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "D:\Adobe CC Apps\Adobe Photoshop 2020\Plug-ins\Filters" /y</Command>
+      <Command>copy "$(TargetPath)" "D:\Adobe CC Apps\Adobe Photoshop 2021\Plug-ins\Filters" /y</Command>
     </PostBuildEvent>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
@@ -203,7 +203,7 @@
       <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "D:\Adobe CC Apps\Adobe Photoshop 2020\Plug-ins\Filters" /y
+      <Command>copy "$(TargetPath)" "D:\Adobe CC Apps\Adobe Photoshop 2021\Plug-ins\Filters" /y
 copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
