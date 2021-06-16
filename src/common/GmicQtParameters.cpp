@@ -513,6 +513,10 @@ OSErr GmicQtParameters::ReadFilterOpaqueData(
     {
         err = e.GetErrorCode();
     }
+    catch (...)
+    {
+        err = paramErr;
+    }
 
     return err;
 }
@@ -549,6 +553,10 @@ OSErr GmicQtParameters::WriteFilterOpaqueData(
     catch (const OSErrException& e)
     {
         err = e.GetErrorCode();
+    }
+    catch (...)
+    {
+        err = paramErr;
     }
 
     return err;
