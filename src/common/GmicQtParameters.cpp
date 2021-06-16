@@ -251,7 +251,7 @@ namespace
     {
         bool result = false;
 
-        if (SPBasicSuiteIsAvailable(filterRecord))
+        if (HandleSuiteIsAvailable(filterRecord) && SPBasicSuiteIsAvailable(filterRecord))
         {
             result = ActionDescriptiorSuiteSupported(filterRecord) && ASZStringSuiteSupported(filterRecord);
         }
