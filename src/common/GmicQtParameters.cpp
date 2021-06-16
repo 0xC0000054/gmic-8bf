@@ -496,26 +496,14 @@ OSErr GmicQtParameters::ReadFilterOpaqueData(
 
         unique_buffer_suite_buffer scopedBuffer(filterRecord, dataSize);
 
-        uint8* data = static_cast<uint8*>(scopedBuffer.Lock());
+        char* data = static_cast<char*>(scopedBuffer.Lock());
 
         OSErrException::ThrowIfError(suite->GetData(descriptor, keyFilterOpaqueData, data));
 
         FilterOpaqueDataHeader* header = (FilterOpaqueDataHeader*)data;
 
-        std::vector<char> buffer(header->commandLength);
-
-        memcpy(buffer.data(), data + sizeof(FilterOpaqueDataHeader), header->commandLength);
-
-        command = std::string(buffer.begin(), buffer.begin() + header->commandLength);
-
-        if (header->menuPathLength > header->commandLength)
-        {
-            buffer.resize(header->menuPathLength);
-        }
-
-        memcpy(buffer.data(), data + sizeof(FilterOpaqueDataHeader) + command.size(), header->menuPathLength);
-
-        filterMenuPath = std::string(buffer.begin(), buffer.begin() + header->menuPathLength);
+        command = std::string(data + sizeof(FilterOpaqueDataHeader), header->commandLength);
+        filterMenuPath = std::string(data + sizeof(FilterOpaqueDataHeader) + command.size(), header->menuPathLength);
     }
     catch (const std::bad_alloc&)
     {
