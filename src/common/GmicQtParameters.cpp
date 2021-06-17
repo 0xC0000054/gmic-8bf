@@ -16,6 +16,7 @@
 #include "ScopedBufferSuite.h"
 #include "Utilities.h"
 #include <boost/predef.h>
+#include <array>
 #include <codecvt>
 
 namespace
@@ -117,14 +118,38 @@ namespace
 
         try
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<ASUnicode>, ASUnicode> convert;
+            std::codecvt_utf8_utf16<ASUnicode> converter;
+            std::codecvt_utf8_utf16<ASUnicode>::state_type state = std::codecvt_utf8_utf16<ASUnicode>::state_type();
 
-            auto unicodeStr = convert.from_bytes(utf8Str);
+            const char* first = utf8Str.data();
+            const char* last = first + utf8Str.length();
 
-            unicodeChars = std::vector<ASUnicode>(unicodeStr.size());
-            size_t unicodeCharsLengthInBytes = unicodeChars.size() * sizeof(ASUnicode);
+            unicodeChars = std::vector<ASUnicode>(converter.length(state, first, last, utf8Str.length()));
 
-            std::memcpy(unicodeChars.data(), unicodeStr.c_str(), unicodeCharsLengthInBytes);
+            ASUnicode* dest = unicodeChars.data();
+            ASUnicode* destEnd = dest + unicodeChars.size();
+            ASUnicode* outputLocation;
+
+            auto result = converter.in(state, first, last, first, dest, destEnd, outputLocation);
+
+            switch (result)
+            {
+            case std::codecvt_base::ok:
+            case std::codecvt_base::partial:
+                if (outputLocation != destEnd)
+                {
+                    throw std::runtime_error("Bad UTF-8 to UTF-16 conversion.");
+                }
+                break;
+            case std::codecvt_base::noconv:
+                for (size_t i = 0, length = last - first; i < length; i++, first++)
+                {
+                    unicodeChars[i] = static_cast<ASUnicode>(static_cast<unsigned char>(*first));
+                }
+                break;
+            default:
+                throw std::runtime_error("Bad UTF-8 to UTF-16 conversion.");
+            }
         }
         catch (const std::bad_alloc&)
         {
