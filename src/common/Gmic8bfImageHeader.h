@@ -17,7 +17,7 @@
 
 #include "FileUtil.h"
 
-struct Gmic8bfImageHeader
+struct alignas(4) Gmic8bfImageHeader
 {
     Gmic8bfImageHeader(const FileHandle* fileHandle);
 

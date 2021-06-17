@@ -21,7 +21,7 @@
 
 namespace
 {
-    struct IndexFileHeader
+    struct alignas(4) IndexFileHeader
     {
         IndexFileHeader(
             int32 numberOfLayers,
