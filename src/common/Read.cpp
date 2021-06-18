@@ -115,18 +115,6 @@ namespace
             return GetNewImageFileName(filterRecord, originalFileName, outputFileName);
         }
     }
-
-    void ReadGmicParametersFile(
-        const boost::filesystem::path& gmicParametersFilePath,
-        FilterRecord* filterRecord)
-    {
-        GmicQtParameters parameters(gmicParametersFilePath);
-
-        if (parameters.IsValid())
-        {
-            parameters.SaveToDescriptor(filterRecord);
-        }
-    }
 }
 
 OSErr ReadGmicOutput(
@@ -196,7 +184,12 @@ OSErr ReadGmicOutput(
 
             if (fullUIWasShown)
             {
-                ReadGmicParametersFile(gmicParametersFilePath, filterRecord);
+                GmicQtParameters parameters(gmicParametersFilePath);
+
+                if (parameters.IsValid())
+                {
+                    parameters.SaveToDescriptor(filterRecord);
+                }
             }
         }
     }
