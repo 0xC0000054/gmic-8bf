@@ -298,37 +298,18 @@ namespace
         return unicodeChars;
     }
 
-    OSErr PutDescriptorString(
+    void PutDescriptorString(
         ASZStringSuite* zstringSuite,
         PSActionDescriptorProcs* descriptorProcs,
         PIActionDescriptor descriptor,
         DescriptorKeyID key,
         const std::string& utf8Str)
     {
-        OSErr err = noErr;
+        std::vector<ASUnicode> unicodeChars = ConvertUtf8StringToASUnicode(utf8Str);
 
-        try
-        {
-            std::vector<ASUnicode> unicodeChars = ConvertUtf8StringToASUnicode(utf8Str);
+        ScopedASZString zstr(zstringSuite, unicodeChars);
 
-            ScopedASZString zstr(zstringSuite, unicodeChars);
-
-            OSErrException::ThrowIfError(descriptorProcs->PutZString(descriptor, key, zstr.get()));
-        }
-        catch (const std::bad_alloc&)
-        {
-            err = memFullErr;
-        }
-        catch (const OSErrException& e)
-        {
-            err = e.GetErrorCode();
-        }
-        catch (...)
-        {
-            err = paramErr;
-        }
-
-        return err;
+        OSErrException::ThrowIfError(descriptorProcs->PutZString(descriptor, key, zstr.get()));
     }
 
     bool ActionDescriptiorSuiteSupported(const FilterRecordPtr filterRecord)
@@ -505,17 +486,16 @@ void GmicQtParameters::SaveToDescriptor(FilterRecordPtr filterRecord) const
 
                 if (descriptor)
                 {
-                    if (PutDescriptorString(zstringSuite.get(), descriptorProcs.get(), descriptor.get(), keyFilterName, filterName) == noErr &&
-                        PutDescriptorString(zstringSuite.get(), descriptorProcs.get(), descriptor.get(), keyFilterInputMode, inputMode) == noErr &&
-                        WriteFilterOpaqueData(filterRecord, descriptorProcs.get(), descriptor.get()) == noErr)
-                    {
-                        if (filterRecord->descriptorParameters->descriptor != nullptr)
-                        {
-                            filterRecord->handleProcs->disposeProc(filterRecord->descriptorParameters->descriptor);
-                        }
+                    PutDescriptorString(zstringSuite.get(), descriptorProcs.get(), descriptor.get(), keyFilterName, filterName);
+                    PutDescriptorString(zstringSuite.get(), descriptorProcs.get(), descriptor.get(), keyFilterInputMode, inputMode);
+                    WriteFilterOpaqueData(filterRecord, descriptorProcs.get(), descriptor.get());
 
-                        descriptorProcs->AsHandle(descriptor.get(), &filterRecord->descriptorParameters->descriptor);
+                    if (filterRecord->descriptorParameters->descriptor != nullptr)
+                    {
+                        filterRecord->handleProcs->disposeProc(filterRecord->descriptorParameters->descriptor);
                     }
+
+                    OSErrException::ThrowIfError(descriptorProcs->AsHandle(descriptor.get(), &filterRecord->descriptorParameters->descriptor));
                 }
             }
         }
@@ -622,7 +602,7 @@ OSErr GmicQtParameters::ReadFilterOpaqueData(
     return err;
 }
 
-OSErr GmicQtParameters::WriteFilterOpaqueData(
+void GmicQtParameters::WriteFilterOpaqueData(
     const FilterRecordPtr filterRecord,
     PSActionDescriptorProcs* suite,
     PIActionDescriptor descriptor) const
@@ -631,34 +611,19 @@ OSErr GmicQtParameters::WriteFilterOpaqueData(
 
     if (dataSize > static_cast<uint64>(std::numeric_limits<int32>::max()))
     {
-        return memFullErr;
+        throw std::runtime_error("The G'MIC-Qt data is larger than 2 GB.");
     }
 
-    OSErr err = noErr;
+    unique_buffer_suite_buffer scopedBuffer(filterRecord, static_cast<int32>(dataSize));
 
-    try
-    {
-        unique_buffer_suite_buffer scopedBuffer(filterRecord, static_cast<int32>(dataSize));
+    uint8* data = static_cast<uint8*>(scopedBuffer.Lock());
 
-        uint8* data = static_cast<uint8*>(scopedBuffer.Lock());
+    FilterOpaqueDataHeader* header = (FilterOpaqueDataHeader*)data;
+    header->commandLength = static_cast<int32>(command.size());
+    header->menuPathLength = static_cast<int32>(filterMenuPath.size());
 
-        FilterOpaqueDataHeader* header = (FilterOpaqueDataHeader*)data;
-        header->commandLength = static_cast<int32>(command.size());
-        header->menuPathLength = static_cast<int32>(filterMenuPath.size());
+    memcpy(data + sizeof(FilterOpaqueDataHeader), command.data(), command.size());
+    memcpy(data + sizeof(FilterOpaqueDataHeader) + command.size(), filterMenuPath.data(), filterMenuPath.size());
 
-        memcpy(data + sizeof(FilterOpaqueDataHeader), command.data(), command.size());
-        memcpy(data + sizeof(FilterOpaqueDataHeader) + command.size(), filterMenuPath.data(), filterMenuPath.size());
-
-        OSErrException::ThrowIfError(suite->PutData(descriptor, keyFilterOpaqueData, static_cast<int32>(dataSize), data));
-    }
-    catch (const OSErrException& e)
-    {
-        err = e.GetErrorCode();
-    }
-    catch (...)
-    {
-        err = paramErr;
-    }
-
-    return err;
+    OSErrException::ThrowIfError(suite->PutData(descriptor, keyFilterOpaqueData, static_cast<int32>(dataSize), data));
 }

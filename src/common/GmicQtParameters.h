@@ -49,7 +49,7 @@ private:
         PSActionDescriptorProcs* suite,
         PIActionDescriptor descriptor);
 
-    OSErr WriteFilterOpaqueData(
+    void WriteFilterOpaqueData(
         const FilterRecordPtr filterRecord,
         PSActionDescriptorProcs* suite,
         PIActionDescriptor descriptor) const;
