@@ -74,6 +74,153 @@ namespace
         int32_t version;
     };
 
+    template<class T> class ScopedPICASuite
+    {
+    public:
+        ScopedPICASuite(SPBasicSuite* basicSuite, const char* name, int32 version) noexcept
+            : basicSuite(basicSuite), suite(nullptr), name(name), version(version), suiteValid(false)
+        {
+            SPErr err = basicSuite->AcquireSuite(
+                name,
+                version,
+                const_cast<const void**>(reinterpret_cast<void**>(&suite)));
+            suiteValid = err == kSPNoError && suite != nullptr;
+        }
+
+        ~ScopedPICASuite()
+        {
+            if (suiteValid)
+            {
+                basicSuite->ReleaseSuite(name, version);
+                suiteValid = false;
+            }
+        }
+
+        T* get() const noexcept
+        {
+            return suite;
+        }
+
+        const T* operator->() const noexcept
+        {
+            return suite;
+        }
+
+        explicit operator bool() const noexcept
+        {
+            return suiteValid;
+        }
+
+    private:
+
+        SPBasicSuite* basicSuite;
+        T* suite;
+        const char* name;
+        int32 version;
+        bool suiteValid;
+    };
+
+    class ScopedActionDescriptor
+    {
+    public:
+        explicit ScopedActionDescriptor(PSActionDescriptorProcs* descriptorProcs)
+            : descriptorProcs(descriptorProcs), descriptor(), descriptorValid(false)
+        {
+           descriptorValid = descriptorProcs->Make(&descriptor) == noErr;
+        }
+
+        ScopedActionDescriptor(PSActionDescriptorProcs* descriptorProcs, PIDescriptorHandle handle)
+            : descriptorProcs(descriptorProcs), descriptor(), descriptorValid(false)
+        {
+            descriptorValid = descriptorProcs->HandleToDescriptor(handle, &descriptor) == noErr;
+        }
+
+        ~ScopedActionDescriptor()
+        {
+            if (descriptorValid)
+            {
+                descriptorProcs->Free(descriptor);
+                descriptorValid = false;
+            }
+        }
+
+        PIActionDescriptor get() const noexcept
+        {
+            return descriptor;
+        }
+
+        explicit operator bool() const noexcept
+        {
+            return descriptorValid;
+        }
+
+    private:
+
+        PSActionDescriptorProcs* descriptorProcs;
+        PIActionDescriptor descriptor;
+        bool descriptorValid;
+    };
+
+    void ThrowIfASError(ASErr err)
+    {
+        if (err != kASNoError)
+        {
+            switch (err)
+            {
+            case kSPOutOfMemoryError:
+                throw OSErrException(memFullErr);
+            case kSPUnimplementedError:
+                throw OSErrException(errPlugInHostInsufficient);
+            default:
+                throw OSErrException(paramErr);
+            }
+        }
+    }
+
+    class ScopedASZString
+    {
+    public:
+
+        ScopedASZString(ASZStringSuite* suite, std::vector<ASUnicode> unicodeChars)
+            : zstringSuite(suite), zstr(nullptr), zstringValid(false)
+        {
+            ThrowIfASError(suite->MakeFromUnicode(unicodeChars.data(), unicodeChars.size(), &zstr));
+            zstringValid = true;
+        }
+
+        ScopedASZString(
+            ASZStringSuite* zstringSuite,
+            PSActionDescriptorProcs* descriptorProcs,
+            PIActionDescriptor descriptor,
+            DescriptorKeyID key)
+            : zstr(nullptr), zstringSuite(zstringSuite), zstringValid(false)
+        {
+            OSErrException::ThrowIfError(descriptorProcs->GetZString(descriptor, key, &zstr));
+            zstringValid = true;
+        }
+
+        ~ScopedASZString()
+        {
+            if (zstringValid)
+            {
+                zstringSuite->Release(zstr);
+                zstr = nullptr;
+                zstringValid = false;
+            }
+        }
+
+        ASZString get() const
+        {
+            return zstr;
+        }
+
+    private:
+
+        ASZStringSuite* zstringSuite;
+        ASZString zstr;
+        bool zstringValid;
+    };
+
     void ReadUtf8String(const FileHandle* fileHandle, std::string& value)
     {
         int32_t stringLength = 0;
@@ -112,55 +259,43 @@ namespace
         }
     }
 
-    OSErr ConvertUtf8StringToASUnicode(const std::string& utf8Str, std::vector<ASUnicode>& unicodeChars)
+    std::vector<ASUnicode> ConvertUtf8StringToASUnicode(const std::string& utf8Str)
     {
-        OSErr err = noErr;
+        std::codecvt_utf8_utf16<ASUnicode> converter;
+        std::codecvt_utf8_utf16<ASUnicode>::state_type state = std::codecvt_utf8_utf16<ASUnicode>::state_type();
 
-        try
+        const char* first = utf8Str.data();
+        const char* last = first + utf8Str.length();
+
+        const int utf16Length = converter.length(state, first, last, utf8Str.length());
+        std::vector<ASUnicode> unicodeChars = std::vector<ASUnicode>(utf16Length);
+
+        ASUnicode* dest = unicodeChars.data();
+        ASUnicode* destEnd = dest + unicodeChars.size();
+        ASUnicode* outputLocation;
+
+        auto result = converter.in(state, first, last, first, dest, destEnd, outputLocation);
+
+        switch (result)
         {
-            std::codecvt_utf8_utf16<ASUnicode> converter;
-            std::codecvt_utf8_utf16<ASUnicode>::state_type state = std::codecvt_utf8_utf16<ASUnicode>::state_type();
-
-            const char* first = utf8Str.data();
-            const char* last = first + utf8Str.length();
-
-            unicodeChars = std::vector<ASUnicode>(converter.length(state, first, last, utf8Str.length()));
-
-            ASUnicode* dest = unicodeChars.data();
-            ASUnicode* destEnd = dest + unicodeChars.size();
-            ASUnicode* outputLocation;
-
-            auto result = converter.in(state, first, last, first, dest, destEnd, outputLocation);
-
-            switch (result)
+        case std::codecvt_base::ok:
+        case std::codecvt_base::partial:
+            if (outputLocation != destEnd)
             {
-            case std::codecvt_base::ok:
-            case std::codecvt_base::partial:
-                if (outputLocation != destEnd)
-                {
-                    throw std::runtime_error("Bad UTF-8 to UTF-16 conversion.");
-                }
-                break;
-            case std::codecvt_base::noconv:
-                for (size_t i = 0, length = last - first; i < length; i++, first++)
-                {
-                    unicodeChars[i] = static_cast<ASUnicode>(static_cast<unsigned char>(*first));
-                }
-                break;
-            default:
                 throw std::runtime_error("Bad UTF-8 to UTF-16 conversion.");
             }
-        }
-        catch (const std::bad_alloc&)
-        {
-            err = memFullErr;
-        }
-        catch (...)
-        {
-            err = paramErr;
+            break;
+        case std::codecvt_base::noconv:
+            for (size_t i = 0, length = last - first; i < length; i++, first++)
+            {
+                unicodeChars[i] = static_cast<ASUnicode>(static_cast<unsigned char>(*first));
+            }
+            break;
+        default:
+            throw std::runtime_error("Bad UTF-8 to UTF-16 conversion.");
         }
 
-        return err;
+        return unicodeChars;
     }
 
     OSErr PutDescriptorString(
@@ -170,34 +305,27 @@ namespace
         DescriptorKeyID key,
         const std::string& utf8Str)
     {
-        std::vector<ASUnicode> unicodeChars;
+        OSErr err = noErr;
 
-        OSErr err = ConvertUtf8StringToASUnicode(utf8Str, unicodeChars);
-
-        if (err == noErr)
+        try
         {
-            ASZString zstr;
+            std::vector<ASUnicode> unicodeChars = ConvertUtf8StringToASUnicode(utf8Str);
 
-            ASErr zstringErr = zstringSuite->MakeFromUnicode(unicodeChars.data(), unicodeChars.size(), &zstr);
+            ScopedASZString zstr(zstringSuite, unicodeChars);
 
-            if (zstringErr == kASNoError)
-            {
-                err = descriptorProcs->PutZString(descriptor, key, zstr);
-
-                zstringSuite->Release(zstr);
-            }
-            else
-            {
-                switch (zstringErr)
-                {
-                case kSPOutOfMemoryError:
-                    err = memFullErr;
-                    break;
-                default:
-                    err = paramErr;
-                    break;
-                }
-            }
+            OSErrException::ThrowIfError(descriptorProcs->PutZString(descriptor, key, zstr.get()));
+        }
+        catch (const std::bad_alloc&)
+        {
+            err = memFullErr;
+        }
+        catch (const OSErrException& e)
+        {
+            err = e.GetErrorCode();
+        }
+        catch (...)
+        {
+            err = paramErr;
         }
 
         return err;
@@ -305,49 +433,35 @@ GmicQtParameters::GmicQtParameters(const FilterRecordPtr filterRecord)
         filterRecord->descriptorParameters->descriptor != nullptr &&
         ActionDescriptorSuitesAreAvailable(filterRecord))
     {
-        PSActionDescriptorProcs* descriptorProcs = nullptr;
+        SPBasicSuite* basicSuite = filterRecord->sSPBasic;
 
-        SPErr err = filterRecord->sSPBasic->AcquireSuite(
-            kPSActionDescriptorSuite,
-            2,
-            const_cast<const void**>(reinterpret_cast<void**>(&descriptorProcs)));
+        ScopedPICASuite<PSActionDescriptorProcs> descriptorProcs(basicSuite, kPSActionDescriptorSuite, 2);
 
-        if (err == kSPNoError)
+        if (descriptorProcs)
         {
-            ASZStringSuite* zstringSuite = nullptr;
+            ScopedPICASuite<ASZStringSuite> zstringSuite(basicSuite, kASZStringSuite, 1);
 
-            err = filterRecord->sSPBasic->AcquireSuite(
-                kASZStringSuite,
-                1,
-                const_cast<const void**>(reinterpret_cast<void**>(&zstringSuite)));
-
-            if (err == kSPNoError)
+            if (zstringSuite)
             {
-                PIActionDescriptor descriptor;
+                ScopedActionDescriptor descriptor(descriptorProcs.get(), filterRecord->descriptorParameters->descriptor);
 
-                if (descriptorProcs->HandleToDescriptor(filterRecord->descriptorParameters->descriptor, &descriptor) == noErr)
+                if (descriptor)
                 {
                     Boolean hasKey;
 
-                    if (descriptorProcs->HasKey(descriptor, keyFilterInputMode, &hasKey) == noErr && hasKey)
+                    if (descriptorProcs->HasKey(descriptor.get(), keyFilterInputMode, &hasKey) == noErr && hasKey)
                     {
-                        ReadFilterInputMode(zstringSuite, descriptorProcs, descriptor);
+                        ReadFilterInputMode(zstringSuite.get(), descriptorProcs.get(), descriptor.get());
                     }
 
-                    if (descriptorProcs->HasKey(descriptor, keyFilterOpaqueData, &hasKey) == noErr && hasKey)
+                    if (descriptorProcs->HasKey(descriptor.get(), keyFilterOpaqueData, &hasKey) == noErr && hasKey)
                     {
-                        ReadFilterOpaqueData(filterRecord, descriptorProcs, descriptor);
+                        ReadFilterOpaqueData(filterRecord, descriptorProcs.get(), descriptor.get());
                     }
 
                     // G'MIC-Qt does not need the filter name.
-
-                    descriptorProcs->Free(descriptor);
                 }
-
-                filterRecord->sSPBasic->ReleaseSuite(kASZStringSuite, 1);
             }
-
-            filterRecord->sSPBasic->ReleaseSuite(kPSActionDescriptorSuite, 2);
         }
     }
 }
@@ -377,47 +491,33 @@ void GmicQtParameters::SaveToDescriptor(FilterRecordPtr filterRecord) const
     if (filterRecord->descriptorParameters != nullptr &&
         ActionDescriptorSuitesAreAvailable(filterRecord))
     {
-        PSActionDescriptorProcs* descriptorProcs = nullptr;
+        SPBasicSuite* basicSuite = filterRecord->sSPBasic;
 
-        SPErr err = filterRecord->sSPBasic->AcquireSuite(
-            kPSActionDescriptorSuite,
-            2,
-            const_cast<const void**>(reinterpret_cast<void**>(&descriptorProcs)));
+        ScopedPICASuite<PSActionDescriptorProcs> descriptorProcs(basicSuite, kPSActionDescriptorSuite, 2);
 
-        if (err == kSPNoError)
+        if (descriptorProcs)
         {
-            ASZStringSuite* zstringSuite = nullptr;
+            ScopedPICASuite<ASZStringSuite> zstringSuite(basicSuite, kASZStringSuite, 1);
 
-            err = filterRecord->sSPBasic->AcquireSuite(
-                kASZStringSuite,
-                1,
-                const_cast<const void**>(reinterpret_cast<void**>(&zstringSuite)));
-
-            if (err == kSPNoError)
+            if (zstringSuite)
             {
-                PIActionDescriptor descriptor;
+                ScopedActionDescriptor descriptor(descriptorProcs.get());
 
-                if (descriptorProcs->Make(&descriptor) == noErr)
+                if (descriptor)
                 {
-                    if (PutDescriptorString(zstringSuite, descriptorProcs, descriptor, keyFilterName, filterName) == noErr &&
-                        PutDescriptorString(zstringSuite, descriptorProcs, descriptor, keyFilterInputMode, inputMode) == noErr &&
-                        WriteFilterOpaqueData(filterRecord, descriptorProcs, descriptor) == noErr)
+                    if (PutDescriptorString(zstringSuite.get(), descriptorProcs.get(), descriptor.get(), keyFilterName, filterName) == noErr &&
+                        PutDescriptorString(zstringSuite.get(), descriptorProcs.get(), descriptor.get(), keyFilterInputMode, inputMode) == noErr &&
+                        WriteFilterOpaqueData(filterRecord, descriptorProcs.get(), descriptor.get()) == noErr)
                     {
                         if (filterRecord->descriptorParameters->descriptor != nullptr)
                         {
                             filterRecord->handleProcs->disposeProc(filterRecord->descriptorParameters->descriptor);
                         }
 
-                        descriptorProcs->AsHandle(descriptor, &filterRecord->descriptorParameters->descriptor);
+                        descriptorProcs->AsHandle(descriptor.get(), &filterRecord->descriptorParameters->descriptor);
                     }
-
-                    descriptorProcs->Free(descriptor);
                 }
-
-                filterRecord->sSPBasic->ReleaseSuite(kASZStringSuite, 1);
             }
-
-            filterRecord->sSPBasic->ReleaseSuite(kPSActionDescriptorSuite, 2);
         }
     }
 }
@@ -445,49 +545,25 @@ OSErr GmicQtParameters::ReadFilterInputMode(
 
     try
     {
-        ASZString zstr;
+        ScopedASZString zstr(zstringSuite, descriptorProcs, descriptor, keyFilterInputMode);
 
-        OSErrException::ThrowIfError(descriptorProcs->GetZString(descriptor, keyFilterInputMode, &zstr));
+        const ASUInt32 stringLength = zstringSuite->LengthAsCString(zstr.get());
 
-        const ASUInt32 stringLength = zstringSuite->LengthAsCString(zstr);
-
-        if (stringLength == 0)
+        if (stringLength > 0)
         {
-            // This should never happen, but if it does we just release the allocated ZString.
-            // The class constructor already set the input mode to its default value.
-            zstringSuite->Release(zstr);
-        }
-        else
-        {
-            std::unique_ptr<char[]> buffer(new (std::nothrow) char[stringLength]);
+            std::unique_ptr<char[]> buffer = std::make_unique<char[]>(stringLength);
 
-            if (buffer)
+            ThrowIfASError(zstringSuite->AsCString(zstr.get(), buffer.get(), stringLength, true));
+
+            ASUInt32 lengthWithoutTerminator = stringLength;
+
+            // Remove the NUL-terminator from the end of the string.
+            if (buffer.get()[stringLength - 1] == 0)
             {
-                if (zstringSuite->AsCString(zstr, buffer.get(), stringLength, true) == kASNoError)
-                {
-                    zstringSuite->Release(zstr);
-
-                    ASUInt32 lengthWithoutTerminator = stringLength;
-
-                    // Remove the NUL-terminator from the end of the string.
-                    if (buffer.get()[stringLength - 1] == 0)
-                    {
-                        lengthWithoutTerminator -= 1;
-                    }
-
-                    inputMode = std::string(buffer.get(), buffer.get() + lengthWithoutTerminator);
-                }
-                else
-                {
-                    zstringSuite->Release(zstr);
-                    err = paramErr;
-                }
+                lengthWithoutTerminator -= 1;
             }
-            else
-            {
-                zstringSuite->Release(zstr);
-                err = memFullErr;
-            }
+
+            inputMode = std::string(buffer.get(), buffer.get() + lengthWithoutTerminator);
         }
     }
     catch (const std::bad_alloc&)
