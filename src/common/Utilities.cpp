@@ -496,7 +496,7 @@ bool SPBasicSuiteIsAvailable(const FilterRecord* filterRecord)
     return spBasicSuiteAvailable;
 }
 
-bool TryGetLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName)
+bool TryGetActiveLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName)
 {
     bool result = false;
 

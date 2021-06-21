@@ -412,7 +412,7 @@ void SaveActiveLayer(
     bool layerIsVisible = true;
     std::string layerName;
 
-    if (!TryGetLayerNameAsUTF8String(filterRecord, layerName))
+    if (!TryGetActiveLayerNameAsUTF8String(filterRecord, layerName))
     {
         layerName = "Layer 0";
     }
