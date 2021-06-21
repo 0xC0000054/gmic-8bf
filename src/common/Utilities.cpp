@@ -108,10 +108,10 @@ namespace
             available = false;
         }
         else if (procs->allocateProc == nullptr ||
-            procs->lockProc == nullptr ||
-            procs->unlockProc == nullptr ||
-            procs->freeProc == nullptr ||
-            procs->spaceProc == nullptr)
+                 procs->lockProc == nullptr ||
+                 procs->unlockProc == nullptr ||
+                 procs->freeProc == nullptr ||
+                 procs->spaceProc == nullptr)
         {
             available = false;
         }
@@ -195,11 +195,11 @@ namespace
             available = false;
         }
         else if (procs->newProc == nullptr ||
-            procs->disposeProc == nullptr ||
-            procs->getSizeProc == nullptr ||
-            procs->setSizeProc == nullptr ||
-            procs->lockProc == nullptr ||
-            procs->unlockProc == nullptr)
+                 procs->disposeProc == nullptr ||
+                 procs->getSizeProc == nullptr ||
+                 procs->setSizeProc == nullptr ||
+                 procs->lockProc == nullptr ||
+                 procs->unlockProc == nullptr)
         {
             available = false;
         }
@@ -271,8 +271,8 @@ namespace
             available = false;
         }
         else if (procs->readPixelsProc == nullptr ||
-            procs->writeBasePixelsProc == nullptr ||
-            procs->readPortForWritePortProc == nullptr)
+                 procs->writeBasePixelsProc == nullptr ||
+                 procs->readPortForWritePortProc == nullptr)
         {
             available = false;
         }
@@ -444,7 +444,7 @@ namespace
             available = false;
         }
         else if (procs->getPropertyProc == nullptr ||
-            procs->setPropertyProc == nullptr)
+                 procs->setPropertyProc == nullptr)
         {
             available = false;
         }
