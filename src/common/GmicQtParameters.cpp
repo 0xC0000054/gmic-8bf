@@ -193,7 +193,7 @@ namespace
             PSActionDescriptorProcs* descriptorProcs,
             PIActionDescriptor descriptor,
             DescriptorKeyID key)
-            : zstr(nullptr), zstringSuite(zstringSuite), zstringValid(false)
+            : zstringSuite(zstringSuite), zstr(nullptr), zstringValid(false)
         {
             OSErrException::ThrowIfError(descriptorProcs->GetZString(descriptor, key, &zstr));
             zstringValid = true;
