@@ -141,6 +141,9 @@ namespace
     {
         OSErr err = noErr;
 
+        BufferID inputDataBufferID;
+        bool inputBufferValid = false;
+
         png_structp pngPtr = png_create_write_struct(PNG_LIBPNG_VER_STRING, static_cast<png_voidp>(writerState), PngWriteErrorHandler, nullptr);
 
         if (!pngPtr)
@@ -167,6 +170,13 @@ namespace
         if (setjmp(png_jmpbuf(pngPtr)))
         {
             png_destroy_write_struct(&pngPtr, &infoPtr);
+
+            if (inputBufferValid)
+            {
+                filterRecord->bufferProcs->unlockProc(inputDataBufferID);
+                filterRecord->bufferProcs->freeProc(inputDataBufferID);
+                inputBufferValid = false;
+            }
 
             return ioErr;
         }
@@ -249,11 +259,11 @@ namespace
 
             if (err == noErr)
             {
-                BufferID inputDataBufferID;
                 err = filterRecord->bufferProcs->allocateProc(inputImageBufferSize, &inputDataBufferID);
 
                 if (err == noErr)
                 {
+                    inputBufferValid = true;
                     uint8* inputBuffer = reinterpret_cast<uint8*>(filterRecord->bufferProcs->lockProc(inputDataBufferID, false));
 
                     const int32 left = 0;
@@ -304,6 +314,7 @@ namespace
 
                     filterRecord->bufferProcs->unlockProc(inputDataBufferID);
                     filterRecord->bufferProcs->freeProc(inputDataBufferID);
+                    inputBufferValid = false;
                 }
             }
         }
