@@ -538,7 +538,7 @@ OSErr GmicQtParameters::ReadFilterInputMode(
             ASUInt32 lengthWithoutTerminator = stringLength;
 
             // Remove the NUL-terminator from the end of the string.
-            if (buffer.get()[stringLength - 1] == 0)
+            if (buffer[stringLength - 1] == 0)
             {
                 lengthWithoutTerminator -= 1;
             }
