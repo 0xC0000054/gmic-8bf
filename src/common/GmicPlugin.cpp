@@ -20,7 +20,6 @@
 #include "Utilities.h"
 #include "version.h"
 #include <stdexcept>
-#include <boost/process.hpp>
 
 OSErr DoParameters(FilterRecord* filterRecord);
 OSErr DoPrepare(FilterRecord* filterRecord) noexcept;
@@ -53,92 +52,6 @@ namespace
         }
 
         return showUI;
-    }
-
-    OSErr ExecuteGmicQt(
-        const boost::filesystem::path& indexFilePath,
-        const boost::filesystem::path& outputDir,
-        const boost::filesystem::path& gmicParametersFilePath,
-        bool showFullUI,
-        FilterRecordPtr filterRecord)
-    {
-        OSErr err = noErr;
-
-        try
-        {
-            boost::filesystem::path gmicExecutablePath = GetGmicQtPath();
-
-            boost::filesystem::path reapply = showFullUI ? "" : "reapply";
-
-            boost::process::child child(gmicExecutablePath, indexFilePath, outputDir, gmicParametersFilePath, reapply);
-
-            child.wait();
-
-            int exitCode = child.exit_code();
-
-            switch (exitCode)
-            {
-            case 0:
-                // No error
-                break;
-            case 1:
-            case 2:
-            case 3:
-                err = ShowErrorMessage("A G'MIC-Qt argument is invalid.", filterRecord, ioErr);
-                break;
-            case 4:
-                err = ShowErrorMessage("An unspecified error occurred when reading the G'MIC-Qt input images.", filterRecord, ioErr);
-                break;
-            case 5:
-                err = userCanceledErr;
-                break;
-            case 6:
-                err = ShowErrorMessage("Unable to open one of the G'MIC-Qt input images.", filterRecord, ioErr);
-                break;
-            case 7:
-                err = ShowErrorMessage("The G'MIC-Qt input images use an unknown format.", filterRecord, ioErr);
-                break;
-            case 8:
-                err = ShowErrorMessage("The G'MIC-Qt input images have an unsupported file version.", filterRecord, ioErr);
-                break;
-            case 9:
-                err = memFullErr;
-                break;
-            case 10:
-                err = ShowErrorMessage("Attempted to read past the end of the file.", filterRecord, eofErr);
-                break;
-            case 11:
-                err = ShowErrorMessage("The Qt platform byte order does not match the plug-in.", filterRecord, ioErr);
-                break;
-            default:
-
-                char buffer[1024] = { 0 };
-
-                if (std::snprintf(buffer, sizeof(buffer), "An unspecified error occurred when running G'MIC-Qt, exit code=%d.", exitCode) > 0)
-                {
-                    err = ShowErrorMessage(buffer, filterRecord, ioErr);
-                }
-                else
-                {
-                    err = ShowErrorMessage("An unspecified error occurred when running G'MIC-Qt.", filterRecord, ioErr);
-                }
-                break;
-            }
-        }
-        catch (const std::bad_alloc&)
-        {
-            err = memFullErr;
-        }
-        catch (const std::exception& e)
-        {
-            err = ShowErrorMessage(e.what(), filterRecord, ioErr);
-        }
-        catch (...)
-        {
-            err = ShowErrorMessage("An unspecified error occurred when running G'MIC-Qt.", filterRecord, ioErr);
-        }
-
-        return err;
     }
 
     // Determines whether the filter can precess the current document.
@@ -416,13 +329,13 @@ OSErr DoStart(FilterRecord* filterRecord)
             {
                 const bool showFullUI = ShowUI(filterRecord);
 
-                err = ExecuteGmicQt(
+                err = ShowGmicUI(
                     indexFilePath,
                     outputDir,
                     gmicParametersFilePath,
                     showFullUI,
                     filterRecord);
-                DebugOut("After ExecuteGmicQt err=%d", err);
+                DebugOut("After ShowGmicUI err=%d", err);
 
                 if (err == noErr)
                 {

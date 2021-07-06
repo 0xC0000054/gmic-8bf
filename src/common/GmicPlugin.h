@@ -32,6 +32,12 @@ FilterParameters* LockParameters(FilterRecordPtr filterRecord);
 void UnlockParameters(FilterRecordPtr filterRecord);
 
 OSErr DoAbout(const AboutRecord* aboutRecord) noexcept;
+OSErr ShowGmicUI(
+    const boost::filesystem::path& indexFilePath,
+    const boost::filesystem::path& outputDir,
+    const boost::filesystem::path& gmicParametersFilePath,
+    bool showFullUI,
+    const FilterRecordPtr filterRecord);
 
 OSErr ReadGmicOutput(
     const boost::filesystem::path& outputDir,

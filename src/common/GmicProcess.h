@@ -1,0 +1,33 @@
+////////////////////////////////////////////////////////////////////////
+//
+// This file is part of gmic-8bf, a filter plug-in module that
+// interfaces with G'MIC-Qt.
+//
+// Copyright (c) 2020, 2021 Nicholas Hayes
+//
+// This file is licensed under the MIT License.
+// See LICENSE.txt for complete licensing and attribution information.
+//
+////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#ifndef GMICPROCESS_H
+#define GMICPROCESS_H
+
+#include "Common.h"
+
+struct GmicProcessErrorInfo
+{
+    bool hasErrorMessage;
+    char errorMessage[2048];
+};
+
+OSErr ExecuteGmicQt(
+    const boost::filesystem::path& indexFilePath,
+    const boost::filesystem::path& outputDir,
+    const boost::filesystem::path& gmicParametersFilePath,
+    bool showFullUI,
+    GmicProcessErrorInfo& errorInfo);
+
+#endif // !GMICPROCESS_H

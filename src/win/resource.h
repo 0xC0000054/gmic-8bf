@@ -27,7 +27,10 @@
 #define GIF_FILTER_NAME                 118
 #define JPEG_FILTER_NAME                119
 #define ALL_IMAGES_FILTER_NAME          120
-#define IMAGE_OPEN_DIALOG_TITLE        121
+#define IMAGE_OPEN_DIALOG_TITLE         121
+#define IDD_GMICPLUGIN                  122
+#define GMICDIALOG_FULLUI_TEXT          123
+#define GMICDIALOG_REPEATFILTER_TEXT    124
 #define IDC_LIBPNGCOPYRIGHTFORMAT       1000
 #define ABOUTFORMAT                     1001
 #define IDC_GMICQT                      1002
@@ -46,14 +49,15 @@
 #define IDC_SECONDIMAGESOURCE_NONE_RADIO 1015
 #define IDC_SECONDIMAGESOURCE_CLIPBOARD_RADIO 1016
 #define IDC_SECONDIMAGESOURCE_FILE_RADIO 1017
+#define IDC_GMICINFO                    1018
 
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        104
+#define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1016
+#define _APS_NEXT_CONTROL_VALUE         1019
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
