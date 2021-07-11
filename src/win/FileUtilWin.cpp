@@ -333,11 +333,6 @@ void WriteFileNative(const FileHandle* fileHandle, const void* data, size_t data
 
             THROW_IF_WIN32_BOOL_FALSE(WriteFile(hFile, buffer, numBytesToWrite, &bytesWritten, nullptr));
 
-            if (bytesWritten != numBytesToWrite)
-            {
-                throw std::runtime_error("Unable to write all of the data to the file.");
-            }
-
             buffer += bytesWritten;
             bytesRemaining -= bytesWritten;
         }
