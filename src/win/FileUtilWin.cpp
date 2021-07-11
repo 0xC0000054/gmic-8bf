@@ -226,16 +226,9 @@ void ReadFileNative(const FileHandle* fileHandle, void* data, size_t dataSize)
 
             THROW_IF_WIN32_BOOL_FALSE(ReadFile(hFile, buffer, numBytesToRead, &bytesRead, nullptr));
 
-            if (bytesRead != numBytesToRead)
+            if (bytesRead == 0)
             {
-                if (bytesRead == 0)
-                {
-                    throw std::runtime_error("Attempted to read beyond the end of the file.");
-                }
-                else
-                {
-                    throw std::runtime_error("An unspecified error occurred when reading from the file.");
-                }
+                throw std::runtime_error("Attempted to read beyond the end of the file.");
             }
 
             buffer += bytesRead;
