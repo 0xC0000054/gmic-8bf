@@ -63,13 +63,15 @@ G'MIC-Qt dialog has been closed in the following cases:
 
 #### Photoshop Actions
 
-The plug-in has support for Photoshop Actions, but are a few compatibility issues with it:
+The plugin will show the name of the G'MIC effect and the Input Mode in the actions palette. 
 
-* Any G'MIC effect that produces multiple images or resizes the image will save the results to an external file.
-* G'MIC-Qt has the ability to "layer" multiple effects in a single session, Actions will only remember the settings of the most recently applied effect.
-* The plugin ignores the Actions user interface setting.
-  * G'MIC-Qt will show a progress dialog for long-running effects.
-  * The plugin will show its own error dialogs.
+![Photoshop Actions palette](images/PhotoshopActions.png)
+
+The Photoshop Actions support has a few compatibility issues:
+
+- G'MIC effects that produce multiple images or resize the image will save the results to external files, these files will have to be manually imported into Photoshop.
+- If you use the G'MIC-Qt ability to "layer" multiple effects in a single  session, Actions will only remember the settings of the most recently applied effect.
+- The plugin will always show its user interface.
 
 ### Input/Output Settings for G'MIC-Qt
 
