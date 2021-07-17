@@ -61,6 +61,16 @@ G'MIC-Qt dialog has been closed in the following cases:
 1. When a filter produces multiple output images the plug-in will prompt the user for a folder to copy them into.
 2. When a filter changes the image size the plug-in will prompt the user to save the resized image.
 
+#### Photoshop Actions
+
+The plug-in has support for Photoshop Actions, but are a few compatibility issues with it:
+
+* Any G'MIC effect that produces multiple images or resizes the image will save the results to an external file.
+* G'MIC-Qt has the ability to "layer" multiple effects in a single session, Actions will only remember the settings of the most recently applied effect.
+* The plugin ignores the Actions user interface setting.
+  * G'MIC-Qt will show a progress dialog for long-running effects.
+  * The plugin will show its own error dialogs.
+
 ### Input/Output Settings for G'MIC-Qt
 
 When the *Input/Output Settings for G'MIC-Qt* menu item is clicked it will start the Input/Output Settings for G'MIC-Qt user interface.
