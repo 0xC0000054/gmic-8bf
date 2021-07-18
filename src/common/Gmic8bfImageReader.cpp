@@ -509,8 +509,6 @@ namespace
             }
             else
             {
-                filterRecord->outLoPlane = filterRecord->outHiPlane = static_cast<int16>(i);
-
                 for (int32 y = 0; y < imageSize.v; y += tileHeight)
                 {
                     const int32 top = y;
@@ -543,45 +541,148 @@ namespace
 
                         ReadFile(fileHandle, tileBuffer, tileDataSize);
 
-                        SetOutputRect(filterRecord, top, left, bottom, right);
-
-                        if (filterRecord->haveMask)
+                        if (numberOfChannels <= 2 && numberOfOutputPlanes >= 3)
                         {
-                            SetMaskRect(filterRecord, top, left, bottom, right);
+                            // Convert a gray or gray + alpha image to RGB or RGB + alpha.
+
+                            if (i == 0)
+                            {
+                                // Gray plane
+
+                                for (int16 colorPlane = 0; colorPlane < 3; colorPlane++)
+                                {
+                                    filterRecord->outLoPlane = filterRecord->outHiPlane = colorPlane;
+
+                                    SetOutputRect(filterRecord, top, left, bottom, right);
+
+                                    if (filterRecord->haveMask)
+                                    {
+                                        SetMaskRect(filterRecord, top, left, bottom, right);
+                                    }
+
+                                    OSErrException::ThrowIfError(filterRecord->advanceState());
+
+                                    const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
+
+                                    switch (filterRecord->imageMode)
+                                    {
+                                    case plugInModeRGBColor:
+                                        CopyTileDataToHostEightBitsPerChannel(
+                                            tileBuffer,
+                                            tileBufferRowBytes,
+                                            columnCount,
+                                            rowCount,
+                                            static_cast<uint8*>(filterRecord->outData),
+                                            filterRecord->outRowBytes,
+                                            maskData,
+                                            filterRecord->maskRowBytes);
+                                        break;
+                                    case plugInModeRGB48:
+                                        CopyTileDataToHostSixteenBitsPerChannel(
+                                            tileBuffer,
+                                            tileBufferRowBytes,
+                                            columnCount,
+                                            rowCount,
+                                            static_cast<uint8*>(filterRecord->outData),
+                                            filterRecord->outRowBytes,
+                                            maskData,
+                                            filterRecord->maskRowBytes);
+                                        break;
+                                    default:
+                                        throw std::runtime_error("Unsupported image mode.");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Alpha plane
+
+                                filterRecord->outLoPlane = filterRecord->outHiPlane = 3;
+
+                                SetOutputRect(filterRecord, top, left, bottom, right);
+
+                                if (filterRecord->haveMask)
+                                {
+                                    SetMaskRect(filterRecord, top, left, bottom, right);
+                                }
+
+                                OSErrException::ThrowIfError(filterRecord->advanceState());
+
+                                const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
+
+                                switch (filterRecord->imageMode)
+                                {
+                                case plugInModeRGBColor:
+                                    CopyTileDataToHostEightBitsPerChannel(
+                                        tileBuffer,
+                                        tileBufferRowBytes,
+                                        columnCount,
+                                        rowCount,
+                                        static_cast<uint8*>(filterRecord->outData),
+                                        filterRecord->outRowBytes,
+                                        maskData,
+                                        filterRecord->maskRowBytes);
+                                    break;
+                                case plugInModeRGB48:
+                                    CopyTileDataToHostSixteenBitsPerChannel(
+                                        tileBuffer,
+                                        tileBufferRowBytes,
+                                        columnCount,
+                                        rowCount,
+                                        static_cast<uint8*>(filterRecord->outData),
+                                        filterRecord->outRowBytes,
+                                        maskData,
+                                        filterRecord->maskRowBytes);
+                                    break;
+                                default:
+                                    throw std::runtime_error("Unsupported image mode.");
+                                }
+                            }
                         }
-
-                        OSErrException::ThrowIfError(filterRecord->advanceState());
-
-                        const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
-
-                        switch (filterRecord->imageMode)
+                        else
                         {
-                        case plugInModeGrayScale:
-                        case plugInModeRGBColor:
-                            CopyTileDataToHostEightBitsPerChannel(
-                                tileBuffer,
-                                tileBufferRowBytes,
-                                columnCount,
-                                rowCount,
-                                static_cast<uint8*>(filterRecord->outData),
-                                filterRecord->outRowBytes,
-                                maskData,
-                                filterRecord->maskRowBytes);
-                            break;
-                        case plugInModeGray16:
-                        case plugInModeRGB48:
-                            CopyTileDataToHostSixteenBitsPerChannel(
-                                tileBuffer,
-                                tileBufferRowBytes,
-                                columnCount,
-                                rowCount,
-                                static_cast<uint8*>(filterRecord->outData),
-                                filterRecord->outRowBytes,
-                                maskData,
-                                filterRecord->maskRowBytes);
-                            break;
-                        default:
-                            throw std::runtime_error("Unsupported image mode.");
+                            filterRecord->outLoPlane = filterRecord->outHiPlane = static_cast<int16>(i);
+
+                            SetOutputRect(filterRecord, top, left, bottom, right);
+
+                            if (filterRecord->haveMask)
+                            {
+                                SetMaskRect(filterRecord, top, left, bottom, right);
+                            }
+
+                            OSErrException::ThrowIfError(filterRecord->advanceState());
+
+                            const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
+
+                            switch (filterRecord->imageMode)
+                            {
+                            case plugInModeGrayScale:
+                            case plugInModeRGBColor:
+                                CopyTileDataToHostEightBitsPerChannel(
+                                    tileBuffer,
+                                    tileBufferRowBytes,
+                                    columnCount,
+                                    rowCount,
+                                    static_cast<uint8*>(filterRecord->outData),
+                                    filterRecord->outRowBytes,
+                                    maskData,
+                                    filterRecord->maskRowBytes);
+                                break;
+                            case plugInModeGray16:
+                            case plugInModeRGB48:
+                                CopyTileDataToHostSixteenBitsPerChannel(
+                                    tileBuffer,
+                                    tileBufferRowBytes,
+                                    columnCount,
+                                    rowCount,
+                                    static_cast<uint8*>(filterRecord->outData),
+                                    filterRecord->outRowBytes,
+                                    maskData,
+                                    filterRecord->maskRowBytes);
+                                break;
+                            default:
+                                throw std::runtime_error("Unsupported image mode.");
+                            }
                         }
                     }
                 }
