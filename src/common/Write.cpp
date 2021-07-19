@@ -84,7 +84,6 @@ namespace
         }
         else
 #endif
-
         {
             SaveActiveLayer(inputDir, inputLayerIndex.get(), filterRecord);
 
