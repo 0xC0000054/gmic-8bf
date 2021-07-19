@@ -53,6 +53,11 @@ InputLayerInfo::~InputLayerInfo()
 {
 }
 
+InputLayerInfo InputLayerInfo::Clone() const
+{
+    return InputLayerInfo(imagePath, layerWidth, layerHeight, layerIsVisible, utf8LayerName);
+}
+
 void InputLayerInfo::Write(const FileHandle* fileHandle)
 {
     IndexLayerInfoHeader header(layerWidth, layerHeight, layerIsVisible);

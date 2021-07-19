@@ -131,14 +131,14 @@ namespace
 
     void ProcessFileDrop(
         const std::wstring& path,
-        const boost::filesystem::path& gmicInputPath)
+        std::unique_ptr<InputLayerInfo>& layer)
     {
-        ConvertImageToGmicInputFormatNative(path, gmicInputPath);
+        ConvertImageToGmicInputFormatNative(path, layer);
     }
 
     void ProcessDib(
         UINT format,
-        const boost::filesystem::path& gmicInputPath)
+        std::unique_ptr<InputLayerInfo>& layer)
     {
         HANDLE hGlobal = GetClipboardData(format);
 
@@ -215,14 +215,14 @@ namespace
                 ConvertImageToGmicInputFormatNative(
                     memoryBmp.data(),
                     memoryBmp.size(),
-                    gmicInputPath);
+                    layer);
             }
         }
     }
 
     void ProcessPng(
         UINT format,
-        const boost::filesystem::path& gmicInputPath)
+        std::unique_ptr<InputLayerInfo>& layer)
     {
         HANDLE hGlobal = GetClipboardData(format);
 
@@ -243,12 +243,12 @@ namespace
         ConvertImageToGmicInputFormatNative(
             lockedData.get(),
             handleSize,
-            gmicInputPath);
+            layer);
     }
 
     void TryProcessClipboardImage(
         const std::vector<UINT>& availableFormats,
-        const boost::filesystem::path& gmicInputPath)
+        std::unique_ptr<InputLayerInfo>& layer)
     {
         static const UINT pngFormatId = RegisterClipboardFormatW(L"PNG");
         static const UINT pngMimeFormatId = RegisterClipboardFormatW(L"image/png"); // Used by Qt-based applications
@@ -263,18 +263,18 @@ namespace
                 std::wstring path = GetFileDropPath();
                 if (!path.empty() && FileDropIsImage(path))
                 {
-                    ProcessFileDrop(path, gmicInputPath);
+                    ProcessFileDrop(path, layer);
                     break;
                 }
             }
             else if (format == CF_DIB || format == CF_DIBV5)
             {
-                ProcessDib(format, gmicInputPath);
+                ProcessDib(format, layer);
                 break;
             }
             else if (format == pngFormatId || format == pngMimeFormatId)
             {
-                ProcessPng(format, gmicInputPath);
+                ProcessPng(format, layer);
                 break;
             }
         }
@@ -367,7 +367,7 @@ namespace
     };
 }
 
-void ConvertClipboardImageToGmicInputNative(const boost::filesystem::path& gmicInputPath)
+void ConvertClipboardImageToGmicInputNative(std::unique_ptr<InputLayerInfo>& layer)
 {
     // Failure to open the clipboard is not a fatal error, if it cannot be opened
     // G'MIC will only get one input image.
@@ -382,6 +382,6 @@ void ConvertClipboardImageToGmicInputNative(const boost::filesystem::path& gmicI
         DumpClipboardFormats(availableFormats);
 #endif // DEBUG_BUILD
 
-        TryProcessClipboardImage(availableFormats, gmicInputPath);
+        TryProcessClipboardImage(availableFormats, layer);
     }
 }

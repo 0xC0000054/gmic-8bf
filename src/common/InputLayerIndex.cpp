@@ -12,8 +12,6 @@
 
 #include "InputLayerIndex.h"
 #include "InputLayerInfo.h"
-#include "ClipboardUtil.h"
-#include "ImageConversion.h"
 #include "FileUtil.h"
 #include <codecvt>
 #include <locale>
@@ -46,7 +44,7 @@ namespace
 #else
 #error "Unknown endianness on this platform."
 #endif
-            version = 1;
+            version = 2;
             layerCount = numberOfLayers;
             activeLayerIndex = activeLayer;
 
@@ -82,56 +80,6 @@ namespace
         uint8_t bitsPerChannel;
         uint16_t padding; // Required due to the 4-byte structure alignment.
     };
-
-    void WriteAlternateInputImagePath(const FileHandle* fileHandle, const boost::filesystem::path& path)
-    {
-        // The file path will be converted from UTF-16 to UTF-8.
-        const std::string& value = path.string();
-
-        if (value.size() > static_cast<size_t>(std::numeric_limits<int32>::max()))
-        {
-            throw std::runtime_error("The string length exceeds 2GB.");
-        }
-
-        int32_t stringLength = static_cast<int32>(value.size());
-
-        WriteFile(fileHandle, &stringLength, sizeof(stringLength));
-
-        WriteFile(fileHandle, value.data(), value.size());
-    }
-
-    void WriteAlternateInputImageData(
-        const FileHandle* fileHandle,
-        const GmicIOSettings& settings)
-    {
-        const SecondInputImageSource source = settings.GetSecondInputImageSource();
-
-        if (source == SecondInputImageSource::None)
-        {
-            // Write an empty path if document layers are the only input source.
-            // This avoids some overhead from creating a file path and trying to open a nonexistent file.
-            WriteAlternateInputImagePath(fileHandle, boost::filesystem::path());
-        }
-        else
-        {
-            boost::filesystem::path inputDir = GetInputDirectory();
-
-            boost::filesystem::path secondGmicInputImage = GetTemporaryFileName(inputDir, ".g8i");
-
-            if (source == SecondInputImageSource::Clipboard)
-            {
-                ConvertClipboardImageToGmicInput(secondGmicInputImage);
-            }
-            else if (source == SecondInputImageSource::File)
-            {
-                ConvertImageToGmicInputFormat(
-                    settings.GetSecondInputImagePath(),
-                    secondGmicInputImage);
-            }
-
-            WriteAlternateInputImagePath(fileHandle, secondGmicInputImage);
-        }
-    }
 }
 
 InputLayerIndex::InputLayerIndex(int16 imageMode)
@@ -155,14 +103,27 @@ void InputLayerIndex::AddFile(
     inputFiles.push_back(info);
 }
 
+void InputLayerIndex::AddFile(const InputLayerInfo& info)
+{
+    inputFiles.push_back(info.Clone());
+}
+
+int32 InputLayerIndex::GetLayerCount() const
+{
+    if (inputFiles.size() > static_cast<size_t>(std::numeric_limits<int32>().max()))
+    {
+        throw std::runtime_error("The number of input files exceeds 2,147,483,647.");
+    }
+
+    return static_cast<int32>(inputFiles.size());
+}
+
 void InputLayerIndex::SetActiveLayerIndex(int32 index)
 {
     activeLayerIndex = index;
 }
 
-void InputLayerIndex::Write(
-    const boost::filesystem::path& path,
-    const GmicIOSettings& settings)
+void InputLayerIndex::Write(const boost::filesystem::path& path)
 {
     if (inputFiles.size() > static_cast<size_t>(std::numeric_limits<int32>().max()))
     {
@@ -186,10 +147,5 @@ void InputLayerIndex::Write(
     for (size_t i = 0; i < inputFiles.size(); i++)
     {
         inputFiles[i].Write(file.get());
-    }
-
-    if (inputFiles.size() == 1)
-    {
-        WriteAlternateInputImageData(file.get(), settings);
     }
 }

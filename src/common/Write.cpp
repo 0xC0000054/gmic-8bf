@@ -13,6 +13,8 @@
 #include "stdafx.h"
 #include "GmicPlugin.h"
 #include "FileUtil.h"
+#include "ClipboardUtil.h"
+#include "ImageConversion.h"
 #include "InputLayerIndex.h"
 #include "Gmic8bfImageWriter.h"
 #include "GmicQtParameters.h"
@@ -32,6 +34,34 @@ namespace
         if (parameters.IsValid())
         {
             parameters.SaveToFile(gmicParametersFilePath);
+        }
+    }
+
+    void WriteAlternateInputImageData(
+        const GmicIOSettings& settings,
+        InputLayerIndex* layerIndex)
+    {
+        const SecondInputImageSource source = settings.GetSecondInputImageSource();
+
+        if (source != SecondInputImageSource::None)
+        {
+            std::unique_ptr<InputLayerInfo> layer;
+
+            if (source == SecondInputImageSource::Clipboard)
+            {
+                ConvertClipboardImageToGmicInput(layer);
+            }
+            else if (source == SecondInputImageSource::File)
+            {
+                ConvertImageToGmicInputFormat(
+                    settings.GetSecondInputImagePath(),
+                    layer);
+            }
+
+            if (layer)
+            {
+                layerIndex->AddFile(*layer.get());
+            }
         }
     }
 
@@ -57,9 +87,11 @@ namespace
 
         {
             SaveActiveLayer(inputDir, inputLayerIndex.get(), filterRecord);
+
+            WriteAlternateInputImageData(settings, inputLayerIndex.get());
         }
 
-        inputLayerIndex->Write(indexFilePath, settings);
+        inputLayerIndex->Write(indexFilePath);
     }
 }
 

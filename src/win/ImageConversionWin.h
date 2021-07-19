@@ -16,14 +16,16 @@
 #define IMAGECONVERSIONWIN_H
 
 #include "Common.h"
+#include "InputLayerInfo.h"
+#include <memory>
 
 void ConvertImageToGmicInputFormatNative(
     const boost::filesystem::path& input,
-    const boost::filesystem::path& output);
+    std::unique_ptr<InputLayerInfo>& output);
 
 void ConvertImageToGmicInputFormatNative(
     const void* input,
     size_t inputLength,
-    const boost::filesystem::path& output);
+    std::unique_ptr<InputLayerInfo>& output);
 
 #endif // !IMAGECONVERSIONWIN_H

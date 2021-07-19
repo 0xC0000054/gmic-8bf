@@ -16,7 +16,9 @@
 #define CLIPBOARDUTIL_H
 
 #include "Common.h"
+#include "InputLayerInfo.h"
+#include <memory>
 
-void ConvertClipboardImageToGmicInput(const boost::filesystem::path& clipboardImagePath);
+void ConvertClipboardImageToGmicInput(std::unique_ptr<InputLayerInfo>& layer);
 
 #endif // !CLIPBOARDUTIL_H

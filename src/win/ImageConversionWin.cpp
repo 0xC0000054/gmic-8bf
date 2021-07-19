@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "ImageConversionWin.h"
+#include "FileUtil.h"
 #include "Gmic8bfImageWriter.h"
 #include "ReadOnlyMemoryStream.h"
 #include <boost/filesystem.hpp>
@@ -176,7 +177,7 @@ namespace
     };
 
     void DoGmicInputFormatConversion(
-        const boost::filesystem::path& output,
+        std::unique_ptr<InputLayerInfo>& output,
         IWICImagingFactory* factory,
         IWICBitmapDecoder* decoder)
     {
@@ -232,6 +233,8 @@ namespace
             static_cast<int32>(uiWidth),
             static_cast<int32>(uiHeight));
 
+        const boost::filesystem::path path = GetTemporaryFileName(GetInputDirectory(), ".g8i");
+
         WritePixelsFromCallback(
             static_cast<int32>(uiWidth),
             static_cast<int32>(uiHeight),
@@ -242,13 +245,20 @@ namespace
             writer.GetTileHeight(),
             &GmicOutputWriter::WriteCallback,
             &writer,
-            output);
+            path);
+
+        output.reset(new InputLayerInfo(
+            path,
+            static_cast<int32>(uiWidth),
+            static_cast<int32>(uiHeight),
+            true,
+            "2nd Layer"));
     }
 }
 
 void ConvertImageToGmicInputFormatNative(
     const boost::filesystem::path& input,
-    const boost::filesystem::path& output)
+    std::unique_ptr<InputLayerInfo>& output)
 {
     try
     {
@@ -284,7 +294,7 @@ void ConvertImageToGmicInputFormatNative(
 void ConvertImageToGmicInputFormatNative(
     const void* input,
     size_t inputLength,
-    const boost::filesystem::path& output)
+    std::unique_ptr<InputLayerInfo>& output)
 {
     try
     {

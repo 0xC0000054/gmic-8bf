@@ -18,7 +18,7 @@
 #error "Missing a ClipboardUtil header for this platform."
 #endif
 
-void ConvertClipboardImageToGmicInput(const boost::filesystem::path& gmicInputPath)
+void ConvertClipboardImageToGmicInput(std::unique_ptr<InputLayerInfo>& layer)
 {
-    ConvertClipboardImageToGmicInputNative(gmicInputPath);
+    ConvertClipboardImageToGmicInputNative(layer);
 }

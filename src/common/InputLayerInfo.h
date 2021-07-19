@@ -32,6 +32,8 @@ public:
 
     ~InputLayerInfo();
 
+    InputLayerInfo Clone() const;
+
     void Write(const FileHandle* fileHandle);
 
 private:

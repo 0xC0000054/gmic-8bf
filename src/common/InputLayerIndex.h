@@ -36,11 +36,13 @@ public:
         bool visible,
         std::string utf8Name);
 
+    void AddFile(const InputLayerInfo& info);
+
+    int32 GetLayerCount() const;
+
     void SetActiveLayerIndex(int32 index);
 
-    void Write(
-        const boost::filesystem::path& path,
-        const GmicIOSettings& settings);
+    void Write(const boost::filesystem::path& path);
 
 private:
 

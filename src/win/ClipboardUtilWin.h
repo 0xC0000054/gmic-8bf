@@ -16,7 +16,9 @@
 #define CLIPBOARDUTILWIN_H
 
 #include "Common.h"
+#include "InputLayerInfo.h"
+#include <memory>
 
-void ConvertClipboardImageToGmicInputNative(const boost::filesystem::path& gmicInputPath);
+void ConvertClipboardImageToGmicInputNative(std::unique_ptr<InputLayerInfo>& layer);
 
 #endif // !CLIPBOARDUTILWIN_H
