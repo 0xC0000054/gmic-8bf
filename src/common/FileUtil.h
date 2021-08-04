@@ -22,8 +22,7 @@
 enum class FileOpenMode
 {
     Read = 0,
-    Write = 1,
-    ReadWrite = 2
+    Write = 1
 };
 
 class FileHandle
