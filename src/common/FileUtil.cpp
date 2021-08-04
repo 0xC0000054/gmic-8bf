@@ -128,22 +128,22 @@ std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOp
     return OpenFileNative(path, mode);
 }
 
-void ReadFile(const FileHandle* fileHandle, void* data, size_t dataSize)
+void ReadFile(FileHandle* fileHandle, void* data, size_t dataSize)
 {
     ReadFileNative(fileHandle, data, dataSize);
 }
 
-void SetFileLength(const FileHandle* fileHandle, int64 length)
+void SetFileLength(FileHandle* fileHandle, int64 length)
 {
     SetFileLengthNative(fileHandle, length);
 }
 
-void SetFilePosition(const FileHandle* fileHandle, int16 posMode, int64 posOffset)
+void SetFilePosition(FileHandle* fileHandle, int16 posMode, int64 posOffset)
 {
     SetFilePositionNative(fileHandle, posMode, posOffset);
 }
 
-void WriteFile(const FileHandle* fileHandle, const void* data, size_t dataSize)
+void WriteFile(FileHandle* fileHandle, const void* data, size_t dataSize)
 {
     WriteFileNative(fileHandle, data, dataSize);
 }

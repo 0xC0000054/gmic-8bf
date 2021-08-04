@@ -25,12 +25,12 @@ boost::filesystem::path GetSessionDirectoriesRootNative();
 
 std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode);
 
-void ReadFileNative(const FileHandle* fileHandle, void* data, size_t dataSize);
+void ReadFileNative(FileHandle* fileHandle, void* data, size_t dataSize);
 
-void SetFileLengthNative(const FileHandle* fileHandle, int64 length);
+void SetFileLengthNative(FileHandle* fileHandle, int64 length);
 
-void SetFilePositionNative(const FileHandle* fileHandle, int16 posMode, int64 posOffset);
+void SetFilePositionNative(FileHandle* fileHandle, int16 posMode, int64 posOffset);
 
-void WriteFileNative(const FileHandle* fileHandle, const void* data, size_t dataSize);
+void WriteFileNative(FileHandle* fileHandle, const void* data, size_t dataSize);
 
 #endif // !FILEUTILWIN_H

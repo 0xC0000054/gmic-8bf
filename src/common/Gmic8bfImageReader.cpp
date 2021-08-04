@@ -177,7 +177,7 @@ namespace
     }
 
     void PremultiplyAlpha(
-        const FileHandle* fileHandle,
+        FileHandle* fileHandle,
         uint8* tileBuffer,
         int32 tileWidth,
         int32 tileHeight,

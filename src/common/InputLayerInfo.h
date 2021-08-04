@@ -34,7 +34,7 @@ public:
 
     InputLayerInfo Clone() const;
 
-    void Write(const FileHandle* fileHandle);
+    void Write(FileHandle* fileHandle);
 
 private:
     boost::filesystem::path imagePath;

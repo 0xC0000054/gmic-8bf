@@ -83,7 +83,7 @@ namespace
         }
 
         static void WriteCallback(
-            const FileHandle* file,
+            FileHandle* file,
             int32 imageWidth,
             int32 imageHeight,
             int32 numberOfChannels,
@@ -113,7 +113,7 @@ namespace
     private:
 
         void WritePixels(
-            const FileHandle* file,
+            FileHandle* file,
             int32 imageWidth,
             int32 imageHeight,
             int32 numberOfChannels,

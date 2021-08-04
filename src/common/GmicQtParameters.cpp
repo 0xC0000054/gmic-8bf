@@ -46,7 +46,7 @@ namespace
             version = 1;
         }
 
-        GmicQtParametersHeader(const FileHandle* fileHandle) : version()
+        GmicQtParametersHeader(FileHandle* fileHandle) : version()
         {
             ReadFile(fileHandle, this, sizeof(*this));
 
@@ -221,7 +221,7 @@ namespace
         bool zstringValid;
     };
 
-    void ReadUtf8String(const FileHandle* fileHandle, std::string& value)
+    void ReadUtf8String(FileHandle* fileHandle, std::string& value)
     {
         int32_t stringLength = 0;
 
@@ -241,7 +241,7 @@ namespace
         }
     }
 
-    void WriteUtf8String(const FileHandle* fileHandle, const std::string& value)
+    void WriteUtf8String(FileHandle* fileHandle, const std::string& value)
     {
         // Check that the required byte buffer size can fit in a uint32_t.
         if (value.size() > static_cast<size_t>(std::numeric_limits<int32_t>::max()))

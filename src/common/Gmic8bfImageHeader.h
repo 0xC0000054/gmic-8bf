@@ -19,7 +19,7 @@
 
 struct alignas(4) Gmic8bfImageHeader
 {
-    Gmic8bfImageHeader(const FileHandle* fileHandle);
+    Gmic8bfImageHeader(FileHandle* fileHandle);
 
     Gmic8bfImageHeader(
         int32 imageWidth,

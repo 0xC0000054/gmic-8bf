@@ -33,7 +33,7 @@ namespace
         char reserved[8];
     };
 
-    void ReadFilePath(const FileHandle* fileHandle, boost::filesystem::path& value)
+    void ReadFilePath(FileHandle* fileHandle, boost::filesystem::path& value)
     {
         boost::endian::little_uint32_t stringLength = 0;
 
@@ -63,7 +63,7 @@ namespace
         }
     }
 
-    void WriteFilePath(const FileHandle* fileHandle, const boost::filesystem::path& value)
+    void WriteFilePath(FileHandle* fileHandle, const boost::filesystem::path& value)
     {
         constexpr size_t pathCharSize = sizeof(boost::filesystem::path::value_type);
 
@@ -86,7 +86,7 @@ namespace
 
     }
 
-    void ReadSecondInputImageSourceValue(const FileHandle* fileHandle, SecondInputImageSource& value)
+    void ReadSecondInputImageSourceValue(FileHandle* fileHandle, SecondInputImageSource& value)
     {
         value = SecondInputImageSource::None;
 
@@ -103,7 +103,7 @@ namespace
         }
     }
 
-    void WriteSecondInputImageSourceValue(const FileHandle* fileHandle, SecondInputImageSource value)
+    void WriteSecondInputImageSourceValue(FileHandle* fileHandle, SecondInputImageSource value)
     {
         uint32_t integerValue = static_cast<uint32_t>(value);
         boost::endian::little_uint32_t source = static_cast<boost::endian::little_uint32_t>(integerValue);

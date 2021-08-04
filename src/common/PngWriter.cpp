@@ -100,7 +100,7 @@ namespace
     }
 
     void FillInputDataBuffer(
-        const FileHandle* fileHandle,
+        FileHandle* fileHandle,
         uint8* buffer,
         int32 rowBytes,
         int32 height,
@@ -135,7 +135,7 @@ namespace
 
     OSErr SavePngImage(
         const FilterRecordPtr filterRecord,
-        const FileHandle* inputFile,
+        FileHandle* inputFile,
         const Gmic8bfImageHeader& inputFileHeader,
         PngWriterState* writerState)
     {

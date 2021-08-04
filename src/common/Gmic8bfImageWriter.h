@@ -21,7 +21,7 @@
 #include <boost/filesystem.hpp>
 
 typedef void(*WritePixelsCallback)(
-    const FileHandle* file,
+    FileHandle* file,
     int32 imageWidth,
     int32 imageHeight,
     int32 numberOfChannels,

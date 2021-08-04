@@ -45,7 +45,7 @@ namespace
     }
 
     void PreallocateFile(
-        const FileHandle* fileHandle,
+        FileHandle* fileHandle,
         int32 width,
         int32 height,
         int32 numberOfChannels,
@@ -66,7 +66,7 @@ namespace
         }
     }
 
-    void SaveActiveLayerImpl(FilterRecordPtr filterRecord, const VPoint& imageSize, const FileHandle* fileHandle)
+    void SaveActiveLayerImpl(FilterRecordPtr filterRecord, const VPoint& imageSize, FileHandle* fileHandle)
     {
         const bool hasTransparency = filterRecord->inLayerPlanes != 0 && filterRecord->inTransparencyMask != 0;
 
@@ -186,7 +186,7 @@ namespace
         FilterRecordPtr filterRecord,
         const VPoint& imageSize,
         const ReadLayerDesc* layerDescriptor,
-        const FileHandle* fileHandle)
+        FileHandle* fileHandle)
     {
         const bool hasTransparency = layerDescriptor->transparency != nullptr;
 

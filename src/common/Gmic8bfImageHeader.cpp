@@ -20,7 +20,7 @@
 #pragma warning(disable: 26495)
 #endif // _MSC_VER
 
-Gmic8bfImageHeader::Gmic8bfImageHeader(const FileHandle* fileHandle)
+Gmic8bfImageHeader::Gmic8bfImageHeader(FileHandle* fileHandle)
 {
     ReadFile(fileHandle, this, sizeof(*this));
 

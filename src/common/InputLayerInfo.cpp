@@ -14,7 +14,7 @@
 
 namespace
 {
-    void WriteString(const FileHandle* fileHandle, std::string value)
+    void WriteString(FileHandle* fileHandle, std::string value)
     {
         if (value.size() > static_cast<size_t>(std::numeric_limits<int32>::max()))
         {
@@ -58,7 +58,7 @@ InputLayerInfo InputLayerInfo::Clone() const
     return InputLayerInfo(imagePath, layerWidth, layerHeight, layerIsVisible, utf8LayerName);
 }
 
-void InputLayerInfo::Write(const FileHandle* fileHandle)
+void InputLayerInfo::Write(FileHandle* fileHandle)
 {
     IndexLayerInfoHeader header(layerWidth, layerHeight, layerIsVisible);
 
