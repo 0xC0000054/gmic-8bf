@@ -201,11 +201,6 @@ public:
                 buffer->writeOffset = 0;
             }
         }
-
-        if (hFile)
-        {
-            hFile.reset();
-        }
     }
 
     FileHandleWin(const FileHandleWin&) = delete;
