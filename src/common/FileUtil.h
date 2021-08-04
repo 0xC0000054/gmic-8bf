@@ -30,7 +30,7 @@ class FileHandle
 {
 public:
 
-    virtual ~FileHandle()
+    virtual ~FileHandle() noexcept(false)
     {
     }
 
