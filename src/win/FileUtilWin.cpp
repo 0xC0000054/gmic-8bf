@@ -84,7 +84,7 @@ namespace
         size_t offset = 0;
         size_t bytesRemaining = count;
 
-        do
+        while (bytesRemaining > 0)
         {
             DWORD bytesRead = ReadCore(hFile, buffer + offset, bytesRemaining);
 
@@ -95,8 +95,7 @@ namespace
 
             offset += bytesRead;
             bytesRemaining -= bytesRead;
-
-        } while (bytesRemaining > 0);
+        }
     }
 
     void WriteCore(HANDLE hFile, const BYTE* buffer, size_t count)
