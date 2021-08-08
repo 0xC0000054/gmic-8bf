@@ -87,11 +87,11 @@ namespace
         }
         catch (const std::exception& e)
         {
-            state->SetErrorMessage(e.what());
+            png_error(png_ptr, e.what());
         }
         catch (...)
         {
-            state->SetErrorMessage("An unknown error occurred when writing the PNG data.");
+            png_error(png_ptr, "An unknown error occurred when writing the PNG data.");
         }
     }
 
