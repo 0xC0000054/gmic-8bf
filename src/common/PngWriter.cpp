@@ -73,6 +73,8 @@ namespace
 
             state->SetErrorMessage(errorDescription);
         }
+
+        longjmp(png_jmpbuf(png), 1);
     }
 
     void WritePngData(png_structp png_ptr, png_bytep data, png_size_t length)
