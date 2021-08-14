@@ -130,12 +130,12 @@ namespace
 
         const char* GetErrorMessage() const
         {
-            return errorInfo.errorMessage;
+            return errorInfo.GetErrorMessage();
         }
 
         bool HasErrorMessage() const
         {
-            return errorInfo.hasErrorMessage;
+            return errorInfo.HasErrorMessage();
         }
 
         static INT_PTR CALLBACK StaticDlgProc(HWND hDlg, UINT wMsg, WPARAM wParam, LPARAM lParam)
@@ -188,17 +188,6 @@ namespace
             PostMessage(dialogHandle, EndGmicProcessThreadMessage, 0, 0);
         }
 
-        void SetErrorMessage(const char* const message)
-        {
-            constexpr size_t MaxErrorStringLength = sizeof(errorInfo.errorMessage) - 1;
-
-            errorInfo.hasErrorMessage = true;
-            std::strncpy(
-                errorInfo.errorMessage,
-                message,
-                MaxErrorStringLength);
-        }
-
         bool InitializeDialog(HWND hDlg)
         {
             bool result = false;
@@ -225,7 +214,7 @@ namespace
                     break;
                 default:
                     errorCode = ioErr;
-                    SetErrorMessage(e.what());
+                    errorInfo.SetErrorMesage(e.what());
                     break;
                 }
             }
@@ -265,7 +254,7 @@ namespace
                 if (threadHandle == nullptr)
                 {
                     errorCode = ioErr;
-                    SetErrorMessage("Unable to start the G'MIC-Qt process worker thread.");
+                    errorInfo.SetErrorMesage("Unable to start the G'MIC-Qt process worker thread.");
                     EndDialog(hDlg, IDABORT);
                 }
                 break;

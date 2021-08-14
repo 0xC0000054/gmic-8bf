@@ -17,8 +17,22 @@
 
 #include "Common.h"
 
-struct GmicProcessErrorInfo
+class GmicProcessErrorInfo
 {
+public:
+
+    GmicProcessErrorInfo();
+
+    const char* GetErrorMessage() const;
+
+    bool HasErrorMessage() const;
+
+    void SetErrorMesage(const char* message);
+
+    void SetErrorMesageFormat(const char* format, ...);
+
+private:
+
     bool hasErrorMessage;
     char errorMessage[2048];
 };

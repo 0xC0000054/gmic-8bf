@@ -13,7 +13,45 @@
 #include "stdafx.h"
 #include "GmicProcess.h"
 #include "FileUtil.h"
+#include <string>
 #include <boost/process.hpp>
+
+GmicProcessErrorInfo::GmicProcessErrorInfo()
+    : hasErrorMessage(false), errorMessage{}
+{
+}
+
+const char* GmicProcessErrorInfo::GetErrorMessage() const
+{
+    return errorMessage;
+}
+
+bool GmicProcessErrorInfo::HasErrorMessage() const
+{
+    return hasErrorMessage;
+}
+
+void GmicProcessErrorInfo::SetErrorMesage(const char* message)
+{
+    constexpr size_t MaxErrorStringLength = sizeof(errorMessage) - 1;
+
+    hasErrorMessage = true;
+    std::strncpy(
+        errorMessage,
+        message,
+        MaxErrorStringLength);
+}
+
+void GmicProcessErrorInfo::SetErrorMesageFormat(const char* format, ...)
+{
+    va_list args;
+
+    va_start(args, format);
+
+    hasErrorMessage = std::vsnprintf(errorMessage, sizeof(errorMessage), format, args) > 0;
+
+    va_end(args);
+}
 
 OSErr ExecuteGmicQt(
     const boost::filesystem::path& indexFilePath,
@@ -23,9 +61,6 @@ OSErr ExecuteGmicQt(
     GmicProcessErrorInfo& errorInfo)
 {
     OSErr err = noErr;
-    errorInfo.hasErrorMessage = false;
-    memset(errorInfo.errorMessage, 0, sizeof(errorInfo.errorMessage));
-    constexpr size_t MaxErrorStringLength = sizeof(errorInfo.errorMessage) - 1;
 
     try
     {
@@ -48,46 +83,26 @@ OSErr ExecuteGmicQt(
         case 2:
         case 3:
             err = ioErr;
-            errorInfo.hasErrorMessage = true;
-            std::strncpy(
-                errorInfo.errorMessage,
-                "A G'MIC-Qt argument is invalid.",
-                MaxErrorStringLength);
+            errorInfo.SetErrorMesage("A G'MIC-Qt argument is invalid.");
             break;
         case 4:
             err = ioErr;
-            errorInfo.hasErrorMessage = true;
-            std::strncpy(
-                errorInfo.errorMessage,
-                "An unspecified error occurred when reading the G'MIC-Qt input images.",
-                MaxErrorStringLength);
+            errorInfo.SetErrorMesage("An unspecified error occurred when reading the G'MIC-Qt input images.");
             break;
         case 5:
             err = userCanceledErr;
             break;
         case 6:
             err = ioErr;
-            errorInfo.hasErrorMessage = true;
-            std::strncpy(
-                errorInfo.errorMessage,
-                "Unable to open one of the G'MIC-Qt input images.",
-                MaxErrorStringLength);
+            errorInfo.SetErrorMesage("Unable to open one of the G'MIC-Qt input images.");
             break;
         case 7:
             err = ioErr;
-            errorInfo.hasErrorMessage = true;
-            std::strncpy(
-                errorInfo.errorMessage,
-                "The G'MIC-Qt input images use an unknown format.",
-                MaxErrorStringLength);
+            errorInfo.SetErrorMesage("The G'MIC-Qt input images use an unknown format.");
             break;
         case 8:
             err = ioErr;
-            errorInfo.hasErrorMessage = true;
-            std::strncpy(
-                errorInfo.errorMessage,
-                "The G'MIC-Qt input images have an unsupported file version.",
-                MaxErrorStringLength);
+            errorInfo.SetErrorMesage("The G'MIC-Qt input images have an unsupported file version.");
             break;
         case 9:
             err = memFullErr;
@@ -97,19 +112,13 @@ OSErr ExecuteGmicQt(
             break;
         case 11:
             err = ioErr;
-            errorInfo.hasErrorMessage = true;
-            std::strncpy(
-                errorInfo.errorMessage,
-                "The Qt platform byte order does not match the plug-in.",
-                MaxErrorStringLength);
+            errorInfo.SetErrorMesage("The Qt platform byte order does not match the plug-in.");
             break;
         default:
             err = ioErr;
-            errorInfo.hasErrorMessage = std::snprintf(
-                errorInfo.errorMessage,
-                MaxErrorStringLength,
+            errorInfo.SetErrorMesageFormat(
                 "An unspecified error occurred when running G'MIC-Qt, exit code=%d.",
-                exitCode) > 0;
+                exitCode);
             break;
         }
     }
@@ -120,20 +129,12 @@ OSErr ExecuteGmicQt(
     catch (const std::exception& e)
     {
         err = ioErr;
-        errorInfo.hasErrorMessage = true;
-        std::strncpy(
-            errorInfo.errorMessage,
-            e.what(),
-            MaxErrorStringLength);
+        errorInfo.SetErrorMesage(e.what());
     }
     catch (...)
     {
         err = ioErr;
-        errorInfo.hasErrorMessage = true;
-        std::strncpy(
-            errorInfo.errorMessage,
-            "An unspecified error occurred when running G'MIC-Qt.",
-            MaxErrorStringLength);
+        errorInfo.SetErrorMesage("An unspecified error occurred when running G'MIC-Qt.");
     }
 
     return err;
