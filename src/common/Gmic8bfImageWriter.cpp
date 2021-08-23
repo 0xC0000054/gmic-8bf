@@ -266,9 +266,9 @@ namespace
             throw OSErrException(memFullErr);
         }
 
-        // Nested scope to ensure that the unique_buffer_suite_buffer is destroyed before the method exits.
+        // Nested scope to ensure that the ScopedBufferSuiteBuffer is destroyed before the method exits.
         {
-            unique_buffer_suite_buffer buffer(filterRecord, imageDataBufferSize);
+            ScopedBufferSuiteBuffer buffer(filterRecord, imageDataBufferSize);
 
             void* imageDataBuffer = buffer.Lock();
 

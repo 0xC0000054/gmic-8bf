@@ -459,7 +459,7 @@ namespace
             throw std::bad_alloc();
         }
 
-        unique_buffer_suite_buffer scopedBuffer(filterRecord, tileBufferSize);
+        ScopedBufferSuiteBuffer scopedBuffer(filterRecord, tileBufferSize);
 
         uint8* tileBuffer = reinterpret_cast<uint8*>(scopedBuffer.Lock());
 

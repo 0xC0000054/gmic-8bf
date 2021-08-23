@@ -575,7 +575,7 @@ OSErr GmicQtParameters::ReadFilterOpaqueData(
 
         OSErrException::ThrowIfError(suite->GetDataLength(descriptor, keyFilterOpaqueData, &dataSize));
 
-        unique_buffer_suite_buffer scopedBuffer(filterRecord, dataSize);
+        ScopedBufferSuiteBuffer scopedBuffer(filterRecord, dataSize);
 
         char* data = static_cast<char*>(scopedBuffer.Lock());
 
@@ -614,7 +614,7 @@ void GmicQtParameters::WriteFilterOpaqueData(
         throw std::runtime_error("The G'MIC-Qt data is larger than 2 GB.");
     }
 
-    unique_buffer_suite_buffer scopedBuffer(filterRecord, static_cast<int32>(dataSize));
+    ScopedBufferSuiteBuffer scopedBuffer(filterRecord, static_cast<int32>(dataSize));
 
     uint8* data = static_cast<uint8*>(scopedBuffer.Lock());
 

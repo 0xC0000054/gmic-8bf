@@ -17,17 +17,17 @@
 
 #include "Common.h"
 
-class unique_buffer_suite_buffer
+class ScopedBufferSuiteBuffer
 {
 public:
-    explicit unique_buffer_suite_buffer(FilterRecordPtr filterRecord, int32 bufferSize)
+    explicit ScopedBufferSuiteBuffer(FilterRecordPtr filterRecord, int32 bufferSize)
         : bufferID(), bufferDataPtr(nullptr), filterRecord(filterRecord), bufferIDValid(false)
     {
         OSErrException::ThrowIfError(filterRecord->bufferProcs->allocateProc(bufferSize, &bufferID));
         bufferIDValid = true;
     }
 
-    ~unique_buffer_suite_buffer()
+    ~ScopedBufferSuiteBuffer()
     {
         if (bufferIDValid)
         {
