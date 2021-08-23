@@ -148,7 +148,6 @@ struct FileBuffer
     }
 };
 
-
 class FileHandleWin : public FileHandle
 {
 public:
