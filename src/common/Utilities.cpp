@@ -544,12 +544,7 @@ bool TryGetActiveLayerNameAsUTF8String(const FilterRecord* filterRecord, std::st
 
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept
 {
-    if (filterRecord->advanceState != nullptr && HostBufferProcsAvailable(filterRecord))
-    {
-        return true;
-    }
-
-    return false;
+    return filterRecord->advanceState != nullptr && HostBufferProcsAvailable(filterRecord);
 }
 
 int32 GetImagePlaneCount(int16 imageMode, int32 layerPlanes, int32 transparencyPlanes)
