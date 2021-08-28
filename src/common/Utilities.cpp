@@ -711,12 +711,7 @@ std::string ConvertLayerNameToUTF8(const uint16* layerName)
 
 bool HostSupportsReadingFromMultipleLayers(const FilterRecord* filterRecord)
 {
-    if (HostChannelPortAvailable(filterRecord) && ReadImageDocumentSupportsLayers(filterRecord))
-    {
-        return true;
-    }
-
-    return false;
+    return HostChannelPortAvailable(filterRecord) && ReadImageDocumentSupportsLayers(filterRecord);
 }
 
 bool DocumentHasMultipleLayers(const FilterRecord* filterRecord)
