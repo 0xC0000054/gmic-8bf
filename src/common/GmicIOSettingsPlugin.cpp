@@ -23,7 +23,7 @@ OSErr GmicIOSettingsDoFinish();
 
 namespace
 {
-    constexpr const char* FilterNameWithVersion = "Input/Output Settings for G'MIC-Qt filter v" VI_VERSION_STR;
+    constexpr const char FilterNameWithVersion[] = "Input/Output Settings for G'MIC-Qt filter v" VI_VERSION_STR;
 
     OSErr LaunderOSErrResult(OSErr err, const FilterRecordPtr filterRecord)
     {

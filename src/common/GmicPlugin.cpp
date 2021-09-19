@@ -27,7 +27,7 @@ OSErr DoStart(FilterRecord* filterRecord);
 OSErr DoContinue() noexcept;
 OSErr DoFinish();
 
-constexpr const char* FilterNameWithVersion = "G'MIC-Qt filter v" VI_VERSION_STR;
+constexpr const char FilterNameWithVersion[] = "G'MIC-Qt filter v" VI_VERSION_STR;
 
 namespace
 {
