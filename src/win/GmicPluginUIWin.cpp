@@ -53,7 +53,7 @@ namespace
         case WM_INITDIALOG:
             CenterDialog(hDlg);
             InitAboutDialog(hDlg);
-            break;
+            return TRUE;
         case WM_LBUTTONUP:
             EndDialog(hDlg, IDOK);
             break;
@@ -97,12 +97,9 @@ namespace
             }
             }
             break;
-
-        default:
-            return FALSE;
         }
 
-        return TRUE;
+        return FALSE;
     }
 
     class GmicDialog
