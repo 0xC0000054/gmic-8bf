@@ -211,7 +211,7 @@ namespace
         case WM_INITDIALOG:
             CenterDialog(hDlg);
             InitIOSettingsDialog(hDlg, dialogParams);
-            break;
+            return TRUE;
         case WM_COMMAND:
             item = LOWORD(wParam);
             cmd = HIWORD(wParam);
@@ -288,8 +288,6 @@ namespace
                     }
 
                     break;
-                default:
-                    return FALSE;
                 }
             }
             else if (item == IDC_SECONDIMAGEPATHEDIT)
@@ -319,11 +317,9 @@ namespace
                 }
             }
             break;
-        default:
-            return FALSE;
         }
 
-        return TRUE;
+        return FALSE;
     }
 }
 

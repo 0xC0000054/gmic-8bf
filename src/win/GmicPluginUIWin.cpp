@@ -236,7 +236,7 @@ namespace
                 {
                     EndDialog(hDlg, IDABORT);
                 }
-                break;
+                return TRUE;
             case WM_WINDOWPOSCHANGED:
                 // Start the G'MIC-Qt process worker thread after the dialog has been displayed to the user.
                 //
@@ -263,11 +263,9 @@ namespace
                 CloseHandle(threadHandle);
                 EndDialog(hDlg, IDOK);
                 break;
-            default:
-                return FALSE;
             }
 
-            return TRUE;
+            return FALSE;
         }
 
         HWND dialogHandle;
