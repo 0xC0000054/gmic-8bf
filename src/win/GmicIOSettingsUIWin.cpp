@@ -197,11 +197,11 @@ namespace
         if (wMsg == WM_INITDIALOG)
         {
             dialogParams = reinterpret_cast<DialogData*>(lParam);
-            SetWindowLongPtrW(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(dialogParams));
+            SetWindowLongPtrW(hDlg, DWLP_USER, reinterpret_cast<LONG_PTR>(dialogParams));
         }
         else
         {
-            dialogParams = reinterpret_cast<DialogData*>(GetWindowLongPtrW(hDlg, GWLP_USERDATA));
+            dialogParams = reinterpret_cast<DialogData*>(GetWindowLongPtrW(hDlg, DWLP_USER));
         }
 
         int item;
