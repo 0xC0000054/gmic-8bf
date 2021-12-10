@@ -21,12 +21,10 @@
 
 namespace
 {
-    struct PngWriterState
+    struct PngErrorData
     {
-        FileHandle* fileHandle;
-
-        PngWriterState(FileHandle* handle)
-            : fileHandle(handle), errorCode(noErr), errorMessageSet(false), errorMessage()
+        PngErrorData()
+            : errorCode(noErr), errorMessageSet(false), errorMessage()
         {
         }
 
@@ -65,13 +63,13 @@ namespace
 
     void PngWriteErrorHandler(png_structp png, png_const_charp errorDescription)
     {
-        PngWriterState* state = static_cast<PngWriterState*>(png_get_error_ptr(png));
+        PngErrorData* errorData = static_cast<PngErrorData*>(png_get_error_ptr(png));
 
-        if (state)
+        if (errorData)
         {
             DebugOut("LibPng error: %s", errorDescription);
 
-            state->SetErrorMessage(errorDescription);
+            errorData->SetErrorMessage(errorDescription);
         }
 
         longjmp(png_jmpbuf(png), 1);
@@ -79,11 +77,11 @@ namespace
 
     void WritePngData(png_structp png_ptr, png_bytep data, png_size_t length)
     {
-        PngWriterState* state = static_cast<PngWriterState*>(png_get_io_ptr(png_ptr));
+        FileHandle* fileHandle = static_cast<FileHandle*>(png_get_io_ptr(png_ptr));
 
         try
         {
-            WriteFile(state->fileHandle, data, length);
+            WriteFile(fileHandle, data, length);
         }
         catch (const std::exception& e)
         {
@@ -106,7 +104,7 @@ namespace
         uint8* buffer,
         int32 rowBytes,
         int32 height,
-        PngWriterState* state)
+        PngErrorData* errorData)
     {
         try
         {
@@ -116,11 +114,11 @@ namespace
         }
         catch (const std::exception& e)
         {
-            state->SetErrorMessage(e.what());
+            errorData->SetErrorMessage(e.what());
         }
         catch (...)
         {
-            state->SetErrorMessage("An unknown error occurred when reading the G'MIC image data.");
+            errorData->SetErrorMessage("An unknown error occurred when reading the G'MIC image data.");
         }
     }
 
@@ -139,14 +137,15 @@ namespace
         const FilterRecordPtr filterRecord,
         FileHandle* inputFile,
         const Gmic8bfImageHeader& inputFileHeader,
-        PngWriterState* writerState)
+        FileHandle* outputFile,
+        PngErrorData* errorData)
     {
         OSErr err = noErr;
 
         BufferID inputDataBufferID;
         bool inputBufferValid = false;
 
-        png_structp pngPtr = png_create_write_struct(PNG_LIBPNG_VER_STRING, static_cast<png_voidp>(writerState), PngWriteErrorHandler, nullptr);
+        png_structp pngPtr = png_create_write_struct(PNG_LIBPNG_VER_STRING, static_cast<png_voidp>(errorData), PngWriteErrorHandler, nullptr);
 
         if (!pngPtr)
         {
@@ -162,7 +161,7 @@ namespace
             return memFullErr;
         }
 
-        png_set_write_fn(pngPtr, static_cast<png_voidp>(writerState), WritePngData, FlushPngData);
+        png_set_write_fn(pngPtr, static_cast<png_voidp>(outputFile), WritePngData, FlushPngData);
 
         // Disable "C4611: interaction between '_setjmp' and C++ object destruction is non-portable" on MSVC.
         // This method does not create any C++ objects.
@@ -226,7 +225,7 @@ namespace
 
         png_write_info(pngPtr, infoPtr);
 
-        err = writerState->GetWriteErrorCode();
+        err = errorData->GetWriteErrorCode();
 
         if (err == noErr)
         {
@@ -283,9 +282,9 @@ namespace
                             inputBuffer,
                             inputRowBytes,
                             rowCount,
-                            writerState);
+                            errorData);
 
-                        err = writerState->GetWriteErrorCode();
+                        err = errorData->GetWriteErrorCode();
 
                         if (err != noErr)
                         {
@@ -299,7 +298,7 @@ namespace
                             png_write_row(pngPtr, row);
                         }
 
-                        err = writerState->GetWriteErrorCode();
+                        err = errorData->GetWriteErrorCode();
 
                         if (err != noErr)
                         {
@@ -311,7 +310,7 @@ namespace
                     {
                         png_write_end(pngPtr, infoPtr);
 
-                        err = writerState->GetWriteErrorCode();
+                        err = errorData->GetWriteErrorCode();
                     }
 
                     filterRecord->bufferProcs->unlockProc(inputDataBufferID);
@@ -336,11 +335,11 @@ void ConvertGmic8bfImageToPng(
     Gmic8bfImageHeader inputFileHeader(inputFile.get());
 
     std::unique_ptr<FileHandle> outputFile = OpenFile(outputFilePath, FileOpenMode::Write);
-    std::unique_ptr<PngWriterState> writerState = std::make_unique<PngWriterState>(outputFile.get());
+    std::unique_ptr<PngErrorData> errorData = std::make_unique<PngErrorData>();
 
-    if (SavePngImage(filterRecord, inputFile.get(), inputFileHeader, writerState.get()) != noErr)
+    if (SavePngImage(filterRecord, inputFile.get(), inputFileHeader, outputFile.get(), errorData.get()) != noErr)
     {
-        std::string errorMessage = writerState->GetErrorMessage();
+        std::string errorMessage = errorData->GetErrorMessage();
 
         if (errorMessage.empty())
         {
