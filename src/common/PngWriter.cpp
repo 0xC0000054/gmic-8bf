@@ -14,6 +14,8 @@
 #include "FileUtil.h"
 #include "Gmic8bfImageHeader.h"
 #include "Utilities.h"
+#include <boost/endian.hpp>
+#include <boost/predef.h>
 #include <new>
 #include <string>
 #include <setjmp.h>
@@ -290,6 +292,22 @@ namespace
                         {
                             break;
                         }
+
+                        // PNG uses big-endian byte order for 16-bit image data, so we need to
+                        // byte-swap on little-endian platforms.
+#if BOOST_ENDIAN_LITTLE_BYTE
+                        if (bitsPerChannel == 16)
+                        {
+                            const size_t sampleCount = static_cast<size_t>(width) * rowCount * numberOfChannels;
+                            uint16* data = reinterpret_cast<uint16*>(inputBuffer);
+
+                            // This loop should be automatically vectorized by the compiler.
+                            for (size_t i = 0; i < sampleCount; i++)
+                            {
+                                boost::endian::endian_reverse_inplace(data[i]);
+                            }
+                        }
+#endif // BOOST_ENDIAN_LITTLE_BYTE
 
                         for (int32 i = 0; i < rowCount; i++)
                         {
