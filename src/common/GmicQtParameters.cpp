@@ -408,7 +408,7 @@ namespace
 }
 
 GmicQtParameters::GmicQtParameters(const FilterRecordPtr filterRecord)
-    : command(), filterMenuPath(), inputMode("Active Layer"), filterName()
+    : command(), filterMenuPath(), inputMode("Active Layer"), filterName(), gmicCommandName()
 {
     if (filterRecord->descriptorParameters != nullptr &&
         filterRecord->descriptorParameters->descriptor != nullptr &&
@@ -448,6 +448,7 @@ GmicQtParameters::GmicQtParameters(const FilterRecordPtr filterRecord)
 }
 
 GmicQtParameters::GmicQtParameters(const boost::filesystem::path& path)
+    : gmicCommandName()
 {
     std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
     GmicQtParametersHeader header(file.get());
@@ -460,6 +461,25 @@ GmicQtParameters::GmicQtParameters(const boost::filesystem::path& path)
 
 GmicQtParameters::~GmicQtParameters()
 {
+}
+
+boost::filesystem::path GmicQtParameters::PrependGmicCommandName(const boost::filesystem::path& originalFileName)
+{
+    const boost::filesystem::path commandName = GetGmicCommandName();
+
+    if (!commandName.empty())
+    {
+        // The new file name will use the format: <command name>_<original file name>.
+        boost::filesystem::path newFileName = commandName;
+        newFileName += "_";
+        newFileName += originalFileName;
+
+        return newFileName;
+    }
+    else
+    {
+        return originalFileName;
+    }
 }
 
 bool GmicQtParameters::IsValid() const
@@ -514,6 +534,34 @@ void GmicQtParameters::SaveToFile(const boost::filesystem::path& path) const
     WriteUtf8String(file.get(), inputMode);
     // G'MIC-Qt does not need the filter name, so write an empty string.
     WriteUtf8String(file.get(), std::string());
+}
+
+boost::filesystem::path GmicQtParameters::GetGmicCommandName()
+{
+    if (gmicCommandName.empty() && IsValid())
+    {
+        // A G'MIC command consists of a command name that can optionally be followed
+        // by a space and the command arguments.
+        // If a command does not take any arguments only the command name will be present.
+        //
+        // According to the G'MIC Language Reference command names are restricted to a
+        // subset of 7-bit US-ASCII: letters, numbers and underscores.
+        // These restrictions make the command name safe to use in an OS file name.
+        // See https://gmic.eu/reference/adding_custom_commands.html for more information.
+
+        size_t firstSpaceIndex = command.find_first_of(' ');
+
+        if (firstSpaceIndex != std::string::npos)
+        {
+            gmicCommandName = command.substr(0, firstSpaceIndex);
+        }
+        else
+        {
+            gmicCommandName = command;
+        }
+    }
+
+    return gmicCommandName;
 }
 
 OSErr GmicQtParameters::ReadFilterInputMode(

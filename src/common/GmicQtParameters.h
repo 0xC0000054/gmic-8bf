@@ -31,6 +31,8 @@ public:
 
     ~GmicQtParameters();
 
+    boost::filesystem::path PrependGmicCommandName(const boost::filesystem::path& originalFileName);
+
     bool IsValid() const;
 
     void SaveToDescriptor(FilterRecordPtr filterRecord) const;
@@ -38,6 +40,8 @@ public:
     void SaveToFile(const boost::filesystem::path& path) const;
 
 private:
+
+    boost::filesystem::path GetGmicCommandName();
 
     OSErr ReadFilterInputMode(
         ASZStringSuite* zstringSuite,
@@ -58,6 +62,7 @@ private:
     std::string filterMenuPath;
     std::string inputMode;
     std::string filterName;
+    boost::filesystem::path gmicCommandName;
 };
 
 #endif

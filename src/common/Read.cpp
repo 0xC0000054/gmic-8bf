@@ -140,6 +140,8 @@ OSErr ReadGmicOutput(
         {
             const char* const outputFileExtension = ".png";
 
+            GmicQtParameters parameters(gmicParametersFilePath);
+
             if (filePaths.size() == 1)
             {
                 const boost::filesystem::path& filePath = filePaths[0];
@@ -157,7 +159,7 @@ OSErr ReadGmicOutput(
                     OSErrException::ThrowIfError(GetResizedImageOutputPath(
                         filterRecord,
                         settings,
-                        filePath.filename().replace_extension(outputFileExtension),
+                        parameters.PrependGmicCommandName(filePath.filename()).replace_extension(outputFileExtension),
                         outputFilePath));
 
                     ConvertGmic8bfImageToPng(filterRecord, filePath, outputFilePath);
@@ -176,20 +178,15 @@ OSErr ReadGmicOutput(
                     const boost::filesystem::path& inputFilePath = filePaths[i];
 
                     boost::filesystem::path outputFilePath = outputFolder;
-                    outputFilePath /= inputFilePath.filename().replace_extension(outputFileExtension);
+                    outputFilePath /= parameters.PrependGmicCommandName(inputFilePath.filename()).replace_extension(outputFileExtension);
 
                     ConvertGmic8bfImageToPng(filterRecord, inputFilePath, outputFilePath);
                 }
             }
 
-            if (fullUIWasShown)
+            if (fullUIWasShown && parameters.IsValid())
             {
-                GmicQtParameters parameters(gmicParametersFilePath);
-
-                if (parameters.IsValid())
-                {
-                    parameters.SaveToDescriptor(filterRecord);
-                }
+                parameters.SaveToDescriptor(filterRecord);
             }
         }
     }
