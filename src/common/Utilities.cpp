@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "Utilities.h"
+#include <SafeInt.hpp>
 #include <codecvt>
 #include <locale>
 #include <string>
@@ -662,39 +663,7 @@ void SetMaskRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bott
 
 bool TryMultiplyInt32(int32 a, int32 x, int32& result)
 {
-    if (a == 0 || x == 0)
-    {
-        result = 0;
-        return true;
-    }
-
-    // The following code has been adapted from https://stackoverflow.com/a/1514309
-
-    // There may be a need to check for -1 for two's complement machines.
-    // If one number is -1 and another is INT_MIN, multiplying them we get abs(INT_MIN) which is 1 higher than INT_MAX
-    if ((a == -1) && (x == INT_MIN)) // `a * x` can overflow
-    {
-        return false;
-    }
-
-    if ((x == -1) && (a == INT_MIN)) // `a * x` (or `a / x`) can overflow
-    {
-        return false;
-    }
-
-    // general case
-    if (a > INT_MAX / x) // `a * x` would overflow
-    {
-        return false;
-    }
-
-    if (a < INT_MIN / x) // `a * x` would underflow
-    {
-        return false;
-    }
-
-    result = a * x;
-    return true;
+    return SafeMultiply(a, x, result);
 }
 
 #if PSSDK_HAS_LAYER_SUPPORT
