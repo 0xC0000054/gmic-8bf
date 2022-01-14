@@ -13,7 +13,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VI_VERSION       3,0,0,1
-#define VI_VERSION_STR  "3.0.0.1"
+#define VI_VERSION       3,0,1,0
+#define VI_VERSION_STR  "3.0.1.0"
 
 #endif // !VERSION_H
