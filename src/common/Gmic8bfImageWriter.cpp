@@ -184,14 +184,20 @@ namespace
 
     void SaveDocumentLayer(
         FilterRecordPtr filterRecord,
-        const VPoint& imageSize,
         const ReadLayerDesc* layerDescriptor,
-        FileHandle* fileHandle)
+        FileHandle* fileHandle,
+        VPoint& layerSize)
     {
         const bool hasTransparency = layerDescriptor->transparency != nullptr;
 
-        int32 width = imageSize.h;
-        int32 height = imageSize.v;
+        const ReadChannelDesc firstCompositeChannel = layerDescriptor->compositeChannelsList[0];
+        const VRect layerBounds = firstCompositeChannel.bounds;
+
+        const int32 width = layerBounds.right - layerBounds.left;
+        const int32 height = layerBounds.bottom - layerBounds.top;
+
+        layerSize.h = width;
+        layerSize.v = height;
 
         int32 bitsPerChannel;
 
@@ -227,8 +233,8 @@ namespace
 
         PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
 
-        const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
-        const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
+        const int32 tileWidth = firstCompositeChannel.tileSize.h;
+        const int32 tileHeight = firstCompositeChannel.tileSize.v;
 
         Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, /* planar */ true, tileWidth, tileHeight);
 
@@ -309,14 +315,14 @@ namespace
                 {
                     VRect writeRect{};
                     writeRect.top = y;
-                    writeRect.bottom = std::min(y + tileHeight, imageSize.v);
+                    writeRect.bottom = std::min(y + tileHeight, height);
 
                     const int32 rowCount = writeRect.bottom - writeRect.top;
 
                     for (int32 x = 0; x < width; x += tileWidth)
                     {
                         writeRect.left = x;
-                        writeRect.right = std::min(x + tileWidth, imageSize.h);
+                        writeRect.right = std::min(x + tileWidth, width);
 
                         const int32 columnCount = writeRect.right - writeRect.left;
                         tileRowBytes = columnCount * filterRecord->inColumnBytes;
@@ -343,7 +349,7 @@ namespace
                             wroteRect.bottom != writeRect.bottom ||
                             wroteRect.right != writeRect.right)
                         {
-                            throw OSErrException(readErr);
+                            throw std::runtime_error("Unable to read all of the requested image data from a layer.");
                         }
 
                         if (bitsPerChannel == 16)
@@ -433,8 +439,6 @@ void SaveAllLayers(
     int32 layerIndex = 0;
     char layerNameBuffer[128]{};
 
-    const VPoint imageSize = GetImageSize(filterRecord);
-
     while (layerDescriptor != nullptr)
     {
         // Skip over any vector layers.
@@ -444,10 +448,12 @@ void SaveAllLayers(
 
             std::unique_ptr<FileHandle> file = OpenFile(imagePath, FileOpenMode::Write);
 
-            SaveDocumentLayer(filterRecord, imageSize, layerDescriptor, file.get());
+            VPoint layerSize{};
 
-            int32 layerWidth = imageSize.h;
-            int32 layerHeight = imageSize.v;
+            SaveDocumentLayer(filterRecord, layerDescriptor, file.get(), layerSize);
+
+            int32 layerWidth = layerSize.h;
+            int32 layerHeight = layerSize.v;
             bool layerIsVisible = true;
             std::string utf8Name;
 
