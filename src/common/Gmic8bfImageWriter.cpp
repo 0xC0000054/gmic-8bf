@@ -212,9 +212,9 @@ namespace
             layerBounds.bottom = documentSize.v;
         }
 
-        if (layerBounds.right > documentSize.v)
+        if (layerBounds.right > documentSize.h)
         {
-            layerBounds.right = documentSize.v;
+            layerBounds.right = documentSize.h;
         }
 
         const int32 width = layerBounds.right - layerBounds.left;
