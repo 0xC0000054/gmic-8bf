@@ -184,6 +184,7 @@ namespace
 
     void SaveDocumentLayer(
         FilterRecordPtr filterRecord,
+        const VPoint& documentSize,
         const ReadLayerDesc* layerDescriptor,
         FileHandle* fileHandle,
         VPoint& layerSize)
@@ -191,7 +192,30 @@ namespace
         const bool hasTransparency = layerDescriptor->transparency != nullptr;
 
         const ReadChannelDesc firstCompositeChannel = layerDescriptor->compositeChannelsList[0];
-        const VRect layerBounds = firstCompositeChannel.bounds;
+        VRect layerBounds = firstCompositeChannel.bounds;
+
+        // Clamp the layer bounds to the size of the parent document.
+        // The layer bounds can be smaller than the parent document, but any data outside of
+        // the parent document bounds should be ignored.
+        if (layerBounds.top < 0)
+        {
+            layerBounds.top = 0;
+        }
+
+        if (layerBounds.left < 0)
+        {
+            layerBounds.left = 0;
+        }
+
+        if (layerBounds.bottom > documentSize.v)
+        {
+            layerBounds.bottom = documentSize.v;
+        }
+
+        if (layerBounds.right > documentSize.v)
+        {
+            layerBounds.right = documentSize.v;
+        }
 
         const int32 width = layerBounds.right - layerBounds.left;
         const int32 height = layerBounds.bottom - layerBounds.top;
@@ -233,8 +257,8 @@ namespace
 
         PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
 
-        const int32 tileWidth = firstCompositeChannel.tileSize.h;
-        const int32 tileHeight = firstCompositeChannel.tileSize.v;
+        const int32 tileWidth = std::min(firstCompositeChannel.tileSize.h, width);
+        const int32 tileHeight = std::min(firstCompositeChannel.tileSize.v, height);
 
         Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, /* planar */ true, tileWidth, tileHeight);
 
@@ -439,6 +463,8 @@ void SaveAllLayers(
     int32 layerIndex = 0;
     char layerNameBuffer[128]{};
 
+    const VPoint documentSize = GetImageSize(filterRecord);
+
     while (layerDescriptor != nullptr)
     {
         // Skip over any vector layers.
@@ -450,7 +476,7 @@ void SaveAllLayers(
 
             VPoint layerSize{};
 
-            SaveDocumentLayer(filterRecord, layerDescriptor, file.get(), layerSize);
+            SaveDocumentLayer(filterRecord, documentSize, layerDescriptor, file.get(), layerSize);
 
             int32 layerWidth = layerSize.h;
             int32 layerHeight = layerSize.v;
