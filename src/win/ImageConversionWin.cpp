@@ -12,6 +12,7 @@
 
 #include "ImageConversionWin.h"
 #include "FileUtil.h"
+#include "FileIO.h"
 #include "Gmic8bfImageWriter.h"
 #include "ReadOnlyMemoryStream.h"
 #include <boost/filesystem.hpp>

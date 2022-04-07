@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "FileUtil.h"
+#include "FileIO.h"
 
 struct alignas(4) Gmic8bfImageHeader
 {

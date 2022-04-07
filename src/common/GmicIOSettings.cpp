@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "GmicIOSettings.h"
-#include "FileUtil.h"
+#include "FileIO.h"
 #include "boost/endian.hpp"
 #include <vector>
 

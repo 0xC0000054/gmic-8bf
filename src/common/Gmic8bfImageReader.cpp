@@ -12,7 +12,7 @@
 
 #include "Gmic8bfImageReader.h"
 #include "Gmic8bfImageHeader.h"
-#include "FileUtil.h"
+#include "FileIO.h"
 #include "ScopedBufferSuite.h"
 #include "Utilities.h"
 #include <algorithm>

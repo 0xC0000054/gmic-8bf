@@ -12,7 +12,7 @@
 
 #include "GmicQtParameters.h"
 #include "GmicPluginTerminology.h"
-#include "FileUtil.h"
+#include "FileIO.h"
 #include "ScopedBufferSuite.h"
 #include "Utilities.h"
 #include <boost/predef.h>

@@ -16,7 +16,7 @@
 #define INPUTLAYERINFO_H
 
 #include "GmicPlugin.h"
-#include "FileUtil.h"
+#include "FileIO.h"
 #include <string>
 #include <boost/filesystem.hpp>
 

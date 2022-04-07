@@ -122,28 +122,3 @@ boost::filesystem::path GetTemporaryFileName(const boost::filesystem::path& dir,
 
     return path;
 }
-
-std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOpenMode mode)
-{
-    return OpenFileNative(path, mode);
-}
-
-void ReadFile(FileHandle* fileHandle, void* data, size_t dataSize)
-{
-    ReadFileNative(fileHandle, data, dataSize);
-}
-
-void SetFileLength(FileHandle* fileHandle, int64 length)
-{
-    SetFileLengthNative(fileHandle, length);
-}
-
-void SetFilePosition(FileHandle* fileHandle, int16 posMode, int64 posOffset)
-{
-    SetFilePositionNative(fileHandle, posMode, posOffset);
-}
-
-void WriteFile(FileHandle* fileHandle, const void* data, size_t dataSize)
-{
-    WriteFileNative(fileHandle, data, dataSize);
-}

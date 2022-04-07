@@ -13,7 +13,7 @@
 #include "Gmic8bfImageWriter.h"
 #include "Gmic8bfImageHeader.h"
 #include "ScopedBufferSuite.h"
-#include "FileUtil.h"
+#include "FileIO.h"
 #include "InputLayerIndex.h"
 #include <string>
 

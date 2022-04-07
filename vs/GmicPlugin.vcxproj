@@ -208,6 +208,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\common\FileIO.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageHeader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageReader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageWriter.h" />
@@ -232,6 +233,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClInclude Include="..\src\common\version.h" />
     <ClInclude Include="..\src\win\ClipboardUtilWin.h" />
     <ClInclude Include="..\src\win\CommonUIWin.h" />
+    <ClInclude Include="..\src\win\FileIOWin.h" />
     <ClInclude Include="..\src\win\FileUtilWin.h" />
     <ClInclude Include="..\src\win\FolderBrowserWin.h" />
     <ClInclude Include="..\src\win\ImageConversionWin.h" />
@@ -248,6 +250,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
   <ItemGroup>
     <ClCompile Include="..\src\common\ClipboardUtil.cpp" />
     <ClCompile Include="..\src\common\Common.cpp" />
+    <ClCompile Include="..\src\common\FileIO.cpp" />
     <ClCompile Include="..\src\common\FileUtil.cpp" />
     <ClCompile Include="..\src\common\FolderBrowser.cpp" />
     <ClCompile Include="..\src\common\Gmic8bfImageHeader.cpp" />
@@ -270,6 +273,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
     <ClCompile Include="..\src\win\ClipboardUtilWin.cpp" />
     <ClCompile Include="..\src\win\CommonUIWin.cpp" />
     <ClCompile Include="..\src\win\dllmain.cpp" />
+    <ClCompile Include="..\src\win\FileIOWin.cpp" />
     <ClCompile Include="..\src\win\FileUtilWin.cpp" />
     <ClCompile Include="..\src\win\FolderBrowserWin.cpp" />
     <ClCompile Include="..\src\win\GmicIOSettingsUIWin.cpp" />

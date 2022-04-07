@@ -23,14 +23,4 @@ boost::filesystem::path GetPluginSettingsDirectoryNative();
 
 boost::filesystem::path GetSessionDirectoriesRootNative();
 
-std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode);
-
-void ReadFileNative(FileHandle* fileHandle, void* data, size_t dataSize);
-
-void SetFileLengthNative(FileHandle* fileHandle, int64 length);
-
-void SetFilePositionNative(FileHandle* fileHandle, int16 posMode, int64 posOffset);
-
-void WriteFileNative(FileHandle* fileHandle, const void* data, size_t dataSize);
-
 #endif // !FILEUTILWIN_H
