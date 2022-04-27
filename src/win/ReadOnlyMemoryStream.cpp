@@ -120,7 +120,7 @@ STDMETHODIMP ReadOnlyMemoryStream::Read(void *pv,
     const BYTE *pbEnd = m_pbBuffer + m_nSize;
     const BYTE *pbReqStart = m_pbBuffer + m_nPos;
     const BYTE *pbReqEnd = pbReqStart + cb;
-    ULONG nBytesToGet = (ULONG)(std::min(pbEnd - pbReqStart, pbReqEnd - pbReqStart));
+    ULONG nBytesToGet = (ULONG)(::std::min(pbEnd - pbReqStart, pbReqEnd - pbReqStart));
 
     memcpy(pv, pbReqStart, nBytesToGet);
 

@@ -14,29 +14,12 @@
 #include "ClipboardUtilWin.h"
 #include "FileUtil.h"
 #include "ImageConversionWin.h"
-#include <vector>
 #include <boost/algorithm/string.hpp>
 #include <boost/core/noncopyable.hpp>
 #include <shellapi.h>
 
 namespace
 {
-    std::vector<UINT> GetAvailableClipboardFormats()
-    {
-        std::vector<UINT> formats;
-
-        UINT format = EnumClipboardFormats(0);
-
-        while (format != 0)
-        {
-            formats.push_back(format);
-
-            format = EnumClipboardFormats(format);
-        }
-
-        return formats;
-    }
-
     struct unique_hglobal_lock : private boost::noncopyable
     {
         explicit unique_hglobal_lock(HGLOBAL global) noexcept
@@ -67,22 +50,22 @@ namespace
         void* lockedMemory;
     };
 
-    std::wstring GetFileDropPath()
+    ::std::wstring GetFileDropPath()
     {
-        std::wstring path;
+        ::std::wstring path;
 
         HANDLE hGlobal = GetClipboardData(CF_HDROP);
 
         if (hGlobal == nullptr)
         {
-            throw std::runtime_error("GetClipboardData returned NULL.");
+            throw ::std::runtime_error("GetClipboardData returned NULL.");
         }
 
         unique_hglobal_lock lockedData(hGlobal);
 
         if (!lockedData)
         {
-            throw std::runtime_error("Unable to lock the clipboard data handle.");
+            throw ::std::runtime_error("Unable to lock the clipboard data handle.");
         }
 
         HDROP hDrop = static_cast<HDROP>(lockedData.get());
@@ -91,11 +74,11 @@ namespace
 
         if (requiredLength > 1)
         {
-            path = std::wstring(static_cast<size_t>(requiredLength), '\0');
+            path = ::std::wstring(static_cast<size_t>(requiredLength), '\0');
 
             if (DragQueryFileW(hDrop, 0, &path[0], requiredLength) == 0)
             {
-                throw std::runtime_error("Unable to get the file path from the clipboard.");
+                throw ::std::runtime_error("Unable to get the file path from the clipboard.");
             }
 
             // Remove the NUL-terminator from the end of the string.
@@ -105,9 +88,9 @@ namespace
         return path;
     }
 
-    bool FileDropIsImage(const std::wstring& path)
+    bool FileDropIsImage(const ::std::wstring& path)
     {
-        static const std::vector<std::wstring> fileExtensions
+        static const ::std::vector<::std::wstring> fileExtensions
         {
             L".bmp",
             L".png",
@@ -132,35 +115,35 @@ namespace
     }
 
     void ProcessFileDrop(
-        const std::wstring& path,
-        std::unique_ptr<InputLayerInfo>& layer)
+        const ::std::wstring& path,
+        ::std::unique_ptr<InputLayerInfo>& layer)
     {
         ConvertImageToGmicInputFormatNative(path, layer);
     }
 
     void ProcessDib(
         UINT format,
-        std::unique_ptr<InputLayerInfo>& layer)
+        ::std::unique_ptr<InputLayerInfo>& layer)
     {
         HANDLE hGlobal = GetClipboardData(format);
 
         if (hGlobal == nullptr)
         {
-            throw std::runtime_error("GetClipboardData returned NULL.");
+            throw ::std::runtime_error("GetClipboardData returned NULL.");
         }
 
         const SIZE_T handleSize = GlobalSize(hGlobal);
 
         if (handleSize < sizeof(BITMAPINFOHEADER))
         {
-            throw std::runtime_error("The clipboard handle size is too small for a DIB header.");
+            throw ::std::runtime_error("The clipboard handle size is too small for a DIB header.");
         }
 
         unique_hglobal_lock lockedData(hGlobal);
 
         if (!lockedData)
         {
-            throw std::runtime_error("Unable to lock the clipboard data handle.");
+            throw ::std::runtime_error("Unable to lock the clipboard data handle.");
         }
 
         const PBITMAPINFOHEADER pbih = static_cast<PBITMAPINFOHEADER>(lockedData.get());
@@ -171,7 +154,7 @@ namespace
         {
             if (pbih->biCompression != BI_RGB)
             {
-                throw std::runtime_error("The DIB compression must be BI_RGB when biSizeImage is 0.");
+                throw ::std::runtime_error("The DIB compression must be BI_RGB when biSizeImage is 0.");
             }
             else
             {
@@ -188,20 +171,20 @@ namespace
 
         if (dibSize > handleSize)
         {
-            throw std::runtime_error("The calculated DIB size is larger than the clipboard data handle size.");
+            throw ::std::runtime_error("The calculated DIB size is larger than the clipboard data handle size.");
         }
         else
         {
             // Compute the size of the entire file.
             const uint64_t fileSize = sizeof(BITMAPFILEHEADER) + dibSize;
 
-            if (fileSize > std::numeric_limits<DWORD>::max())
+            if (fileSize > ::std::numeric_limits<DWORD>::max())
             {
-                throw std::runtime_error("The bitmap file size is larger than 4 GB.");
+                throw ::std::runtime_error("The bitmap file size is larger than 4 GB.");
             }
             else
             {
-                std::vector<BYTE> memoryBmp(static_cast<size_t>(fileSize));
+                ::std::vector<BYTE> memoryBmp(static_cast<size_t>(fileSize));
 
                 BITMAPFILEHEADER* bfh = reinterpret_cast<BITMAPFILEHEADER*>(memoryBmp.data());
                 bfh->bfType = 0x4d42; // 0x42 = "B" 0x4d = "M"
@@ -212,7 +195,7 @@ namespace
 
                 BYTE* dst = memoryBmp.data() + sizeof(BITMAPFILEHEADER);
 
-                std::memcpy(dst, lockedData.get(), static_cast<size_t>(dibSize));
+                ::std::memcpy(dst, lockedData.get(), static_cast<size_t>(dibSize));
 
                 ConvertImageToGmicInputFormatNative(
                     memoryBmp.data(),
@@ -224,13 +207,13 @@ namespace
 
     void ProcessPng(
         UINT format,
-        std::unique_ptr<InputLayerInfo>& layer)
+        ::std::unique_ptr<InputLayerInfo>& layer)
     {
         HANDLE hGlobal = GetClipboardData(format);
 
         if (hGlobal == nullptr)
         {
-            throw std::runtime_error("GetClipboardData returned NULL.");
+            throw ::std::runtime_error("GetClipboardData returned NULL.");
         }
 
         const SIZE_T handleSize = GlobalSize(hGlobal);
@@ -239,7 +222,7 @@ namespace
 
         if (!lockedData)
         {
-            throw std::runtime_error("Unable to lock the clipboard data handle.");
+            throw ::std::runtime_error("Unable to lock the clipboard data handle.");
         }
 
         ConvertImageToGmicInputFormatNative(
@@ -247,101 +230,6 @@ namespace
             handleSize,
             layer);
     }
-
-    void TryProcessClipboardImage(
-        const std::vector<UINT>& availableFormats,
-        std::unique_ptr<InputLayerInfo>& layer)
-    {
-        static const UINT pngFormatId = RegisterClipboardFormatW(L"PNG");
-        static const UINT pngMimeFormatId = RegisterClipboardFormatW(L"image/png"); // Used by Qt-based applications
-
-        for (const auto& format : availableFormats)
-        {
-            // Pick the first format in the list that we support.
-            if (format == CF_HDROP)
-            {
-                // Web Browsers often download the image and place a link on the clipboard.
-
-                std::wstring path = GetFileDropPath();
-                if (!path.empty() && FileDropIsImage(path))
-                {
-                    ProcessFileDrop(path, layer);
-                    break;
-                }
-            }
-            else if (format == CF_DIB || format == CF_DIBV5)
-            {
-                ProcessDib(format, layer);
-                break;
-            }
-            else if (format == pngFormatId || format == pngMimeFormatId)
-            {
-                ProcessPng(format, layer);
-                break;
-            }
-        }
-    }
-
-#if DEBUG_BUILD
-#include <map>
-
-    void DumpClipboardFormats(const std::vector<UINT>& availableFormats)
-    {
-        static std::map<UINT, std::string> predefinedFormats
-        {
-            { CF_TEXT, "CF_TEXT" },
-            { CF_BITMAP, "CF_BITMAP" },
-            { CF_METAFILEPICT, "CF_METAFILEPICT" },
-            { CF_SYLK, "CF_SYLK" },
-            { CF_DIF, "CF_DIF" },
-            { CF_TIFF, "CF_TIFF" },
-            { CF_OEMTEXT, "CF_OEMTEXT" },
-            { CF_DIB, "CF_DIB" },
-            { CF_PALETTE, "CF_PALETTE" },
-            { CF_PENDATA, "CF_PENDATA" },
-            { CF_RIFF, "CF_RIFF" },
-            { CF_WAVE, "CF_WAVE" },
-            { CF_UNICODETEXT, "CF_UNICODETEXT" },
-            { CF_ENHMETAFILE, "CF_ENHMETAFILE" },
-            { CF_HDROP, "CF_HDROP" },
-            { CF_LOCALE, "CF_LOCALE" },
-            { CF_DIBV5, "CF_DIBV5" }
-        };
-
-        DebugOut("The clipboard contains %zd formats.", availableFormats.size());
-
-        constexpr int formatNameBufferLength = 256;
-        char formatNameBuffer[formatNameBufferLength]{};
-
-        for (auto& format : availableFormats)
-        {
-            const auto& predefinedItem = predefinedFormats.find(format);
-
-            if (predefinedItem != predefinedFormats.end())
-            {
-                DebugOut("Predefined format %u (%s)", format, predefinedItem->second.c_str());
-            }
-            else
-            {
-                if (GetClipboardFormatNameA(format, formatNameBuffer, formatNameBufferLength) > 0)
-                {
-                    DebugOut("Registered format %u (%s)", format, formatNameBuffer);
-                }
-                else
-                {
-                    if (format >= CF_PRIVATEFIRST && format <= CF_PRIVATELAST)
-                    {
-                        DebugOut("Private format %u", format);
-                    }
-                    else
-                    {
-                        DebugOut("Unknown format %u", format);
-                    }
-                }
-            }
-        }
-    }
-#endif // DEBUG_BUILD
 
     struct unique_clipboard : private boost::noncopyable
     {
@@ -369,7 +257,7 @@ namespace
     };
 }
 
-void ConvertClipboardImageToGmicInputNative(std::unique_ptr<InputLayerInfo>& layer)
+void ConvertClipboardImageToGmicInputNative(::std::unique_ptr<InputLayerInfo>& layer)
 {
     // Failure to open the clipboard is not a fatal error, if it cannot be opened
     // G'MIC will only get one input image.
@@ -378,12 +266,32 @@ void ConvertClipboardImageToGmicInputNative(std::unique_ptr<InputLayerInfo>& lay
 
     if (clipboard)
     {
-        const std::vector<UINT>& availableFormats = GetAvailableClipboardFormats();
+        static const UINT pngFormatId = RegisterClipboardFormatW(L"PNG");
+        static const UINT pngMimeFormatId = RegisterClipboardFormatW(L"image/png"); // Used by Qt-based applications
 
-#if DEBUG_BUILD
-        DumpClipboardFormats(availableFormats);
-#endif // DEBUG_BUILD
-
-        TryProcessClipboardImage(availableFormats, layer);
+        for (UINT format = EnumClipboardFormats(0); format != 0; format = EnumClipboardFormats(format))
+        {
+            // Pick the first format in the list that we support.
+            if (format == CF_HDROP)
+            {
+                // Web Browsers often download the image and place a link on the clipboard.
+                ::std::wstring path = GetFileDropPath();
+                if (!path.empty() && FileDropIsImage(path))
+                {
+                    ProcessFileDrop(path, layer);
+                    break;
+                }
+            }
+            else if (format == CF_DIB || format == CF_DIBV5)
+            {
+                ProcessDib(format, layer);
+                break;
+            }
+            else if (format == pngFormatId || format == pngMimeFormatId)
+            {
+                ProcessPng(format, layer);
+                break;
+            }
+        }
     }
 }

@@ -303,7 +303,7 @@ OSErr ShowGmicUI(
 
     try
     {
-        std::unique_ptr<GmicDialog> dialog = std::make_unique<GmicDialog>(indexFilePath, outputDir, gmicParametersFilePath, showFullUI);
+        ::std::unique_ptr<GmicDialog> dialog = ::std::make_unique<GmicDialog>(indexFilePath, outputDir, gmicParametersFilePath, showFullUI);
 
         DialogBoxParam(
             wil::GetModuleInstanceHandle(),
@@ -319,7 +319,7 @@ OSErr ShowGmicUI(
             err = ShowErrorMessage(dialog->GetErrorMessage(), filterRecord, err);
         }
     }
-    catch (const std::bad_alloc&)
+    catch (const ::std::bad_alloc&)
     {
         err = memFullErr;
     }

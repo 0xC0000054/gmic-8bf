@@ -76,7 +76,7 @@ namespace
                 err = ioErr;
             }
         }
-        catch (const std::bad_alloc&)
+        catch (const ::std::bad_alloc&)
         {
             err = memFullErr;
         }
@@ -153,7 +153,7 @@ namespace
                     err = userCanceledErr;
                 }
             }
-            catch (const std::bad_alloc&)
+            catch (const ::std::bad_alloc&)
             {
                 err = memFullErr;
             }

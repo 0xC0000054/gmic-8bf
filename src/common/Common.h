@@ -48,7 +48,7 @@
 
 #if DEBUG_BUILD
 void DebugOut(const char* fmt, ...) noexcept;
-std::string FourCCToString(const uint32 fourCC);
+::std::string FourCCToString(const uint32 fourCC);
 #else
 #define DebugOut(fmt, ...)
 #define FourCCToString(fourCC)

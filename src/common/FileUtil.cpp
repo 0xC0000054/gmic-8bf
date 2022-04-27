@@ -29,7 +29,7 @@ namespace
         {
             if (sessionDirectoriesRoot.empty())
             {
-                throw std::runtime_error("The session directories root path is empty.");
+                throw ::std::runtime_error("The session directories root path is empty.");
             }
 
             path = sessionDirectoriesRoot;
@@ -62,7 +62,7 @@ namespace
 
     boost::filesystem::path GetSessionDirectory()
     {
-        static std::unique_ptr<TempDirectory> sessionDir = std::make_unique<TempDirectory>(GetSessionDirectoriesRootNative());
+        static ::std::unique_ptr<TempDirectory> sessionDir = ::std::make_unique<TempDirectory>(GetSessionDirectoriesRootNative());
 
         return sessionDir->Get();
     }

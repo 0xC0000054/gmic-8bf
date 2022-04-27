@@ -21,11 +21,11 @@
 
 void ConvertImageToGmicInputFormatNative(
     const boost::filesystem::path& input,
-    std::unique_ptr<InputLayerInfo>& output);
+    ::std::unique_ptr<InputLayerInfo>& output);
 
 void ConvertImageToGmicInputFormatNative(
     const void* input,
     size_t inputLength,
-    std::unique_ptr<InputLayerInfo>& output);
+    ::std::unique_ptr<InputLayerInfo>& output);
 
 #endif // !IMAGECONVERSIONWIN_H

@@ -58,10 +58,10 @@ private:
         PSActionDescriptorProcs* suite,
         PIActionDescriptor descriptor) const;
 
-    std::string command;
-    std::string filterMenuPath;
-    std::string inputMode;
-    std::string filterName;
+    ::std::string command;
+    ::std::string filterMenuPath;
+    ::std::string inputMode;
+    ::std::string filterName;
     boost::filesystem::path gmicCommandName;
 };
 

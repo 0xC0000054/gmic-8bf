@@ -19,6 +19,6 @@
 #include "InputLayerInfo.h"
 #include <memory>
 
-void ConvertClipboardImageToGmicInputNative(std::unique_ptr<InputLayerInfo>& layer);
+void ConvertClipboardImageToGmicInputNative(::std::unique_ptr<InputLayerInfo>& layer);
 
 #endif // !CLIPBOARDUTILWIN_H

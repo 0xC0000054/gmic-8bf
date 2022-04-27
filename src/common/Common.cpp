@@ -38,9 +38,9 @@ void DebugOut(const char* fmt, ...) noexcept
 #endif // __PIWin__
 }
 
-std::string FourCCToString(const uint32 fourCC)
+::std::string FourCCToString(const uint32 fourCC)
 {
-    std::string value(4, '\0');
+    ::std::string value(4, '\0');
 
     const char* sigPtr = reinterpret_cast<const char*>(&fourCC);
 

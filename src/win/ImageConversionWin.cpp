@@ -84,8 +84,8 @@ namespace
             int32 width,
             int32 height)
             : image(source),
-              tileWidth(std::min(width, 1024)),
-              tileHeight(std::min(height, 1024))
+              tileWidth(::std::min(width, 1024)),
+              tileHeight(::std::min(height, 1024))
         {
         }
 
@@ -99,7 +99,7 @@ namespace
         {
             if (file == nullptr || callbackState == nullptr)
             {
-                throw std::runtime_error("A required pointer was null.");
+                throw ::std::runtime_error("A required pointer was null.");
             }
 
             GmicOutputWriter* instance = static_cast<GmicOutputWriter*>(callbackState);
@@ -133,14 +133,14 @@ namespace
             for (int32 y = 0; y < imageHeight; y += tileHeight)
             {
                 lockRect.Y = y;
-                lockRect.Height = std::min(tileHeight, imageHeight - y);
+                lockRect.Height = ::std::min(tileHeight, imageHeight - y);
 
                 INT rowCount = lockRect.Height;
 
                 for (int32 x = 0; x < imageWidth; x += tileWidth)
                 {
                     lockRect.X = x;
-                    lockRect.Width = std::min(tileWidth, imageWidth - x);
+                    lockRect.Width = ::std::min(tileWidth, imageWidth - x);
 
                     wil::com_ptr<IWICBitmapLock> bitmapLock;
 
@@ -184,7 +184,7 @@ namespace
     };
 
     void DoGmicInputFormatConversion(
-        std::unique_ptr<InputLayerInfo>& output,
+        ::std::unique_ptr<InputLayerInfo>& output,
         IWICImagingFactory* factory,
         IWICBitmapDecoder* decoder)
     {
@@ -197,8 +197,8 @@ namespace
 
         THROW_IF_FAILED(decoderFrame->GetSize(&uiWidth, &uiHeight));
 
-        if (uiWidth > static_cast<UINT>(std::numeric_limits<int32>::max()) ||
-            uiHeight > static_cast<UINT>(std::numeric_limits<int32>::max()))
+        if (uiWidth > static_cast<UINT>(::std::numeric_limits<int32>::max()) ||
+            uiHeight > static_cast<UINT>(::std::numeric_limits<int32>::max()))
         {
             throw wil::ResultException(HRESULT_FROM_WIN32(ERROR_ARITHMETIC_OVERFLOW));
         }
@@ -265,7 +265,7 @@ namespace
 
 void ConvertImageToGmicInputFormatNative(
     const boost::filesystem::path& input,
-    std::unique_ptr<InputLayerInfo>& output)
+    ::std::unique_ptr<InputLayerInfo>& output)
 {
     try
     {
@@ -289,11 +289,11 @@ void ConvertImageToGmicInputFormatNative(
     {
         if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            throw std::bad_alloc();
+            throw ::std::bad_alloc();
         }
         else
         {
-            throw std::runtime_error(e.what());
+            throw ::std::runtime_error(e.what());
         }
     }
 }
@@ -301,7 +301,7 @@ void ConvertImageToGmicInputFormatNative(
 void ConvertImageToGmicInputFormatNative(
     const void* input,
     size_t inputLength,
-    std::unique_ptr<InputLayerInfo>& output)
+    ::std::unique_ptr<InputLayerInfo>& output)
 {
     try
     {
@@ -326,11 +326,11 @@ void ConvertImageToGmicInputFormatNative(
     {
         if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            throw std::bad_alloc();
+            throw ::std::bad_alloc();
         }
         else
         {
-            throw std::runtime_error(e.what());
+            throw ::std::runtime_error(e.what());
         }
     }
 }

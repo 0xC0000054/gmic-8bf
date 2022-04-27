@@ -36,7 +36,7 @@ void GmicProcessErrorInfo::SetErrorMesage(const char* message)
     constexpr size_t MaxErrorStringLength = sizeof(errorMessage) - 1;
 
     hasErrorMessage = true;
-    std::strncpy(
+    ::std::strncpy(
         errorMessage,
         message,
         MaxErrorStringLength);
@@ -48,7 +48,7 @@ void GmicProcessErrorInfo::SetErrorMesageFormat(const char* format, ...)
 
     va_start(args, format);
 
-    hasErrorMessage = std::vsnprintf(errorMessage, sizeof(errorMessage), format, args) > 0;
+    hasErrorMessage = ::std::vsnprintf(errorMessage, sizeof(errorMessage), format, args) > 0;
 
     va_end(args);
 }
@@ -122,11 +122,11 @@ OSErr ExecuteGmicQt(
             break;
         }
     }
-    catch (const std::bad_alloc&)
+    catch (const ::std::bad_alloc&)
     {
         err = memFullErr;
     }
-    catch (const std::exception& e)
+    catch (const ::std::exception& e)
     {
         err = ioErr;
         errorInfo.SetErrorMesage(e.what());

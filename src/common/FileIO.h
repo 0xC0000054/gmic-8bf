@@ -46,7 +46,7 @@ protected:
     FileHandle operator=(FileHandle&&) = delete;
 };
 
-std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOpenMode mode);
+::std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOpenMode mode);
 
 void ReadFile(FileHandle* fileHandle, void* data, size_t dataSize);
 

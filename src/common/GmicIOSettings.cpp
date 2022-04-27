@@ -48,12 +48,12 @@ namespace
             constexpr size_t pathCharSize = sizeof(boost::filesystem::path::value_type);
 
             // Check that the required byte buffer size can fit in a size_t.
-            if (stringLength > (std::numeric_limits<size_t>::max() / pathCharSize))
+            if (stringLength > (::std::numeric_limits<size_t>::max() / pathCharSize))
             {
-                throw std::runtime_error("The string cannot be written to the file because it is too long.");
+                throw ::std::runtime_error("The string cannot be written to the file because it is too long.");
             }
 
-            std::vector<boost::filesystem::path::value_type> stringChars(stringLength);
+            ::std::vector<boost::filesystem::path::value_type> stringChars(stringLength);
 
             const size_t stringLengthInBytes = stringLength * pathCharSize;
 
@@ -68,9 +68,9 @@ namespace
         constexpr size_t pathCharSize = sizeof(boost::filesystem::path::value_type);
 
         // Check that the required byte buffer size can fit in a size_t.
-        if (value.size() > (std::numeric_limits<size_t>::max() / pathCharSize))
+        if (value.size() > (::std::numeric_limits<size_t>::max() / pathCharSize))
         {
-            throw std::runtime_error("The string cannot be written to the file because it is too long.");
+            throw ::std::runtime_error("The string cannot be written to the file because it is too long.");
         }
 
         boost::endian::little_uint32_t stringLength = static_cast<uint32_t>(value.size());
@@ -155,19 +155,19 @@ void GmicIOSettings::Load(const boost::filesystem::path& path)
 {
     if (boost::filesystem::exists(path))
     {
-        std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
+        ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
 
         IOSettingsFileHeader header{};
 
         ReadFile(file.get(), &header, sizeof(header));
         if (strncmp(header.signature, "G8IS", 4) != 0)
         {
-            throw std::runtime_error("The setting file has an incorrect signature.");
+            throw ::std::runtime_error("The setting file has an incorrect signature.");
         }
 
         if (header.version != 1)
         {
-            throw std::runtime_error("The setting file has an unknown version.");
+            throw ::std::runtime_error("The setting file has an unknown version.");
         }
 
         ReadFilePath(file.get(), defaultOutputPath);
@@ -180,7 +180,7 @@ void GmicIOSettings::Load(const boost::filesystem::path& path)
 
 void GmicIOSettings::Save(const boost::filesystem::path& path)
 {
-    std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Write);
+    ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Write);
 
     IOSettingsFileHeader header;
 

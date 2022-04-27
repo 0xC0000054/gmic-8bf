@@ -27,7 +27,7 @@
 
 bool HandleSuiteIsAvailable(const FilterRecord* filterRecord);
 bool SPBasicSuiteIsAvailable(const FilterRecord* filterRecord);
-bool TryGetActiveLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName);
+bool TryGetActiveLayerNameAsUTF8String(const FilterRecord* filterRecord, ::std::string& utf8LayerName);
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
 int32 GetImagePlaneCount(int16 imageMode, int32 layerPlanes, int32 transparencyPlanes);
 VPoint GetImageSize(const FilterRecordPtr filterRecord);
@@ -39,7 +39,7 @@ void SetMaskRect(FilterRecordPtr filterRecord, int32 top, int32 left, int32 bott
 bool TryMultiplyInt32(int32 a, int32 x, int32& result);
 
 #if PSSDK_HAS_LAYER_SUPPORT
-std::string ConvertLayerNameToUTF8(const uint16* layerName);
+::std::string ConvertLayerNameToUTF8(const uint16* layerName);
 bool DocumentHasMultipleLayers(const FilterRecord* filterRecord);
 bool HostSupportsReadingFromMultipleLayers(const FilterRecord* filterRecord);
 bool TryGetTargetLayerIndex(const FilterRecord* filterRecord, int32& targetLayerIndex);

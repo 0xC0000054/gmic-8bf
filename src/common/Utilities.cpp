@@ -497,7 +497,7 @@ bool SPBasicSuiteIsAvailable(const FilterRecord* filterRecord)
     return spBasicSuiteAvailable;
 }
 
-bool TryGetActiveLayerNameAsUTF8String(const FilterRecord* filterRecord, std::string& utf8LayerName)
+bool TryGetActiveLayerNameAsUTF8String(const FilterRecord* filterRecord, ::std::string& utf8LayerName)
 {
     bool result = false;
 
@@ -667,9 +667,9 @@ bool TryMultiplyInt32(int32 a, int32 x, int32& result)
 }
 
 #if PSSDK_HAS_LAYER_SUPPORT
-std::string ConvertLayerNameToUTF8(const uint16* layerName)
+::std::string ConvertLayerNameToUTF8(const uint16* layerName)
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<uint16>, uint16> convert;
+    ::std::wstring_convert<::std::codecvt_utf8_utf16<uint16>, uint16> convert;
     return convert.to_bytes(layerName);
 }
 

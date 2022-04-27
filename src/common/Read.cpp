@@ -29,9 +29,9 @@
 
 namespace
 {
-    std::vector<boost::filesystem::path> GetOutputFiles(const boost::filesystem::path& outputDir)
+    ::std::vector<boost::filesystem::path> GetOutputFiles(const boost::filesystem::path& outputDir)
     {
-        std::vector<boost::filesystem::path> filePaths;
+        ::std::vector<boost::filesystem::path> filePaths;
 
         for (auto& file : boost::filesystem::directory_iterator(outputDir))
         {
@@ -130,11 +130,11 @@ OSErr ReadGmicOutput(
 
     try
     {
-        std::vector<boost::filesystem::path> filePaths = GetOutputFiles(outputDir);
+        ::std::vector<boost::filesystem::path> filePaths = GetOutputFiles(outputDir);
 
         if (filePaths.empty())
         {
-            throw std::runtime_error("G'MIC did not produce any output images.");
+            throw ::std::runtime_error("G'MIC did not produce any output images.");
         }
         else
         {
@@ -190,7 +190,7 @@ OSErr ReadGmicOutput(
             }
         }
     }
-    catch (const std::bad_alloc&)
+    catch (const ::std::bad_alloc&)
     {
         err = memFullErr;
     }
@@ -198,7 +198,7 @@ OSErr ReadGmicOutput(
     {
         err = e.GetErrorCode();
     }
-    catch (const std::exception& e)
+    catch (const ::std::exception& e)
     {
         err = ShowErrorMessage(e.what(), filterRecord, readErr);
     }

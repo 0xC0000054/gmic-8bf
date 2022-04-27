@@ -25,9 +25,9 @@
 
 namespace
 {
-    std::vector<std::pair<std::wstring, std::wstring>> GetOpenDialogFilters()
+    ::std::vector<::std::pair<::std::wstring, ::std::wstring>> GetOpenDialogFilters()
     {
-        const std::vector<std::pair<UINT, std::wstring>> resourceMap
+        const ::std::vector<::std::pair<UINT, ::std::wstring>> resourceMap
         {
             { ALL_IMAGES_FILTER_NAME, L"*.bmp;*.dib;*.gif;*.jpg;*.jpeg;*.jpe;*.jfif;*.png;*.rle"},
             { BMP_FILTER_NAME, L"*.bmp;*.dib;*.rle" },
@@ -39,13 +39,13 @@ namespace
         constexpr int filterNameBufferLength = 256;
         wchar_t filterNameBuffer[filterNameBufferLength]{};
 
-        std::vector<std::pair<std::wstring, std::wstring>> filters;
+        ::std::vector<::std::pair<::std::wstring, ::std::wstring>> filters;
         filters.reserve(resourceMap.size());
 
         for (auto& resource : resourceMap)
         {
             UINT resourceId = resource.first;
-            const std::wstring& extFilter = resource.second;
+            const ::std::wstring& extFilter = resource.second;
 
             int stringLength = LoadStringW(wil::GetModuleInstanceHandle(),
                                            resourceId,
@@ -53,9 +53,9 @@ namespace
                                            filterNameBufferLength);
             if (stringLength > 0)
             {
-                std::wstring name(filterNameBuffer, static_cast<size_t>(stringLength));
+                ::std::wstring name(filterNameBuffer, static_cast<size_t>(stringLength));
 
-                filters.push_back(std::pair<std::wstring, std::wstring>(name, extFilter));
+                filters.push_back(::std::pair<::std::wstring, ::std::wstring>(name, extFilter));
             }
         }
 
@@ -75,13 +75,13 @@ namespace
         return false;
     }
 
-    std::vector<COMDLG_FILTERSPEC> BulidVistaOpenDialogFilter(const std::vector<std::pair<std::wstring, std::wstring>>& filterItems)
+    ::std::vector<COMDLG_FILTERSPEC> BulidVistaOpenDialogFilter(const ::std::vector<::std::pair<::std::wstring, ::std::wstring>>& filterItems)
     {
-        std::vector<COMDLG_FILTERSPEC> fileTypes(filterItems.size());
+        ::std::vector<COMDLG_FILTERSPEC> fileTypes(filterItems.size());
 
         for (size_t i = 0; i < fileTypes.size(); i++)
         {
-            const std::pair<std::wstring, std::wstring>& entry = filterItems[i];
+            const ::std::pair<::std::wstring, ::std::wstring>& entry = filterItems[i];
             auto& filter = fileTypes[i];
 
             filter.pszName = entry.first.c_str();
@@ -124,8 +124,8 @@ namespace
                 THROW_IF_FAILED(pfd->SetTitle(titleBuffer));
                 THROW_IF_FAILED(pfd->SetClientGuid(ClientGuid));
 
-                const std::vector<std::pair<std::wstring, std::wstring>>& filterItems = GetOpenDialogFilters();
-                const std::vector<COMDLG_FILTERSPEC>& fileTypes = BulidVistaOpenDialogFilter(filterItems);
+                const ::std::vector<::std::pair<::std::wstring, ::std::wstring>>& filterItems = GetOpenDialogFilters();
+                const ::std::vector<COMDLG_FILTERSPEC>& fileTypes = BulidVistaOpenDialogFilter(filterItems);
 
                 THROW_IF_FAILED(pfd->SetFileTypes(static_cast<UINT>(fileTypes.size()), fileTypes.data()));
 
@@ -145,7 +145,7 @@ namespace
                 err = ioErr;
             }
         }
-        catch (const std::bad_alloc&)
+        catch (const ::std::bad_alloc&)
         {
             err = memFullErr;
         }
@@ -172,9 +172,9 @@ namespace
         return err;
     }
 
-    std::wstring BulidClassicOpenDialogFilterString(const std::vector<std::pair<std::wstring, std::wstring>>& filterItems)
+    ::std::wstring BulidClassicOpenDialogFilterString(const ::std::vector<::std::pair<::std::wstring, ::std::wstring>>& filterItems)
     {
-        std::wstring filter;
+        ::std::wstring filter;
 
         for (auto& item : filterItems)
         {
@@ -208,8 +208,8 @@ namespace
             {
                 auto comCleanup = wil::CoInitializeEx(COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-                const std::vector<std::pair<std::wstring, std::wstring>>& filterItems = GetOpenDialogFilters();
-                const std::wstring& filterStr = BulidClassicOpenDialogFilterString(filterItems);
+                const ::std::vector<::std::pair<::std::wstring, ::std::wstring>>& filterItems = GetOpenDialogFilters();
+                const ::std::wstring& filterStr = BulidClassicOpenDialogFilterString(filterItems);
 
                 constexpr int fileNameBufferLength = 8192;
 
@@ -241,7 +241,7 @@ namespace
                 err = ioErr;
             }
         }
-        catch (const std::bad_alloc&)
+        catch (const ::std::bad_alloc&)
         {
             err = memFullErr;
         }

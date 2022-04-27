@@ -98,11 +98,11 @@ namespace
             inputDir = GetInputDirectory();
             outputDir = GetOutputDirectory();
         }
-        catch (const std::bad_alloc&)
+        catch (const ::std::bad_alloc&)
         {
             err = memFullErr;
         }
-        catch (const std::exception& e)
+        catch (const ::std::exception& e)
         {
             err = ShowErrorMessage(e.what(), filterRecord, ioErr);
         }
@@ -158,13 +158,13 @@ DLLExport MACPASCAL void Gmic_Entry_Point(
     {
         *result = e;
     }
-    catch (const std::bad_alloc&)
+    catch (const ::std::bad_alloc&)
     {
         *result = memFullErr;
     }
-    catch (const std::length_error&)
+    catch (const ::std::length_error&)
     {
-        // The std::*string classes can throw this if the string
+        // The ::std::*string classes can throw this if the string
         // exceeds the implementation-defined max size.
         *result = memFullErr;
     }
@@ -181,7 +181,7 @@ OSErr DoParameters(FilterRecord* filterRecord)
     PrintFunctionName();
 
 #if DEBUG_BUILD
-    std::string sig = FourCCToString(filterRecord->hostSig);
+    ::std::string sig = FourCCToString(filterRecord->hostSig);
 
     DebugOut("Host signature: 0x%X (%s)", filterRecord->hostSig, sig.c_str());
 #endif // DEBUG_BUILD

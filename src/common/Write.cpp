@@ -45,7 +45,7 @@ namespace
 
         if (source != SecondInputImageSource::None)
         {
-            std::unique_ptr<InputLayerInfo> layer;
+            ::std::unique_ptr<InputLayerInfo> layer;
 
             if (source == SecondInputImageSource::Clipboard)
             {
@@ -71,7 +71,7 @@ namespace
         FilterRecord* filterRecord,
         const GmicIOSettings& settings)
     {
-        std::unique_ptr<InputLayerIndex> inputLayerIndex = std::make_unique<InputLayerIndex>(filterRecord->imageMode);
+        ::std::unique_ptr<InputLayerIndex> inputLayerIndex = ::std::make_unique<InputLayerIndex>(filterRecord->imageMode);
 
 #if PSSDK_HAS_LAYER_SUPPORT
         int32 targetLayerIndex = 0;
@@ -115,7 +115,7 @@ OSErr WriteGmicFiles(
 
         WriteGmicParametersFile(gmicParametersFilePath, filterRecord);
     }
-    catch (const std::bad_alloc&)
+    catch (const ::std::bad_alloc&)
     {
         err = memFullErr;
     }
@@ -123,7 +123,7 @@ OSErr WriteGmicFiles(
     {
         err = e.GetErrorCode();
     }
-    catch (const std::exception& e)
+    catch (const ::std::exception& e)
     {
         err = ShowErrorMessage(e.what(), filterRecord, writErr);
     }

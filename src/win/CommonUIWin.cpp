@@ -49,17 +49,17 @@ void CenterDialog(HWND hDlg)
     nWidth = rcDialog.right - rcDialog.left;
     nHeight = rcDialog.bottom - rcDialog.top;
 
-    xOrigin = std::max(rcParent.right - rcParent.left - nWidth, 0L) / 2
+    xOrigin = ::std::max(rcParent.right - rcParent.left - nWidth, 0L) / 2
         + rcParent.left - nTitleBits;
     xScreen = GetSystemMetrics(SM_CXSCREEN);
     if (xOrigin + nWidth > xScreen)
-        xOrigin = std::max(0, xScreen - nWidth);
+        xOrigin = ::std::max(0, xScreen - nWidth);
 
-    yOrigin = std::max(rcParent.bottom - rcParent.top - nHeight, 0L) / 3
+    yOrigin = ::std::max(rcParent.bottom - rcParent.top - nHeight, 0L) / 3
         + rcParent.top;
     yScreen = GetSystemMetrics(SM_CYSCREEN);
     if (yOrigin + nHeight > yScreen)
-        yOrigin = std::max(0, yScreen - nHeight);
+        yOrigin = ::std::max(0, yScreen - nHeight);
 
     SetWindowPos(hDlg, NULL, xOrigin, yOrigin, nWidth, nHeight, SWP_NOZORDER);
 }

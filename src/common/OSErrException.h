@@ -17,7 +17,7 @@
 #include "PITypes.h"
 #include <stdexcept>
 
-class OSErrException : public std::exception
+class OSErrException : public ::std::exception
 {
 public:
     explicit OSErrException(OSErr err) noexcept : error(err)

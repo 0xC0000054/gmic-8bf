@@ -14,11 +14,11 @@
 
 namespace
 {
-    void WriteString(FileHandle* fileHandle, std::string value)
+    void WriteString(FileHandle* fileHandle, ::std::string value)
     {
-        if (value.size() > static_cast<size_t>(std::numeric_limits<int32>::max()))
+        if (value.size() > static_cast<size_t>(::std::numeric_limits<int32>::max()))
         {
-            throw std::runtime_error("The string length exceeds 2GB.");
+            throw ::std::runtime_error("The string length exceeds 2GB.");
         }
 
         int32_t stringLength = static_cast<int32>(value.size());
@@ -43,7 +43,7 @@ namespace
     };
 }
 
-InputLayerInfo::InputLayerInfo(boost::filesystem::path path, int32 width, int32 height, bool visible, std::string utf8Name)
+InputLayerInfo::InputLayerInfo(boost::filesystem::path path, int32 width, int32 height, bool visible, ::std::string utf8Name)
     : imagePath(path), layerWidth(width), layerHeight(height),
       layerIsVisible(visible), utf8LayerName(utf8Name)
 {

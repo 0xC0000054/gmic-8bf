@@ -17,7 +17,7 @@
 
 #include "FileIO.h"
 
-std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode);
+::std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode);
 
 void ReadFileNative(FileHandle* fileHandle, void* data, size_t dataSize);
 

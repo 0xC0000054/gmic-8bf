@@ -28,7 +28,7 @@ public:
         int32 width,
         int32 height,
         bool visible,
-        std::string utf8Name);
+        ::std::string utf8Name);
 
     ~InputLayerInfo();
 
@@ -41,7 +41,7 @@ private:
     int32 layerWidth;
     int32 layerHeight;
     bool layerIsVisible;
-    std::string utf8LayerName;
+    ::std::string utf8LayerName;
 };
 
 #endif // !INPUTLAYERINFO_H

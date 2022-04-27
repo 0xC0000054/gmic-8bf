@@ -52,7 +52,7 @@ namespace
 
             if (strncmp(signature, "G8FP", 4) != 0)
             {
-                throw std::runtime_error("The GmicQt parameters file has an invalid file signature.");
+                throw ::std::runtime_error("The GmicQt parameters file has an invalid file signature.");
             }
 
 #if BOOST_ENDIAN_BIG_BYTE
@@ -65,7 +65,7 @@ namespace
 
             if (strncmp(endian, platformEndian, 4) != 0)
             {
-                throw std::runtime_error("The GmicQt parameters file endianess does not match the current platform.");
+                throw ::std::runtime_error("The GmicQt parameters file endianess does not match the current platform.");
             }
         }
 
@@ -181,7 +181,7 @@ namespace
     {
     public:
 
-        ScopedASZString(ASZStringSuite* suite, std::vector<ASUnicode> unicodeChars)
+        ScopedASZString(ASZStringSuite* suite, ::std::vector<ASUnicode> unicodeChars)
             : zstringSuite(suite), zstr(nullptr), zstringValid(false)
         {
             ThrowIfASError(suite->MakeFromUnicode(unicodeChars.data(), unicodeChars.size(), &zstr));
@@ -221,7 +221,7 @@ namespace
         bool zstringValid;
     };
 
-    void ReadUtf8String(FileHandle* fileHandle, std::string& value)
+    void ReadUtf8String(FileHandle* fileHandle, ::std::string& value)
     {
         int32_t stringLength = 0;
 
@@ -229,11 +229,11 @@ namespace
 
         if (stringLength == 0)
         {
-            value = std::string();
+            value = ::std::string();
         }
         else
         {
-            std::vector<char> stringChars(stringLength);
+            ::std::vector<char> stringChars(stringLength);
 
             ReadFile(fileHandle, &stringChars[0], stringLength);
 
@@ -241,12 +241,12 @@ namespace
         }
     }
 
-    void WriteUtf8String(FileHandle* fileHandle, const std::string& value)
+    void WriteUtf8String(FileHandle* fileHandle, const ::std::string& value)
     {
         // Check that the required byte buffer size can fit in a uint32_t.
-        if (value.size() > static_cast<size_t>(std::numeric_limits<int32_t>::max()))
+        if (value.size() > static_cast<size_t>(::std::numeric_limits<int32_t>::max()))
         {
-            throw std::runtime_error("The string cannot be written to the file because it is too long.");
+            throw ::std::runtime_error("The string cannot be written to the file because it is too long.");
         }
 
         int32_t stringLength = static_cast<int32_t>(value.size());
@@ -259,16 +259,16 @@ namespace
         }
     }
 
-    std::vector<ASUnicode> ConvertUtf8StringToASUnicode(const std::string& utf8Str)
+    ::std::vector<ASUnicode> ConvertUtf8StringToASUnicode(const ::std::string& utf8Str)
     {
-        std::codecvt_utf8_utf16<ASUnicode> converter;
-        std::codecvt_utf8_utf16<ASUnicode>::state_type state = std::codecvt_utf8_utf16<ASUnicode>::state_type();
+        ::std::codecvt_utf8_utf16<ASUnicode> converter;
+        ::std::codecvt_utf8_utf16<ASUnicode>::state_type state = ::std::codecvt_utf8_utf16<ASUnicode>::state_type();
 
         const char* first = utf8Str.data();
         const char* last = first + utf8Str.length();
 
         const int utf16Length = converter.length(state, first, last, utf8Str.length());
-        std::vector<ASUnicode> unicodeChars = std::vector<ASUnicode>(utf16Length);
+        ::std::vector<ASUnicode> unicodeChars = ::std::vector<ASUnicode>(utf16Length);
 
         ASUnicode* dest = unicodeChars.data();
         ASUnicode* destEnd = dest + unicodeChars.size();
@@ -278,21 +278,21 @@ namespace
 
         switch (result)
         {
-        case std::codecvt_base::ok:
-        case std::codecvt_base::partial:
+        case ::std::codecvt_base::ok:
+        case ::std::codecvt_base::partial:
             if (outputLocation != destEnd)
             {
-                throw std::runtime_error("Bad UTF-8 to UTF-16 conversion.");
+                throw ::std::runtime_error("Bad UTF-8 to UTF-16 conversion.");
             }
             break;
-        case std::codecvt_base::noconv:
+        case ::std::codecvt_base::noconv:
             for (size_t i = 0, length = last - first; i < length; i++, first++)
             {
                 unicodeChars[i] = static_cast<ASUnicode>(static_cast<unsigned char>(*first));
             }
             break;
         default:
-            throw std::runtime_error("Bad UTF-8 to UTF-16 conversion.");
+            throw ::std::runtime_error("Bad UTF-8 to UTF-16 conversion.");
         }
 
         return unicodeChars;
@@ -303,9 +303,9 @@ namespace
         PSActionDescriptorProcs* descriptorProcs,
         PIActionDescriptor descriptor,
         DescriptorKeyID key,
-        const std::string& utf8Str)
+        const ::std::string& utf8Str)
     {
-        std::vector<ASUnicode> unicodeChars = ConvertUtf8StringToASUnicode(utf8Str);
+        ::std::vector<ASUnicode> unicodeChars = ConvertUtf8StringToASUnicode(utf8Str);
 
         ScopedASZString zstr(zstringSuite, unicodeChars);
 
@@ -450,7 +450,7 @@ GmicQtParameters::GmicQtParameters(const FilterRecordPtr filterRecord)
 GmicQtParameters::GmicQtParameters(const boost::filesystem::path& path)
     : gmicCommandName()
 {
-    std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
+    ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
     GmicQtParametersHeader header(file.get());
 
     ReadUtf8String(file.get(), command);
@@ -526,14 +526,14 @@ void GmicQtParameters::SaveToFile(const boost::filesystem::path& path) const
 {
     GmicQtParametersHeader header;
 
-    std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Write);
+    ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Write);
 
     WriteFile(file.get(), &header, sizeof(header));
     WriteUtf8String(file.get(), command);
     WriteUtf8String(file.get(), filterMenuPath);
     WriteUtf8String(file.get(), inputMode);
     // G'MIC-Qt does not need the filter name, so write an empty string.
-    WriteUtf8String(file.get(), std::string());
+    WriteUtf8String(file.get(), ::std::string());
 }
 
 boost::filesystem::path GmicQtParameters::GetGmicCommandName()
@@ -551,7 +551,7 @@ boost::filesystem::path GmicQtParameters::GetGmicCommandName()
 
         size_t firstSpaceIndex = command.find_first_of(' ');
 
-        if (firstSpaceIndex != std::string::npos)
+        if (firstSpaceIndex != ::std::string::npos)
         {
             gmicCommandName = command.substr(0, firstSpaceIndex);
         }
@@ -579,7 +579,7 @@ OSErr GmicQtParameters::ReadFilterInputMode(
 
         if (stringLength > 0)
         {
-            std::unique_ptr<char[]> buffer = std::make_unique<char[]>(stringLength);
+            ::std::unique_ptr<char[]> buffer = ::std::make_unique<char[]>(stringLength);
 
             ThrowIfASError(zstringSuite->AsCString(zstr.get(), buffer.get(), stringLength, true));
 
@@ -591,10 +591,10 @@ OSErr GmicQtParameters::ReadFilterInputMode(
                 lengthWithoutTerminator -= 1;
             }
 
-            inputMode = std::string(buffer.get(), buffer.get() + lengthWithoutTerminator);
+            inputMode = ::std::string(buffer.get(), buffer.get() + lengthWithoutTerminator);
         }
     }
-    catch (const std::bad_alloc&)
+    catch (const ::std::bad_alloc&)
     {
         err = memFullErr;
     }
@@ -631,10 +631,10 @@ OSErr GmicQtParameters::ReadFilterOpaqueData(
 
         FilterOpaqueDataHeader* header = (FilterOpaqueDataHeader*)data;
 
-        command = std::string(data + sizeof(FilterOpaqueDataHeader), header->commandLength);
-        filterMenuPath = std::string(data + sizeof(FilterOpaqueDataHeader) + command.size(), header->menuPathLength);
+        command = ::std::string(data + sizeof(FilterOpaqueDataHeader), header->commandLength);
+        filterMenuPath = ::std::string(data + sizeof(FilterOpaqueDataHeader) + command.size(), header->menuPathLength);
     }
-    catch (const std::bad_alloc&)
+    catch (const ::std::bad_alloc&)
     {
         err = memFullErr;
     }
@@ -657,9 +657,9 @@ void GmicQtParameters::WriteFilterOpaqueData(
 {
     uint64 dataSize = static_cast<uint64>(sizeof(FilterOpaqueDataHeader)) + command.size() + filterMenuPath.size();
 
-    if (dataSize > static_cast<uint64>(std::numeric_limits<int32>::max()))
+    if (dataSize > static_cast<uint64>(::std::numeric_limits<int32>::max()))
     {
-        throw std::runtime_error("The G'MIC-Qt data is larger than 2 GB.");
+        throw ::std::runtime_error("The G'MIC-Qt data is larger than 2 GB.");
     }
 
     ScopedBufferSuiteBuffer scopedBuffer(filterRecord, static_cast<int32>(dataSize));

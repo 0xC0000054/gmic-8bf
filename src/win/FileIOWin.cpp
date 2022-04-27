@@ -37,11 +37,11 @@ namespace
         {
             if (e.GetErrorCode() == E_OUTOFMEMORY)
             {
-                throw std::bad_alloc();
+                throw ::std::bad_alloc();
             }
             else
             {
-                throw std::runtime_error(e.what());
+                throw ::std::runtime_error(e.what());
             }
         }
     }
@@ -57,7 +57,7 @@ namespace
 
             if (bytesRead == 0)
             {
-                throw std::runtime_error("Attempted to read beyond the end of the file.");
+                throw ::std::runtime_error("Attempted to read beyond the end of the file.");
             }
 
             offset += bytesRead;
@@ -92,11 +92,11 @@ namespace
         {
             if (e.GetErrorCode() == E_OUTOFMEMORY)
             {
-                throw std::bad_alloc();
+                throw ::std::bad_alloc();
             }
             else
             {
-                throw std::runtime_error(e.what());
+                throw ::std::runtime_error(e.what());
             }
         }
     }
@@ -104,7 +104,7 @@ namespace
 
 struct FileBuffer
 {
-    std::vector<BYTE> buffer;
+    ::std::vector<BYTE> buffer;
     size_t readOffset;
     size_t readLength;
     size_t writeOffset;
@@ -119,7 +119,7 @@ class FileHandleWin : public FileHandle
 {
 public:
     FileHandleWin(const boost::filesystem::path& path, FileOpenMode mode)
-        : buffer(std::make_unique<FileBuffer>()), uncaughtExceptionCount(std::uncaught_exceptions()), hFile()
+        : buffer(::std::make_unique<FileBuffer>()), uncaughtExceptionCount(::std::uncaught_exceptions()), hFile()
     {
         DWORD dwDesiredAccess;
         DWORD dwShareMode;
@@ -139,7 +139,7 @@ public:
             dwCreationDisposition = CREATE_ALWAYS;
             break;
         default:
-            throw std::invalid_argument("Unknown FileOpenMode");
+            throw ::std::invalid_argument("Unknown FileOpenMode");
         }
 
         hFile.reset(CreateFileW(path.c_str(), dwDesiredAccess, dwShareMode, nullptr, dwCreationDisposition, dwFlagsAndAttributes, nullptr));
@@ -153,7 +153,7 @@ public:
     ~FileHandleWin() override
     {
         // Flush the write buffer to disk, unless the stack is being unwound due to an uncaught exception.
-        if (uncaughtExceptionCount == std::uncaught_exceptions())
+        if (uncaughtExceptionCount == ::std::uncaught_exceptions())
         {
             if (buffer->writeOffset > 0)
             {
@@ -180,26 +180,26 @@ public:
     }
 
 private:
-    std::unique_ptr<FileBuffer> buffer;
+    ::std::unique_ptr<FileBuffer> buffer;
     const int uncaughtExceptionCount;
     wil::unique_hfile hFile;
 };
 
-std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode)
+::std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode)
 {
     try
     {
-        return std::make_unique<FileHandleWin>(path, mode);
+        return ::std::make_unique<FileHandleWin>(path, mode);
     }
     catch (const wil::ResultException& e)
     {
         if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            throw std::bad_alloc();
+            throw ::std::bad_alloc();
         }
         else
         {
-            throw std::runtime_error(e.what());
+            throw ::std::runtime_error(e.what());
         }
     }
 }
@@ -208,7 +208,7 @@ void ReadFileNative(FileHandle* fileHandle, void* data, size_t dataSize)
 {
     if (!fileHandle)
     {
-        throw std::runtime_error("Null file handle");
+        throw ::std::runtime_error("Null file handle");
     }
 
     FileHandleWin* fileHandleWin = static_cast<FileHandleWin*>(fileHandle);
@@ -243,7 +243,7 @@ void ReadFileNative(FileHandle* fileHandle, void* data, size_t dataSize)
 
             if (bytesRead == 0)
             {
-                throw std::runtime_error("Attempted to read beyond the end of the file.");
+                throw ::std::runtime_error("Attempted to read beyond the end of the file.");
             }
 
             buffer->readOffset = 0;
@@ -290,11 +290,11 @@ void SetFileLengthNative(FileHandle* fileHandle, int64 length)
     {
         if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            throw std::bad_alloc();
+            throw ::std::bad_alloc();
         }
         else
         {
-            throw std::runtime_error(e.what());
+            throw ::std::runtime_error(e.what());
         }
     }
 }
@@ -303,7 +303,7 @@ void SetFilePositionNative(FileHandle* fileHandle, int16 posMode, int64 posOffse
 {
     if (!fileHandle)
     {
-        throw std::runtime_error("Null file handle");
+        throw ::std::runtime_error("Null file handle");
     }
 
     FileHandleWin* fileHandleWin = static_cast<FileHandleWin*>(fileHandle);
@@ -337,11 +337,11 @@ void SetFilePositionNative(FileHandle* fileHandle, int16 posMode, int64 posOffse
     {
         if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            throw std::bad_alloc();
+            throw ::std::bad_alloc();
         }
         else
         {
-            throw std::runtime_error(e.what());
+            throw ::std::runtime_error(e.what());
         }
     }
 }
@@ -350,7 +350,7 @@ void WriteFileNative(FileHandle* fileHandle, const void* data, size_t dataSize)
 {
     if (!fileHandle)
     {
-        throw std::runtime_error("Null file handle");
+        throw ::std::runtime_error("Null file handle");
     }
 
     const BYTE* input = static_cast<const BYTE*>(data);

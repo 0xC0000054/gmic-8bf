@@ -66,7 +66,7 @@ namespace
                 bitsPerChannel = 32;
                 break;
             default:
-                throw std::runtime_error("Unsupported image mode.");
+                throw ::std::runtime_error("Unsupported image mode.");
             }
             padding = 0;
         }
@@ -96,7 +96,7 @@ void InputLayerIndex::AddFile(
     int32 width,
     int32 height,
     bool visible,
-    std::string utf8Name)
+    ::std::string utf8Name)
 {
     InputLayerInfo info(path, width, height, visible, utf8Name);
 
@@ -110,9 +110,9 @@ void InputLayerIndex::AddFile(const InputLayerInfo& info)
 
 int32 InputLayerIndex::GetLayerCount() const
 {
-    if (inputFiles.size() > static_cast<size_t>(std::numeric_limits<int32>().max()))
+    if (inputFiles.size() > static_cast<size_t>(::std::numeric_limits<int32>().max()))
     {
-        throw std::runtime_error("The number of input files exceeds 2,147,483,647.");
+        throw ::std::runtime_error("The number of input files exceeds 2,147,483,647.");
     }
 
     return static_cast<int32>(inputFiles.size());
@@ -125,17 +125,17 @@ void InputLayerIndex::SetActiveLayerIndex(int32 index)
 
 void InputLayerIndex::Write(const boost::filesystem::path& path)
 {
-    if (inputFiles.size() > static_cast<size_t>(std::numeric_limits<int32>().max()))
+    if (inputFiles.size() > static_cast<size_t>(::std::numeric_limits<int32>().max()))
     {
-        throw std::runtime_error("The number of input files exceeds 2,147,483,647.");
+        throw ::std::runtime_error("The number of input files exceeds 2,147,483,647.");
     }
 
     // Convert the narrow path string to UTF-8 on Windows.
 #if __PIWin__
-    boost::filesystem::path::imbue(std::locale(std::locale(), new std::codecvt_utf8_utf16<wchar_t>()));
+    boost::filesystem::path::imbue(::std::locale(::std::locale(), new ::std::codecvt_utf8_utf16<wchar_t>()));
 #endif
 
-    std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Write);
+    ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Write);
 
     IndexFileHeader header(
         static_cast<int32>(inputFiles.size()),

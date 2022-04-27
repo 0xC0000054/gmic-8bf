@@ -35,7 +35,7 @@ namespace
             return errorCode;
         }
 
-        std::string GetErrorMessage() const
+        ::std::string GetErrorMessage() const
         {
             return errorMessage;
         }
@@ -60,7 +60,7 @@ namespace
     private:
         OSErr errorCode;
         bool errorMessageSet;
-        std::string errorMessage;
+        ::std::string errorMessage;
     };
 
     void PngWriteErrorHandler(png_structp png, png_const_charp errorDescription)
@@ -85,7 +85,7 @@ namespace
         {
             WriteFile(fileHandle, data, length);
         }
-        catch (const std::exception& e)
+        catch (const ::std::exception& e)
         {
             png_error(png_ptr, e.what());
         }
@@ -114,7 +114,7 @@ namespace
 
             ReadFile(fileHandle, buffer, bufferSize);
         }
-        catch (const std::exception& e)
+        catch (const ::std::exception& e)
         {
             errorData->SetErrorMessage(e.what());
         }
@@ -130,9 +130,9 @@ namespace
         int32 inputHeight)
     {
         const int32 maxBufferSpace = filterRecord->bufferProcs->spaceProc();
-        const int32 maxHeight = std::min(GetTileHeight(filterRecord->outTileHeight), inputHeight);
+        const int32 maxHeight = ::std::min(GetTileHeight(filterRecord->outTileHeight), inputHeight);
 
-        return std::min(std::max(maxBufferSpace / inputRowBytes, 1), maxHeight);
+        return ::std::min(::std::max(maxBufferSpace / inputRowBytes, 1), maxHeight);
     }
 
     OSErr SavePngImage(
@@ -275,7 +275,7 @@ namespace
                     for (int32 y = 0; y < height; y += maxInputChunkHeight)
                     {
                         const int32 top = y;
-                        const int32 bottom = std::min(y + maxInputChunkHeight, height);
+                        const int32 bottom = ::std::min(y + maxInputChunkHeight, height);
 
                         const int32 rowCount = bottom - top;
 
@@ -349,15 +349,15 @@ void ConvertGmic8bfImageToPng(
     const boost::filesystem::path& inputFilePath,
     const boost::filesystem::path& outputFilePath)
 {
-    std::unique_ptr<FileHandle> inputFile = OpenFile(inputFilePath, FileOpenMode::Read);
+    ::std::unique_ptr<FileHandle> inputFile = OpenFile(inputFilePath, FileOpenMode::Read);
     Gmic8bfImageHeader inputFileHeader(inputFile.get());
 
-    std::unique_ptr<FileHandle> outputFile = OpenFile(outputFilePath, FileOpenMode::Write);
-    std::unique_ptr<PngErrorData> errorData = std::make_unique<PngErrorData>();
+    ::std::unique_ptr<FileHandle> outputFile = OpenFile(outputFilePath, FileOpenMode::Write);
+    ::std::unique_ptr<PngErrorData> errorData = ::std::make_unique<PngErrorData>();
 
     if (SavePngImage(filterRecord, inputFile.get(), inputFileHeader, outputFile.get(), errorData.get()) != noErr)
     {
-        std::string errorMessage = errorData->GetErrorMessage();
+        ::std::string errorMessage = errorData->GetErrorMessage();
 
         if (errorMessage.empty())
         {
@@ -365,7 +365,7 @@ void ConvertGmic8bfImageToPng(
         }
         else
         {
-            throw std::runtime_error(errorMessage);
+            throw ::std::runtime_error(errorMessage);
         }
     }
 }

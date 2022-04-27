@@ -26,7 +26,7 @@ Gmic8bfImageHeader::Gmic8bfImageHeader(FileHandle* fileHandle)
 
     if (strncmp(signature, "G8IM", 4) != 0)
     {
-        throw std::runtime_error("The Gmic8bfImage has an invalid file signature.");
+        throw ::std::runtime_error("The Gmic8bfImage has an invalid file signature.");
     }
 
 #if BOOST_ENDIAN_BIG_BYTE
@@ -39,7 +39,7 @@ Gmic8bfImageHeader::Gmic8bfImageHeader(FileHandle* fileHandle)
 
     if (strncmp(endian, platformEndian, 4) != 0)
     {
-        throw std::runtime_error("The Gmic8bfImage endianess does not match the current platform.");
+        throw ::std::runtime_error("The Gmic8bfImage endianess does not match the current platform.");
     }
 }
 

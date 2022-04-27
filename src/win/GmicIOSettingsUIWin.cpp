@@ -140,11 +140,11 @@ namespace
             }
 
             // Ensure that adding the NUL terminator will not cause an integer overflow.
-            if (pathLength < std::numeric_limits<int>::max())
+            if (pathLength < ::std::numeric_limits<int>::max())
             {
                 const int lengthWithTerminator = pathLength + 1;
 
-                std::vector<wchar_t> temp(lengthWithTerminator);
+                ::std::vector<wchar_t> temp(lengthWithTerminator);
 
                 if (GetWindowTextW(editBoxHWnd, &temp[0], lengthWithTerminator) > 0)
                 {
@@ -160,7 +160,7 @@ namespace
                 err = memFullErr;
             }
         }
-        catch (const std::bad_alloc&)
+        catch (const ::std::bad_alloc&)
         {
             err = memFullErr;
         }
@@ -360,7 +360,7 @@ OSErr DoIOSettingsUI(const FilterRecordPtr filterRecord, GmicIOSettings& setting
             err = userCanceledErr;
         }
     }
-    catch (const std::bad_alloc&)
+    catch (const ::std::bad_alloc&)
     {
         err = memFullErr;
     }

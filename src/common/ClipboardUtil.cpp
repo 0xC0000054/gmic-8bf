@@ -18,7 +18,7 @@
 #error "Missing a ClipboardUtil header for this platform."
 #endif
 
-void ConvertClipboardImageToGmicInput(std::unique_ptr<InputLayerInfo>& layer)
+void ConvertClipboardImageToGmicInput(::std::unique_ptr<InputLayerInfo>& layer)
 {
     ConvertClipboardImageToGmicInputNative(layer);
 }

@@ -60,7 +60,7 @@ namespace
 
         uint64 fileLength = sizeof(Gmic8bfImageHeader) + imageDataLength;
 
-        if (fileLength <= static_cast<uint64>(std::numeric_limits<int64>::max()))
+        if (fileLength <= static_cast<uint64>(::std::numeric_limits<int64>::max()))
         {
             SetFileLength(fileHandle, static_cast<int64>(fileLength));
         }
@@ -107,8 +107,8 @@ namespace
 
         PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
 
-        const int32 tileWidth = std::min(GetTileWidth(filterRecord->inTileWidth), width);
-        const int32 tileHeight = std::min(GetTileHeight(filterRecord->inTileHeight), height);
+        const int32 tileWidth = ::std::min(GetTileWidth(filterRecord->inTileWidth), width);
+        const int32 tileHeight = ::std::min(GetTileHeight(filterRecord->inTileHeight), height);
 
         Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, /* planar */ true, tileWidth, tileHeight);
 
@@ -138,14 +138,14 @@ namespace
             for (int32 y = 0; y < height; y += tileHeight)
             {
                 const int32 top = y;
-                const int32 bottom = std::min(y + tileHeight, imageSize.v);
+                const int32 bottom = ::std::min(y + tileHeight, imageSize.v);
 
                 const int32 rowCount = bottom - top;
 
                 for (int32 x = 0; x < width; x += tileWidth)
                 {
                     const int32 left = x;
-                    const int32 right = std::min(x + tileWidth, imageSize.h);
+                    const int32 right = ::std::min(x + tileWidth, imageSize.h);
 
                     const int32 columnCount = right - left;
 
@@ -257,8 +257,8 @@ namespace
 
         PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
 
-        const int32 tileWidth = std::min(firstCompositeChannel.tileSize.h, width);
-        const int32 tileHeight = std::min(firstCompositeChannel.tileSize.v, height);
+        const int32 tileWidth = ::std::min(firstCompositeChannel.tileSize.h, width);
+        const int32 tileHeight = ::std::min(firstCompositeChannel.tileSize.v, height);
 
         Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, /* planar */ true, tileWidth, tileHeight);
 
@@ -339,14 +339,14 @@ namespace
                 {
                     VRect writeRect{};
                     writeRect.top = y;
-                    writeRect.bottom = std::min(y + tileHeight, height);
+                    writeRect.bottom = ::std::min(y + tileHeight, height);
 
                     const int32 rowCount = writeRect.bottom - writeRect.top;
 
                     for (int32 x = 0; x < width; x += tileWidth)
                     {
                         writeRect.left = x;
-                        writeRect.right = std::min(x + tileWidth, width);
+                        writeRect.right = ::std::min(x + tileWidth, width);
 
                         const int32 columnCount = writeRect.right - writeRect.left;
                         tileRowBytes = columnCount * filterRecord->inColumnBytes;
@@ -373,7 +373,7 @@ namespace
                             wroteRect.bottom != writeRect.bottom ||
                             wroteRect.right != writeRect.right)
                         {
-                            throw std::runtime_error("Unable to read all of the requested image data from a layer.");
+                            throw ::std::runtime_error("Unable to read all of the requested image data from a layer.");
                         }
 
                         if (bitsPerChannel == 16)
@@ -403,10 +403,10 @@ void WritePixelsFromCallback(
 {
     if (writeCallback == nullptr)
     {
-        throw std::runtime_error("Null write callback.");
+        throw ::std::runtime_error("Null write callback.");
     }
 
-    std::unique_ptr<FileHandle> file = OpenFile(outputPath, FileOpenMode::Write);
+    ::std::unique_ptr<FileHandle> file = OpenFile(outputPath, FileOpenMode::Write);
 
     PreallocateFile(file.get(), width, height, numberOfChannels, bitsPerChannel);
 
@@ -430,7 +430,7 @@ void SaveActiveLayer(
 {
     boost::filesystem::path activeLayerPath = GetTemporaryFileName(outputDir, ".g8i");
 
-    std::unique_ptr<FileHandle> file = OpenFile(activeLayerPath, FileOpenMode::Write);
+    ::std::unique_ptr<FileHandle> file = OpenFile(activeLayerPath, FileOpenMode::Write);
 
     const VPoint imageSize = GetImageSize(filterRecord);
 
@@ -439,7 +439,7 @@ void SaveActiveLayer(
     int32 layerWidth = imageSize.h;
     int32 layerHeight = imageSize.v;
     bool layerIsVisible = true;
-    std::string layerName;
+    ::std::string layerName;
 
     if (!TryGetActiveLayerNameAsUTF8String(filterRecord, layerName))
     {
@@ -472,7 +472,7 @@ void SaveAllLayers(
         {
             boost::filesystem::path imagePath = GetTemporaryFileName(outputDir, ".g8i");
 
-            std::unique_ptr<FileHandle> file = OpenFile(imagePath, FileOpenMode::Write);
+            ::std::unique_ptr<FileHandle> file = OpenFile(imagePath, FileOpenMode::Write);
 
             VPoint layerSize{};
 
@@ -481,7 +481,7 @@ void SaveAllLayers(
             int32 layerWidth = layerSize.h;
             int32 layerHeight = layerSize.v;
             bool layerIsVisible = true;
-            std::string utf8Name;
+            ::std::string utf8Name;
 
             if (layerDescriptor->maxVersion >= 2)
             {
@@ -495,11 +495,11 @@ void SaveAllLayers(
 
             if (utf8Name.empty())
             {
-                int written = std::snprintf(layerNameBuffer, sizeof(layerNameBuffer), "Layer %d", pixelBasedLayerCount);
+                int written = ::std::snprintf(layerNameBuffer, sizeof(layerNameBuffer), "Layer %d", pixelBasedLayerCount);
 
                 if (written <= 0)
                 {
-                    throw std::runtime_error("Unable to write the layer name.");
+                    throw ::std::runtime_error("Unable to write the layer name.");
                 }
 
                 utf8Name.assign(layerNameBuffer, layerNameBuffer + written);

@@ -44,7 +44,7 @@ public:
     {
         if (!bufferIDValid)
         {
-            throw std::runtime_error("Cannot Lock an invalid buffer.");
+            throw ::std::runtime_error("Cannot Lock an invalid buffer.");
         }
 
         if (bufferDataPtr == nullptr)
@@ -53,7 +53,7 @@ public:
 
             if (bufferDataPtr == nullptr)
             {
-                throw std::runtime_error("Unable to lock the BufferSuite buffer.");
+                throw ::std::runtime_error("Unable to lock the BufferSuite buffer.");
             }
         }
 

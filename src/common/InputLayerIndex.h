@@ -34,7 +34,7 @@ public:
         int32 width,
         int32 height,
         bool visible,
-        std::string utf8Name);
+        ::std::string utf8Name);
 
     void AddFile(const InputLayerInfo& info);
 
@@ -46,7 +46,7 @@ public:
 
 private:
 
-    std::vector<InputLayerInfo> inputFiles;
+    ::std::vector<InputLayerInfo> inputFiles;
     int32 activeLayerIndex;
     int16 imageMode;
 };

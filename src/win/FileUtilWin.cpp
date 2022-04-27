@@ -38,11 +38,11 @@ namespace
         {
             if (e.GetErrorCode() == E_OUTOFMEMORY)
             {
-                throw std::bad_alloc();
+                throw ::std::bad_alloc();
             }
             else
             {
-                throw std::runtime_error(e.what());
+                throw ::std::runtime_error(e.what());
             }
         }
 
@@ -78,11 +78,11 @@ boost::filesystem::path GetPluginSettingsDirectoryNative()
     {
         if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            throw std::bad_alloc();
+            throw ::std::bad_alloc();
         }
         else
         {
-            throw std::runtime_error(e.what());
+            throw ::std::runtime_error(e.what());
         }
     }
 
@@ -107,11 +107,11 @@ boost::filesystem::path GetSessionDirectoriesRootNative()
     {
         if (e.GetErrorCode() == E_OUTOFMEMORY)
         {
-            throw std::bad_alloc();
+            throw ::std::bad_alloc();
         }
         else
         {
-            throw std::runtime_error(e.what());
+            throw ::std::runtime_error(e.what());
         }
     }
 

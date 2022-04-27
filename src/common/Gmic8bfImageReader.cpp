@@ -54,9 +54,9 @@ namespace
         }
     }
 
-    std::vector<uint16> BuildSixteenBitToHostLUT()
+    ::std::vector<uint16> BuildSixteenBitToHostLUT()
     {
-        std::vector<uint16> sixteenBitToHostLUT;
+        ::std::vector<uint16> sixteenBitToHostLUT;
         sixteenBitToHostLUT.reserve(65536);
 
         for (size_t i = 0; i < sixteenBitToHostLUT.capacity(); i++)
@@ -78,7 +78,7 @@ namespace
         const uint8* maskData,
         int32 maskRowBytes)
     {
-        static const std::vector<uint16> sixteenBitToHostLUT = BuildSixteenBitToHostLUT();
+        static const ::std::vector<uint16> sixteenBitToHostLUT = BuildSixteenBitToHostLUT();
 
         for (int32 y = 0; y < tileHeight; y++)
         {
@@ -196,7 +196,7 @@ namespace
             numberOfImagePlanes = 3;
             break;
         default:
-            throw std::runtime_error("Unsupported image mode.");
+            throw ::std::runtime_error("Unsupported image mode.");
         }
 
         if (filterRecord->haveMask)
@@ -207,14 +207,14 @@ namespace
         for (int32 y = 0; y < imageSize.v; y += tileHeight)
         {
             const int32 top = y;
-            const int32 bottom = std::min(y + tileHeight, imageSize.v);
+            const int32 bottom = ::std::min(y + tileHeight, imageSize.v);
 
             const int32 rowCount = bottom - top;
 
             for (int32 x = 0; x < imageSize.h; x += tileWidth)
             {
                 const int32 left = x;
-                const int32 right = std::min(x + tileWidth, imageSize.h);
+                const int32 right = ::std::min(x + tileWidth, imageSize.h);
 
                 const int32 columnCount = right - left;
 
@@ -265,7 +265,7 @@ namespace
                             filterRecord->maskRowBytes);
                         break;
                     default:
-                        throw std::runtime_error("Unsupported image mode.");
+                        throw ::std::runtime_error("Unsupported image mode.");
                     }
                 }
             }
@@ -344,13 +344,13 @@ namespace
             alphaChannelPlane = 3;
             break;
         default:
-            throw std::runtime_error("Unsupported image mode.");
+            throw ::std::runtime_error("Unsupported image mode.");
         }
 
         filterRecord->outLoPlane = filterRecord->outHiPlane = alphaChannelPlane;
 
-        const int32 tileWidth = std::min(GetTileWidth(filterRecord->outTileWidth), imageSize.h);
-        const int32 tileHeight = std::min(GetTileHeight(filterRecord->outTileHeight), imageSize.v);
+        const int32 tileWidth = ::std::min(GetTileWidth(filterRecord->outTileWidth), imageSize.h);
+        const int32 tileHeight = ::std::min(GetTileHeight(filterRecord->outTileHeight), imageSize.v);
 
         if (filterRecord->haveMask)
         {
@@ -360,14 +360,14 @@ namespace
         for (int32 y = 0; y < imageSize.v; y += tileHeight)
         {
             const int32 top = y;
-            const int32 bottom = std::min(y + tileHeight, imageSize.v);
+            const int32 bottom = ::std::min(y + tileHeight, imageSize.v);
 
             const int32 rowCount = bottom - top;
 
             for (int32 x = 0; x < imageSize.h; x += tileWidth)
             {
                 const int32 left = x;
-                const int32 right = std::min(x + tileWidth, imageSize.h);
+                const int32 right = ::std::min(x + tileWidth, imageSize.h);
 
                 const int32 columnCount = right - left;
 
@@ -405,7 +405,7 @@ namespace
                         filterRecord->maskRowBytes);
                     break;
                 default:
-                    throw std::runtime_error("Unsupported image mode.");
+                    throw ::std::runtime_error("Unsupported image mode.");
                 }
             }
         }
@@ -448,7 +448,7 @@ namespace
         if (!TryMultiplyInt32(tileWidth, bitsPerChannel / 8, tileMaxRowBytes))
         {
             // The multiplication would have resulted in an integer overflow / underflow.
-            throw std::bad_alloc();
+            throw ::std::bad_alloc();
         }
 
         int32 tileBufferSize = 0;
@@ -456,7 +456,7 @@ namespace
         if (!TryMultiplyInt32(tileMaxRowBytes, tileHeight, tileBufferSize))
         {
             // The multiplication would have resulted in an integer overflow / underflow.
-            throw std::bad_alloc();
+            throw ::std::bad_alloc();
         }
 
         ScopedBufferSuiteBuffer scopedBuffer(filterRecord, tileBufferSize);
@@ -487,14 +487,14 @@ namespace
                 for (int32 y = 0; y < imageSize.v; y += tileHeight)
                 {
                     const int32 top = y;
-                    const int32 bottom = std::min(top + tileHeight, imageSize.v);
+                    const int32 bottom = ::std::min(top + tileHeight, imageSize.v);
 
                     const int32 rowCount = bottom - top;
 
                     for (int32 x = 0; x < imageSize.h; x += tileWidth)
                     {
                         const int32 left = x;
-                        const int32 right = std::min(left + tileWidth, imageSize.h);
+                        const int32 right = ::std::min(left + tileWidth, imageSize.h);
 
                         const int32 columnCount = right - left;
 
@@ -509,7 +509,7 @@ namespace
                             tileBufferRowBytes = columnCount * 2;
                             break;
                         default:
-                            throw std::runtime_error("Unsupported bit depth.");
+                            throw ::std::runtime_error("Unsupported bit depth.");
                         }
 
                         const size_t tileDataSize = static_cast<size_t>(rowCount) * static_cast<size_t>(tileBufferRowBytes);
@@ -564,7 +564,7 @@ namespace
                                             filterRecord->maskRowBytes);
                                         break;
                                     default:
-                                        throw std::runtime_error("Unsupported image mode.");
+                                        throw ::std::runtime_error("Unsupported image mode.");
                                     }
                                 }
                             }
@@ -610,7 +610,7 @@ namespace
                                         filterRecord->maskRowBytes);
                                     break;
                                 default:
-                                    throw std::runtime_error("Unsupported image mode.");
+                                    throw ::std::runtime_error("Unsupported image mode.");
                                 }
                             }
                         }
@@ -656,7 +656,7 @@ namespace
                                     filterRecord->maskRowBytes);
                                 break;
                             default:
-                                throw std::runtime_error("Unsupported image mode.");
+                                throw ::std::runtime_error("Unsupported image mode.");
                             }
                         }
                     }
@@ -670,7 +670,7 @@ bool ImageSizeMatchesDocument(
     const boost::filesystem::path& path,
     const VPoint& documentSize)
 {
-    std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
+    ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
     Gmic8bfImageHeader header(file.get());
 
     return header.GetWidth() == documentSize.h && header.GetHeight() == documentSize.v;
@@ -678,7 +678,7 @@ bool ImageSizeMatchesDocument(
 
 void CopyImageToActiveLayer(const boost::filesystem::path& path, FilterRecord* filterRecord)
 {
-    std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
+    ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
 
     CopyImageToActiveLayerCore(filterRecord, file.get());
 }
