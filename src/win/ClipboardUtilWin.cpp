@@ -10,12 +10,14 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#include "stdafx.h"
 #include "ClipboardUtilWin.h"
 #include "FileUtil.h"
 #include "ImageConversionWin.h"
 #include <vector>
 #include <boost/algorithm/string.hpp>
 #include <boost/core/noncopyable.hpp>
+#include <shellapi.h>
 
 namespace
 {

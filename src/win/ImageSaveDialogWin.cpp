@@ -10,9 +10,10 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#include "stdafx.h"
 #include "ImageSaveDialogWin.h"
 #include "resource.h"
-#include <windows.h>
+#include <commdlg.h>
 #include <Uxtheme.h>
 #include <ShlObj.h>
 #include <ShObjIdl.h>

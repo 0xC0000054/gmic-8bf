@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -133,7 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <UseFullPaths>false</UseFullPaths>
@@ -160,7 +160,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -185,7 +185,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <UseFullPaths>false</UseFullPaths>
@@ -288,21 +288,21 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
   <ItemGroup>
     <CustomBuild Include="..\src\common\GmicPlugin.r">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cl /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
-..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cl /I..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
+..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
 del "$(IntDir)%(Filename).rr"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).pipl;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cl /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
-..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cl /I..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
+..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
 del "$(IntDir)%(Filename).rr"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename).pipl;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).pipl;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).pipl;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cl /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
-..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cl /I..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
+..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
 del "$(IntDir)%(Filename).rr"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cl /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
-..\ext\adobe_photoshop_cs6_sdk_win\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cl /I..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\Common\Includes /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\Photoshop /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\PICA_SP /I..\ext\adobe_photoshop_sdk\pluginsdk\PhotoshopAPI\resources /I..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\Common\Resources /EP /DMSWindows=1 /DWIN32=1 /Tc"%(FullPath)" &gt; "$(IntDir)%(Filename).rr"
+..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\resources\cnvtpipl.exe "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).pipl"
 del "$(IntDir)%(Filename).rr"</Command>
     </CustomBuild>
     <None Include="packages.config" />

@@ -24,6 +24,11 @@
 #endif // _MSC_VER
 
 #include "PIDefines.h"
+
+#if __PIWin__
+#include "stdafx.h" // Allow our OS includes to take precedence.
+#endif
+
 #include "PITypes.h"
 #include "PIFilter.h"
 #include "OSErrException.h"

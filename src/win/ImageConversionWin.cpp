@@ -10,6 +10,12 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#include "stdafx.h"
+
+#if _WIN32_WINNT == _WIN32_WINNT_WIN7
+#define _WIN7_PLATFORM_UPDATE 1
+#endif // _WIN32_WINNT == _WIN32_WINNT_WIN7
+
 #include "ImageConversionWin.h"
 #include "FileUtil.h"
 #include "FileIO.h"
