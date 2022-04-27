@@ -261,6 +261,20 @@ namespace
             true,
             "2nd Layer"));
     }
+
+    wil::com_ptr_t<IWICImagingFactory> GetWICImagingFactory()
+    {
+        wil::com_ptr_t<IWICImagingFactory> factory;
+
+        if (FAILED(::CoCreateInstance(CLSID_WICImagingFactory2, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
+        {
+            // Use CLSID_WICImagingFactory1 if we could not create a CLSID_WICImagingFactory2 instance.
+            // This should only occur on Windows 7 without the Platform Update.
+            THROW_IF_FAILED(::CoCreateInstance(CLSID_WICImagingFactory1, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory)));
+        }
+
+        return factory;
+    }
 }
 
 void ConvertImageToGmicInputFormatNative(
@@ -271,7 +285,7 @@ void ConvertImageToGmicInputFormatNative(
     {
         auto comCleanup = wil::CoInitializeEx(COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-        auto factory = wil::CoCreateInstance<IWICImagingFactory>(CLSID_WICImagingFactory1);
+        auto factory = GetWICImagingFactory();
         wil::com_ptr<IWICBitmapDecoder> decoder;
 
         const GUID* vendor = &GUID_VendorMicrosoftBuiltIn;
@@ -307,7 +321,7 @@ void ConvertImageToGmicInputFormatNative(
     {
         auto comCleanup = wil::CoInitializeEx(COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-        auto factory = wil::CoCreateInstance<IWICImagingFactory>(CLSID_WICImagingFactory1);
+        auto factory = GetWICImagingFactory();
         wil::com_ptr<IWICBitmapDecoder> decoder;
 
         wil::com_ptr<ReadOnlyMemoryStream> stream(new ReadOnlyMemoryStream(input, inputLength));
