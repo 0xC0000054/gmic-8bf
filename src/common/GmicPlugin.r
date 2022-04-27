@@ -21,14 +21,15 @@ resource 'PiPL' ( 16000, "GmicPlugin", purgeable )
 		Version { (latestFilterVersion << 16 ) | latestFilterSubVersion },
 
 		#ifdef __PIMac__
-			#if (defined(__i386__))
-				CodeMacIntel32 { "Gmic_Entry_Point" },
-			#endif
-			#if (defined(__ppc__))
-				CodeMachOPowerPC { 0, 0, "Gmic_Entry_Point" },
+			#if defined(__arm64__)
+				CodeMacARM64 { "Gmic_Entry_Point" },
+			#elif defined(__x86_64__)
+				CodeMacIntel64 { "Gmic_Entry_Point" },
 			#endif
 		#else
-			#if defined(_WIN64)
+			#if defined(_M_ARM64)
+				CodeWin64ARM { "Gmic_Entry_Point" },
+			#elif defined(_M_AMD64)
 				CodeWin64X86 { "Gmic_Entry_Point" },
 			#else
 				CodeWin32X86 { "Gmic_Entry_Point" },
@@ -118,14 +119,15 @@ resource 'PiPL' ( 16001, "GmicOutputSettingsPlugin", purgeable )
 		Version { (latestFilterVersion << 16 ) | latestFilterSubVersion },
 
 		#ifdef __PIMac__
-			#if (defined(__i386__))
-				CodeMacIntel32 { "Gmic_IO_Settings_Entry_Point" },
-			#endif
-			#if (defined(__ppc__))
-				CodeMachOPowerPC { 0, 0, "Gmic_IO_Settings_Entry_Point" },
+			#if defined(__arm64__)
+				CodeMacARM64 { "Gmic_IO_Settings_Entry_Point" },
+			#elif defined(__x86_64__)
+				CodeMacIntel64 { "Gmic_IO_Settings_Entry_Point" },
 			#endif
 		#else
-			#if defined(_WIN64)
+			#if defined(_M_ARM64)
+				CodeWin64ARM { "Gmic_IO_Settings_Entry_Point" },
+			#elif defined(_M_AMD64)
 				CodeWin64X86 { "Gmic_IO_Settings_Entry_Point" },
 			#else
 				CodeWin32X86 { "Gmic_IO_Settings_Entry_Point" },
