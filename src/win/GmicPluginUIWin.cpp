@@ -18,6 +18,7 @@
 #include "resource.h"
 #include "version.h"
 #include <CommCtrl.h>
+#include <process.h>
 #include <shellapi.h>
 #include <objbase.h> // Required by wil/win32_helpers.h
 #include <wil/resource.h>
