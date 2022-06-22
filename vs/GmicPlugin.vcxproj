@@ -194,7 +194,7 @@
       <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x86\$(TargetFileName)" /y</Command>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_x86\$(TargetFileName)" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -271,7 +271,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Command>copy "$(TargetPath)" "D:\Adobe CC Apps\Adobe Photoshop 2022\Plug-ins\Filters" /y
-copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)" /y</Command>
+copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_x64\$(TargetFileName)" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -300,8 +300,8 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\x64\$(TargetFileName)
       <AdditionalIncludeDirectories>..\src\common</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\arm64_win11\$(TargetFileName)" /y
-copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_release\arm64_win10\$(TargetFileName)" /y</Command>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win11\$(TargetFileName)" /y
+copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
