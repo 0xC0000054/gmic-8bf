@@ -182,7 +182,8 @@ namespace
         int32 tileWidth,
         int32 tileHeight,
         FilterRecord* filterRecord,
-        const VPoint& imageSize)
+        const VPoint& imageSize,
+        int32 bitsPerChannel)
     {
         int16 numberOfImagePlanes;
         switch (filterRecord->imageMode)
@@ -238,10 +239,9 @@ namespace
 
                     const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
 
-                    switch (filterRecord->imageMode)
+                    switch (bitsPerChannel)
                     {
-                    case plugInModeGrayScale:
-                    case plugInModeRGBColor:
+                    case 8:
                         PremultiplyAlphaEightBitsPerChannel(
                             tileBuffer,
                             tileBufferRowBytes,
@@ -252,8 +252,7 @@ namespace
                             maskData,
                             filterRecord->maskRowBytes);
                         break;
-                    case plugInModeGray16:
-                    case plugInModeRGB48:
+                    case 16:
                         PremultiplyAlphaSixteenBitsPerChannel(
                             tileBuffer,
                             tileBufferRowBytes,
@@ -265,7 +264,7 @@ namespace
                             filterRecord->maskRowBytes);
                         break;
                     default:
-                        throw ::std::runtime_error("Unsupported image mode.");
+                        throw ::std::runtime_error("Unsupported image depth.");
                     }
                 }
             }
@@ -330,7 +329,7 @@ namespace
         }
     }
 
-    void SetAlphaChannelToOpaque(FilterRecord* filterRecord, const VPoint& imageSize)
+    void SetAlphaChannelToOpaque(FilterRecord* filterRecord, const VPoint& imageSize, int32 bitsPerChannel)
     {
         int16 alphaChannelPlane;
         switch (filterRecord->imageMode)
@@ -382,10 +381,9 @@ namespace
 
                 const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
 
-                switch (filterRecord->imageMode)
+                switch (bitsPerChannel)
                 {
-                case plugInModeGrayScale:
-                case plugInModeRGBColor:
+                case 8:
                     SetAlphaChannelToOpaqueEightBitsPerChannel(
                         columnCount,
                         rowCount,
@@ -394,8 +392,7 @@ namespace
                         maskData,
                         filterRecord->maskRowBytes);
                     break;
-                case plugInModeGray16:
-                case plugInModeRGB48:
+                case 16:
                     SetAlphaChannelToOpaqueSixteenBitsPerChannel(
                         columnCount,
                         rowCount,
@@ -405,7 +402,7 @@ namespace
                         filterRecord->maskRowBytes);
                     break;
                 default:
-                    throw ::std::runtime_error("Unsupported image mode.");
+                    throw ::std::runtime_error("Unsupported image depth.");
                 }
             }
         }
@@ -433,9 +430,32 @@ namespace
         assert(height == imageSize.v);
         assert(header.IsPlanar());
 
+        const int32 hostBitDepth = GetImageDepth(filterRecord);
+
+        if (bitsPerChannel != hostBitDepth)
+        {
+            char formatBuffer[256]{};
+
+            const int result = snprintf(
+                formatBuffer,
+                sizeof(formatBuffer),
+                "The G'MIC image bit depth (%d) does not math the host bit depth (%d).",
+                bitsPerChannel,
+                hostBitDepth);
+
+            if (result > 0)
+            {
+                throw std::runtime_error(formatBuffer);
+            }
+            else
+            {
+                throw std::runtime_error("The G'MIC image bit depth does not math the host bit depth.");
+            }
+        }
+
         if (!hasAlphaChannel && canEditLayerTransparency)
         {
-            SetAlphaChannelToOpaque(filterRecord, imageSize);
+            SetAlphaChannelToOpaque(filterRecord, imageSize, bitsPerChannel);
         }
 
         const bool premultiplyAlpha = hasAlphaChannel && !canEditLayerTransparency;
@@ -480,7 +500,8 @@ namespace
                     tileWidth,
                     tileHeight,
                     filterRecord,
-                    imageSize);
+                    imageSize,
+                    bitsPerChannel);
             }
             else
             {
@@ -539,9 +560,9 @@ namespace
 
                                     const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
 
-                                    switch (filterRecord->imageMode)
+                                    switch (bitsPerChannel)
                                     {
-                                    case plugInModeRGBColor:
+                                    case 8:
                                         CopyTileDataToHostEightBitsPerChannel(
                                             tileBuffer,
                                             tileBufferRowBytes,
@@ -552,7 +573,7 @@ namespace
                                             maskData,
                                             filterRecord->maskRowBytes);
                                         break;
-                                    case plugInModeRGB48:
+                                    case 16:
                                         CopyTileDataToHostSixteenBitsPerChannel(
                                             tileBuffer,
                                             tileBufferRowBytes,
@@ -564,7 +585,7 @@ namespace
                                             filterRecord->maskRowBytes);
                                         break;
                                     default:
-                                        throw ::std::runtime_error("Unsupported image mode.");
+                                        throw ::std::runtime_error("Unsupported image depth.");
                                     }
                                 }
                             }
@@ -585,9 +606,9 @@ namespace
 
                                 const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
 
-                                switch (filterRecord->imageMode)
+                                switch (bitsPerChannel)
                                 {
-                                case plugInModeRGBColor:
+                                case 8:
                                     CopyTileDataToHostEightBitsPerChannel(
                                         tileBuffer,
                                         tileBufferRowBytes,
@@ -598,7 +619,7 @@ namespace
                                         maskData,
                                         filterRecord->maskRowBytes);
                                     break;
-                                case plugInModeRGB48:
+                                case 16:
                                     CopyTileDataToHostSixteenBitsPerChannel(
                                         tileBuffer,
                                         tileBufferRowBytes,
@@ -610,7 +631,7 @@ namespace
                                         filterRecord->maskRowBytes);
                                     break;
                                 default:
-                                    throw ::std::runtime_error("Unsupported image mode.");
+                                    throw ::std::runtime_error("Unsupported image depth.");
                                 }
                             }
                         }
@@ -629,10 +650,9 @@ namespace
 
                             const uint8* maskData = filterRecord->haveMask ? static_cast<const uint8*>(filterRecord->maskData) : nullptr;
 
-                            switch (filterRecord->imageMode)
+                            switch (bitsPerChannel)
                             {
-                            case plugInModeGrayScale:
-                            case plugInModeRGBColor:
+                            case 8:
                                 CopyTileDataToHostEightBitsPerChannel(
                                     tileBuffer,
                                     tileBufferRowBytes,
@@ -643,8 +663,7 @@ namespace
                                     maskData,
                                     filterRecord->maskRowBytes);
                                 break;
-                            case plugInModeGray16:
-                            case plugInModeRGB48:
+                            case 16:
                                 CopyTileDataToHostSixteenBitsPerChannel(
                                     tileBuffer,
                                     tileBufferRowBytes,
@@ -656,7 +675,7 @@ namespace
                                     filterRecord->maskRowBytes);
                                 break;
                             default:
-                                throw ::std::runtime_error("Unsupported image mode.");
+                                throw ::std::runtime_error("Unsupported image depth.");
                             }
                         }
                     }

@@ -548,6 +548,29 @@ bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept
     return filterRecord->advanceState != nullptr && HostBufferProcsAvailable(filterRecord);
 }
 
+int32 GetImageDepth(const FilterRecord* filterRecord) noexcept
+{
+    int32 depth = filterRecord->depth;
+
+    if (depth == 0)
+    {
+        // The host is not Photoshop 5.0 compatible, try to guess the image depth from the image mode.
+        switch (filterRecord->imageMode)
+        {
+        case plugInModeGrayScale:
+        case plugInModeRGBColor:
+            depth = 8;
+            break;
+        case plugInModeGray16:
+        case plugInModeRGB48:
+            depth = 16;
+            break;
+        }
+    }
+
+    return depth;
+}
+
 int32 GetImagePlaneCount(int16 imageMode, int32 layerPlanes, int32 transparencyPlanes)
 {
     int32 imagePlanes;

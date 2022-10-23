@@ -73,20 +73,26 @@ namespace
         int32 width = imageSize.h;
         int32 height = imageSize.v;
 
-        int32 bitsPerChannel;
+        const int32 bitsPerChannel = GetImageDepth(filterRecord);
 
-        switch (filterRecord->imageMode)
+        if (bitsPerChannel != 8 && bitsPerChannel != 16)
         {
-        case plugInModeGrayScale:
-        case plugInModeRGBColor:
-            bitsPerChannel = 8;
-            break;
-        case plugInModeGray16:
-        case plugInModeRGB48:
-            bitsPerChannel = 16;
-            break;
-        default:
-            throw OSErrException(filterBadMode);
+            char formatBuffer[256]{};
+
+            const int result = snprintf(
+                formatBuffer,
+                sizeof(formatBuffer),
+                "Unsupported image bit depth (%d), must be 8 or 16.",
+                bitsPerChannel);
+
+            if (result > 0)
+            {
+                throw std::runtime_error(formatBuffer);
+            }
+            else
+            {
+                throw std::runtime_error("Unsupported image bit depth, must be 8 or 16.");
+            }
         }
 
         int32 numberOfChannels;
@@ -223,20 +229,26 @@ namespace
         layerSize.h = width;
         layerSize.v = height;
 
-        int32 bitsPerChannel;
+        const int32 bitsPerChannel = GetImageDepth(filterRecord);
 
-        switch (filterRecord->imageMode)
+        if (bitsPerChannel != 8 && bitsPerChannel != 16)
         {
-        case plugInModeGrayScale:
-        case plugInModeRGBColor:
-            bitsPerChannel = 8;
-            break;
-        case plugInModeGray16:
-        case plugInModeRGB48:
-            bitsPerChannel = 16;
-            break;
-        default:
-            throw OSErrException(filterBadMode);
+            char formatBuffer[256]{};
+
+            const int result = snprintf(
+                formatBuffer,
+                sizeof(formatBuffer),
+                "Unsupported image bit depth (%d), must be 8 or 16.",
+                bitsPerChannel);
+
+            if (result > 0)
+            {
+                throw std::runtime_error(formatBuffer);
+            }
+            else
+            {
+                throw std::runtime_error("Unsupported image bit depth, must be 8 or 16.");
+            }
         }
 
         int32 numberOfChannels;

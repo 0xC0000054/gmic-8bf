@@ -29,6 +29,7 @@ bool HandleSuiteIsAvailable(const FilterRecord* filterRecord);
 bool SPBasicSuiteIsAvailable(const FilterRecord* filterRecord);
 bool TryGetActiveLayerNameAsUTF8String(const FilterRecord* filterRecord, ::std::string& utf8LayerName);
 bool HostMeetsRequirements(const FilterRecord* filterRecord) noexcept;
+int32 GetImageDepth(const FilterRecord* filterRecord) noexcept;
 int32 GetImagePlaneCount(int16 imageMode, int32 layerPlanes, int32 transparencyPlanes);
 VPoint GetImageSize(const FilterRecordPtr filterRecord);
 int32 GetTileHeight(int16 suggestedTileHeight);
