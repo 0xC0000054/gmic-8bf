@@ -269,9 +269,6 @@ namespace
                     inputBufferValid = true;
                     uint8* inputBuffer = reinterpret_cast<uint8*>(filterRecord->bufferProcs->lockProc(inputDataBufferID, false));
 
-                    const int32 left = 0;
-                    const int32 right = width;
-
                     for (int32 y = 0; y < height; y += maxInputChunkHeight)
                     {
                         const int32 top = y;
