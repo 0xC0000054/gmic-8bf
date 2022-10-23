@@ -1,0 +1,15 @@
+{
+  "name": "gmic-8bf",
+  "version": "1.0.0",
+  "description": "An 8bf filter plug-in that interacts with G'MIC-Qt",
+  "homepage": "https://github.com/0xC0000054/gmic-8bf",
+  "dependencies": [
+    "boost-algorithm",
+    "boost-endian",
+    "boost-filesystem",
+    "boost-predef",
+    "boost-process",
+    "libpng",
+    "safeint"
+  ]
+}

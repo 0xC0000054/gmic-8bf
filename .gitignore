@@ -340,3 +340,4 @@ ASALocalRun/
 # Local repository
 
 *.diagsession
+vcpkg_installed/

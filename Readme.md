@@ -110,7 +110,8 @@ See [License.txt](License.txt) for more information.
 ## Prerequisites
 
 * Visual Studio 2022
-* The `boost-filesystem`, `boost-endian`, `boost-predef`, `boost-process`, `boost-algorithm`, `LibPNG` and `safeint` packages from [VCPkg](https://github.com/microsoft/vcpkg).
+* [vcpkg](https://github.com/microsoft/vcpkg)
+  * The dependencies listed in [vcpkg.json](vcpkg.json) will be installed as part of the build.
 * The Adobe Photoshop SDK, see the read-me in the ext folder for more details.
 
 ## Building the plug-in
