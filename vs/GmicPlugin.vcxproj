@@ -305,6 +305,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\common\Alpha.h" />
     <ClInclude Include="..\src\common\FileIO.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageHeader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageReader.h" />
@@ -312,6 +313,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     <ClInclude Include="..\src\common\GmicPluginTerminology.h" />
     <ClInclude Include="..\src\common\GmicProcess.h" />
     <ClInclude Include="..\src\common\GmicQtParameters.h" />
+    <ClInclude Include="..\src\common\ImageUtil.h" />
     <ClInclude Include="..\src\common\Memory.h" />
     <ClInclude Include="..\src\common\PngWriter.h" />
     <ClInclude Include="..\src\common\ScopedBufferSuite.h" />
@@ -345,6 +347,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     <ClInclude Include="..\src\common\GmicIOSettings.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\common\Alpha.cpp" />
     <ClCompile Include="..\src\common\ClipboardUtil.cpp" />
     <ClCompile Include="..\src\common\Common.cpp" />
     <ClCompile Include="..\src\common\FileIO.cpp" />
@@ -360,6 +363,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     <ClCompile Include="..\src\common\ImageConversion.cpp" />
     <ClCompile Include="..\src\common\ImageLoadDialog.cpp" />
     <ClCompile Include="..\src\common\ImageSaveDialog.cpp" />
+    <ClCompile Include="..\src\common\ImageUtil.cpp" />
     <ClCompile Include="..\src\common\InputLayerIndex.cpp" />
     <ClCompile Include="..\src\common\InputLayerInfo.cpp" />
     <ClCompile Include="..\src\common\Memory.cpp" />
