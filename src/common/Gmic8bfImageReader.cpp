@@ -114,6 +114,8 @@ namespace
         const uint8* maskData,
         int32 maskRowBytes)
     {
+        constexpr double maxValue = 255.0;
+
         for (int32 y = 0; y < tileHeight; y++)
         {
             const uint8* alphaPixel = alphaData + (static_cast<int64>(y) * alphaRowBytes);
@@ -125,9 +127,11 @@ namespace
                 // Clip the output to the mask, if one is present.
                 if (mask == nullptr || *mask != 0)
                 {
-                    double alpha = static_cast<double>(*alphaPixel) / 255.0;
+                    double alpha = static_cast<double>(*alphaPixel);
 
-                    pixel[0] = static_cast<uint8>((static_cast<double>(pixel[0]) * alpha) + 0.5);
+                    double premultipliedColor = (static_cast<double>(pixel[0]) * alpha) / maxValue;
+
+                    pixel[0] = static_cast<uint8>(std::min(std::round(premultipliedColor), maxValue));
                 }
 
                 alphaPixel++;
@@ -150,6 +154,9 @@ namespace
         const uint8* maskData,
         int32 maskRowBytes)
     {
+        static const ::std::vector<uint16> sixteenBitToHostLUT = BuildSixteenBitToHostLUT();
+        constexpr double maxValue = 32768.0;
+
         for (int32 y = 0; y < tileHeight; y++)
         {
             const uint16* alphaPixel = reinterpret_cast<const uint16*>(alphaData + (static_cast<int64>(y) * alphaRowBytes));
@@ -161,9 +168,11 @@ namespace
                 // Clip the output to the mask, if one is present.
                 if (mask == nullptr || *mask != 0)
                 {
-                    double alpha = static_cast<double>(*alphaPixel) / 65535.0;
+                    double alpha = static_cast<double>(sixteenBitToHostLUT[*alphaPixel]);
 
-                    pixel[0] = static_cast<uint16>((static_cast<double>(pixel[0]) * alpha) + 0.5);
+                    double premultipliedColor = (static_cast<double>(pixel[0]) * alpha) / maxValue;
+
+                    pixel[0] = static_cast<uint16>(std::min(std::round(premultipliedColor), maxValue));
                 }
 
                 alphaPixel++;
