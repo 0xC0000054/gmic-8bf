@@ -48,12 +48,16 @@ void WritePixelsFromCallback(
 
 void SaveActiveLayer(
     const boost::filesystem::path& outputDir,
+    const int32& bitsPerChannel,
+    const bool& grayScale,
     InputLayerIndex* index,
     FilterRecordPtr filterRecord);
 
 #if PSSDK_HAS_LAYER_SUPPORT
 void SaveAllLayers(
     const boost::filesystem::path& outputDir,
+    const int32& bitsPerChannel,
+    const bool& grayScale,
     InputLayerIndex* index,
     int32 targetLayerIndex,
     FilterRecordPtr filterRecord);

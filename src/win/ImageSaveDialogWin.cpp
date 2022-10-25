@@ -39,7 +39,8 @@ namespace
     OSErr GetSaveFileNameVista(
         HWND owner,
         const boost::filesystem::path& defaultFileName,
-        boost::filesystem::path& saveFilePath)
+        boost::filesystem::path& saveFilePath,
+        int32 imageBitDepth)
     {
         // The client GUID is used to allow this dialog to persist its state independently of the other file dialogs in
         // the host application.
@@ -57,8 +58,11 @@ namespace
                                                 IMAGE_SAVE_DIALOG_TITLE,
                                                 titleBuffer,
                                                 _countof(titleBuffer));
+
+            const UINT filterResourceId = imageBitDepth == 32 ? EXR_FILTER_NAME : PNG_FILTER_NAME;
+
             const int filterNameLength = LoadStringW(wil::GetModuleInstanceHandle(),
-                                                     IMAGE_SAVE_DIALOG_FILTER_NAME,
+                                                     filterResourceId,
                                                      filterNameBuffer,
                                                      _countof(filterNameBuffer));
 
@@ -74,15 +78,27 @@ namespace
                 THROW_IF_FAILED(pfd->SetOptions(dwOptions | FOS_DONTADDTORECENT | FOS_FORCEFILESYSTEM | FOS_OVERWRITEPROMPT));
                 THROW_IF_FAILED(pfd->SetTitle(titleBuffer));
                 THROW_IF_FAILED(pfd->SetClientGuid(ClientGuid));
-                THROW_IF_FAILED(pfd->SetDefaultExtension(L"png"));
                 if (!defaultFileName.empty())
                 {
                     THROW_IF_FAILED(pfd->SetFileName(defaultFileName.c_str()));
                 }
 
-                COMDLG_FILTERSPEC filter = { filterNameBuffer, L"*.png" };
+                if (imageBitDepth == 32)
+                {
+                    THROW_IF_FAILED(pfd->SetDefaultExtension(L"exr"));
 
-                THROW_IF_FAILED(pfd->SetFileTypes(1, &filter));
+                    COMDLG_FILTERSPEC filter = { filterNameBuffer, L"*.exr" };
+
+                    THROW_IF_FAILED(pfd->SetFileTypes(1, &filter));
+                }
+                else
+                {
+                    THROW_IF_FAILED(pfd->SetDefaultExtension(L"png"));
+
+                    COMDLG_FILTERSPEC filter = { filterNameBuffer, L"*.png" };
+
+                    THROW_IF_FAILED(pfd->SetFileTypes(1, &filter));
+                }
 
                 THROW_IF_FAILED(pfd->Show(owner));
 
@@ -127,10 +143,13 @@ namespace
         return err;
     }
 
-    wil::unique_cotaskmem_ptr<wchar_t[]> BulidClassicSaveDialogFilterString(LPCWSTR filterName, size_t filterNameLength)
+    wil::unique_cotaskmem_ptr<wchar_t[]> BulidClassicSaveDialogFilterString(
+        LPCWSTR filterName,
+        size_t filterNameLength,
+        int32 imageBitDepth)
     {
-        static constexpr const wchar_t* fileExtensionFilter = L"*.png";
-        constexpr size_t fileExtensionFilterLength = ::std::char_traits<wchar_t>::length(fileExtensionFilter);
+        static const wchar_t* fileExtensionFilter = imageBitDepth == 32 ? L"*.exr" : L"*.png";
+        const size_t fileExtensionFilterLength = ::std::char_traits<wchar_t>::length(fileExtensionFilter);
 
         // The filter uses embedded NUL characters as a separator, with double termination for the last item.
         // The final string will have the following format: "PNG Images\0*.png\0\0".
@@ -162,7 +181,8 @@ namespace
     OSErr GetSaveFileNameClassic(
         HWND owner,
         const boost::filesystem::path& defaultFileName,
-        boost::filesystem::path& outputFilePath)
+        boost::filesystem::path& outputFilePath,
+        int32 imageBitDepth)
     {
         OSErr err = noErr;
 
@@ -175,8 +195,11 @@ namespace
                                                 IMAGE_SAVE_DIALOG_TITLE,
                                                 titleBuffer,
                                                 _countof(titleBuffer));
+
+            const UINT filterResourceId = imageBitDepth == 32 ? EXR_FILTER_NAME : PNG_FILTER_NAME;
+
             const int filterNameLength = LoadStringW(wil::GetModuleInstanceHandle(),
-                                                     IMAGE_SAVE_DIALOG_FILTER_NAME,
+                                                     filterResourceId,
                                                      filterNameBuffer,
                                                      _countof(filterNameBuffer));
 
@@ -184,7 +207,7 @@ namespace
             {
                 auto comCleanup = wil::CoInitializeEx(COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-                auto filterStr = BulidClassicSaveDialogFilterString(filterNameBuffer, filterNameLength);
+                auto filterStr = BulidClassicSaveDialogFilterString(filterNameBuffer, filterNameLength, imageBitDepth);
 
                 constexpr int fileNameBufferLength = 8192;
 
@@ -200,7 +223,7 @@ namespace
                 OPENFILENAMEW ofn = {};
                 ofn.lStructSize = sizeof(ofn);
                 ofn.hwndOwner = owner;
-                ofn.lpstrDefExt = L"png";
+                ofn.lpstrDefExt = imageBitDepth == 32 ? L"exr" : L"png";
                 ofn.lpstrTitle = titleBuffer;
                 ofn.lpstrFilter = filterStr.get();
                 ofn.nFilterIndex = 1;
@@ -242,7 +265,8 @@ namespace
 OSErr GetNewImageFileNameNative(
     const FilterRecordPtr filterRecord,
     const boost::filesystem::path& defaultFileName,
-    boost::filesystem::path& outputFileName)
+    boost::filesystem::path& outputFileName,
+    int32 imageBitDepth)
 {
     PlatformData* platformData = static_cast<PlatformData*>(filterRecord->platformData);
 
@@ -250,10 +274,10 @@ OSErr GetNewImageFileNameNative(
 
     if (UseVistaStyleDialogs())
     {
-        return GetSaveFileNameVista(owner, defaultFileName, outputFileName);
+        return GetSaveFileNameVista(owner, defaultFileName, outputFileName, imageBitDepth);
     }
     else
     {
-        return GetSaveFileNameClassic(owner, defaultFileName, outputFileName);
+        return GetSaveFileNameClassic(owner, defaultFileName, outputFileName, imageBitDepth);
     }
 }

@@ -34,9 +34,14 @@ void SetFileLength(FileHandle* fileHandle, int64 length)
     SetFileLengthNative(fileHandle, length);
 }
 
-void SetFilePosition(FileHandle* fileHandle, int16 posMode, int64 posOffset)
+int64 GetFilePosition(FileHandle* fileHandle)
 {
-    SetFilePositionNative(fileHandle, posMode, posOffset);
+    return GetFilePositionNative(fileHandle);
+}
+
+void SetFilePosition(FileHandle* fileHandle, int64 posOffset)
+{
+    SetFilePositionNative(fileHandle, posOffset);
 }
 
 void WriteFile(FileHandle* fileHandle, const void* data, size_t dataSize)

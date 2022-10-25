@@ -12,15 +12,15 @@
 
 #pragma once
 
-#ifndef IMAGESAVEDIALOG_H
-#define IMAGESAVEDIALOG_H
+#ifndef EXRWRITER_H
+#define EXRWRITER_H
 
-#include "GmicPlugin.h"
+#include "Common.h"
+#include <boost/filesystem.hpp>
 
-OSErr GetNewImageFileName(
+void ConvertGmic8bfImageToExr(
     const FilterRecordPtr filterRecord,
-    const boost::filesystem::path& defaultFileName,
-    boost::filesystem::path& outputFileName,
-    int32 imageBitDepth);
+    const boost::filesystem::path& inputFilePath,
+    const boost::filesystem::path& outputFilePath);
 
-#endif // !IMAGESAVEDIALOG_H
+#endif // !EXRWRITER_H

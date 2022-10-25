@@ -21,6 +21,9 @@ bool ImageSizeMatchesDocument(
     const boost::filesystem::path& path,
     const VPoint& documentSize);
 
-void CopyImageToActiveLayer(const boost::filesystem::path& path, FilterRecord* filterRecord);
+void CopyImageToActiveLayer(
+    const boost::filesystem::path& path,
+    FilterRecord* filterRecord,
+    const int32& hostBitDepth);
 
 #endif // !GMIC8BFIMAGEREADER_H

@@ -23,7 +23,9 @@ void ReadFileNative(FileHandle* fileHandle, void* data, size_t dataSize);
 
 void SetFileLengthNative(FileHandle* fileHandle, int64 length);
 
-void SetFilePositionNative(FileHandle* fileHandle, int16 posMode, int64 posOffset);
+int64 GetFilePositionNative(FileHandle* fileHandle);
+
+void SetFilePositionNative(FileHandle* fileHandle, int64 posOffset);
 
 void WriteFileNative(FileHandle* fileHandle, const void* data, size_t dataSize);
 

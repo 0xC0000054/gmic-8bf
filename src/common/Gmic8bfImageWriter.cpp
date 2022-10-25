@@ -57,6 +57,10 @@ namespace
         {
             imageDataLength *= 2;
         }
+        else if (bitsPerChannel == 32)
+        {
+            imageDataLength *= 4;
+        }
 
         uint64 fileLength = sizeof(Gmic8bfImageHeader) + imageDataLength;
 
@@ -66,49 +70,26 @@ namespace
         }
     }
 
-    void SaveActiveLayerImpl(FilterRecordPtr filterRecord, const VPoint& imageSize, FileHandle* fileHandle)
+    void SaveActiveLayerCore(
+        FilterRecordPtr filterRecord,
+        const VPoint& imageSize,
+        const int32& bitsPerChannel,
+        const bool& grayScale,
+        FileHandle* fileHandle)
     {
         const bool hasTransparency = filterRecord->inLayerPlanes != 0 && filterRecord->inTransparencyMask != 0;
 
         int32 width = imageSize.h;
         int32 height = imageSize.v;
-
-        const int32 bitsPerChannel = GetImageDepth(filterRecord);
-
-        if (bitsPerChannel != 8 && bitsPerChannel != 16)
-        {
-            char formatBuffer[256]{};
-
-            const int result = snprintf(
-                formatBuffer,
-                sizeof(formatBuffer),
-                "Unsupported image bit depth (%d), must be 8 or 16.",
-                bitsPerChannel);
-
-            if (result > 0)
-            {
-                throw std::runtime_error(formatBuffer);
-            }
-            else
-            {
-                throw std::runtime_error("Unsupported image bit depth, must be 8 or 16.");
-            }
-        }
-
         int32 numberOfChannels;
 
-        switch (filterRecord->imageMode)
+        if (grayScale)
         {
-        case plugInModeGrayScale:
-        case plugInModeGray16:
             numberOfChannels = hasTransparency ? 2 : 1;
-            break;
-        case plugInModeRGBColor:
-        case plugInModeRGB48:
+        }
+        else
+        {
             numberOfChannels = hasTransparency ? 4 : 3;
-            break;
-        default:
-            throw OSErrException(filterBadMode);
         }
 
         PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
@@ -120,20 +101,9 @@ namespace
 
         WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
-        switch (filterRecord->imageMode)
-        {
-        case plugInModeGrayScale:
-        case plugInModeRGBColor:
-            filterRecord->inPlaneBytes = 1;
-            break;
-        case plugInModeGray16:
-        case plugInModeRGB48:
-            filterRecord->inPlaneBytes = 2;
-            break;
-        default:
-            throw OSErrException(filterBadMode);
-        }
+        const int32 bytesPerChannel = bitsPerChannel / 8;
 
+        filterRecord->inPlaneBytes = bytesPerChannel;
         filterRecord->inColumnBytes = filterRecord->inPlaneBytes;
         filterRecord->inputRate = int2fixed(1);
 
@@ -159,11 +129,10 @@ namespace
 
                     OSErrException::ThrowIfError(filterRecord->advanceState());
 
-                    int32 outputStride = columnCount;
+                    const int32 outputStride = columnCount * bytesPerChannel;
 
                     if (bitsPerChannel == 16)
                     {
-                        outputStride *= 2;
                         ScaleSixteenBitDataToOutputRange(filterRecord->inData, columnCount, rowCount, filterRecord->inRowBytes);
                     }
 
@@ -191,6 +160,8 @@ namespace
     void SaveDocumentLayer(
         FilterRecordPtr filterRecord,
         const VPoint& documentSize,
+        const int32& bitsPerChannel,
+        const bool& grayScale,
         const ReadLayerDesc* layerDescriptor,
         FileHandle* fileHandle,
         VPoint& layerSize)
@@ -229,42 +200,15 @@ namespace
         layerSize.h = width;
         layerSize.v = height;
 
-        const int32 bitsPerChannel = GetImageDepth(filterRecord);
-
-        if (bitsPerChannel != 8 && bitsPerChannel != 16)
-        {
-            char formatBuffer[256]{};
-
-            const int result = snprintf(
-                formatBuffer,
-                sizeof(formatBuffer),
-                "Unsupported image bit depth (%d), must be 8 or 16.",
-                bitsPerChannel);
-
-            if (result > 0)
-            {
-                throw std::runtime_error(formatBuffer);
-            }
-            else
-            {
-                throw std::runtime_error("Unsupported image bit depth, must be 8 or 16.");
-            }
-        }
-
         int32 numberOfChannels;
 
-        switch (filterRecord->imageMode)
+        if (grayScale)
         {
-        case plugInModeGrayScale:
-        case plugInModeGray16:
             numberOfChannels = hasTransparency ? 2 : 1;
-            break;
-        case plugInModeRGBColor:
-        case plugInModeRGB48:
+        }
+        else
+        {
             numberOfChannels = hasTransparency ? 4 : 3;
-            break;
-        default:
-            throw OSErrException(filterBadMode);
         }
 
         PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
@@ -276,20 +220,7 @@ namespace
 
         WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
 
-        switch (filterRecord->imageMode)
-        {
-        case plugInModeGrayScale:
-        case plugInModeRGBColor:
-            filterRecord->inPlaneBytes = 1;
-            break;
-        case plugInModeGray16:
-        case plugInModeRGB48:
-            filterRecord->inPlaneBytes = 2;
-            break;
-        default:
-            throw OSErrException(filterBadMode);
-        }
-
+        filterRecord->inPlaneBytes = bitsPerChannel / 8;
         filterRecord->inColumnBytes = filterRecord->inPlaneBytes;
         filterRecord->inputRate = int2fixed(1);
         int32 tileRowBytes;
@@ -327,22 +258,17 @@ namespace
 
             ReadChannelDesc* imageChannels[4] = { nullptr, nullptr, nullptr, nullptr };
 
-            switch (filterRecord->imageMode)
+            if (grayScale)
             {
-            case plugInModeGrayScale:
-            case plugInModeGray16:
                 imageChannels[0] = layerDescriptor->compositeChannelsList;
                 imageChannels[1] = layerDescriptor->transparency;
-                break;
-            case plugInModeRGBColor:
-            case plugInModeRGB48:
+            }
+            else
+            {
                 imageChannels[0] = layerDescriptor->compositeChannelsList;
                 imageChannels[1] = imageChannels[0]->next;
                 imageChannels[2] = imageChannels[1]->next;
                 imageChannels[3] = layerDescriptor->transparency;
-                break;
-            default:
-                throw OSErrException(filterBadMode);
             }
 
             for (int32 i = 0; i < numberOfChannels; i++)
@@ -437,6 +363,8 @@ void WritePixelsFromCallback(
 
 void SaveActiveLayer(
     const boost::filesystem::path& outputDir,
+    const int32& bitsPerChannel,
+    const bool& grayScale,
     InputLayerIndex* index,
     FilterRecordPtr filterRecord)
 {
@@ -446,7 +374,7 @@ void SaveActiveLayer(
 
     const VPoint imageSize = GetImageSize(filterRecord);
 
-    SaveActiveLayerImpl(filterRecord, imageSize, file.get());
+    SaveActiveLayerCore(filterRecord, imageSize, bitsPerChannel, grayScale, file.get());
 
     int32 layerWidth = imageSize.h;
     int32 layerHeight = imageSize.v;
@@ -464,6 +392,8 @@ void SaveActiveLayer(
 #ifdef PSSDK_HAS_LAYER_SUPPORT
 void SaveAllLayers(
     const boost::filesystem::path& outputDir,
+    const int32& bitsPerChannel,
+    const bool& grayScale,
     InputLayerIndex* index,
     int32 targetLayerIndex,
     FilterRecordPtr filterRecord)
@@ -488,7 +418,14 @@ void SaveAllLayers(
 
             VPoint layerSize{};
 
-            SaveDocumentLayer(filterRecord, documentSize, layerDescriptor, file.get(), layerSize);
+            SaveDocumentLayer(
+                filterRecord,
+                documentSize,
+                bitsPerChannel,
+                grayScale,
+                layerDescriptor,
+                file.get(),
+                layerSize);
 
             int32 layerWidth = layerSize.h;
             int32 layerHeight = layerSize.v;

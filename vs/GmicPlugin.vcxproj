@@ -150,7 +150,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;..\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\Imath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -176,7 +176,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;..\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\Imath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <UseFullPaths>false</UseFullPaths>
@@ -203,7 +203,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;..\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\Imath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -226,7 +226,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;..\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\Imath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -252,7 +252,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;..\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\Imath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <UseFullPaths>false</UseFullPaths>
@@ -282,7 +282,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_x64\$(TargetFileName)" /y</Co
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;BOOST_FILESYSTEM_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;GMICPLUGIN_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\win;..\src\common;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\photoshop;..\ext\adobe_photoshop_sdk\pluginsdk\photoshopapi\pica_sp;..\ext\adobe_photoshop_sdk\pluginsdk\samplecode\common\includes;..\vcpkg_installed\$(VcpkgTriplet)\$(VcpkgTriplet)\include\Imath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <UseFullPaths>false</UseFullPaths>
@@ -306,6 +306,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\src\common\Alpha.h" />
+    <ClInclude Include="..\src\common\ExrWriter.h" />
     <ClInclude Include="..\src\common\FileIO.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageHeader.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageReader.h" />
@@ -350,6 +351,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     <ClCompile Include="..\src\common\Alpha.cpp" />
     <ClCompile Include="..\src\common\ClipboardUtil.cpp" />
     <ClCompile Include="..\src\common\Common.cpp" />
+    <ClCompile Include="..\src\common\ExrWriter.cpp" />
     <ClCompile Include="..\src\common\FileIO.cpp" />
     <ClCompile Include="..\src\common\FileUtil.cpp" />
     <ClCompile Include="..\src\common\FolderBrowser.cpp" />

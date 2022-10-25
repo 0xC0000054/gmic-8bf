@@ -10,6 +10,7 @@
     "boost-predef",
     "boost-process",
     "libpng",
+	"openexr",
     "safeint"
   ]
 }

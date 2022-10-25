@@ -65,13 +65,33 @@ namespace
         }
     }
 
+    bool IsGrayScale(const FilterRecord* filterRecord)
+    {
+        switch (filterRecord->imageMode)
+        {
+        case plugInModeGrayScale:
+        case plugInModeGray16:
+        case plugInModeGray32:
+            return true;
+        case plugInModeRGBColor:
+        case plugInModeRGB48:
+        case plugInModeRGB96:
+            return false;
+        default:
+            throw OSErrException(filterBadMode);
+        }
+    }
+
     void WriteLayerIndexFile(
         const boost::filesystem::path& inputDir,
         const boost::filesystem::path& indexFilePath,
         FilterRecord* filterRecord,
+        const int32& bitsPerChannel,
         const GmicIOSettings& settings)
     {
-        ::std::unique_ptr<InputLayerIndex> inputLayerIndex = ::std::make_unique<InputLayerIndex>(filterRecord->imageMode);
+        const bool grayScale = IsGrayScale(filterRecord);
+
+        ::std::unique_ptr<InputLayerIndex> inputLayerIndex = ::std::make_unique<InputLayerIndex>(static_cast<uint8>(bitsPerChannel), grayScale);
 
 #if PSSDK_HAS_LAYER_SUPPORT
         int32 targetLayerIndex = 0;
@@ -80,12 +100,12 @@ namespace
             HostSupportsReadingFromMultipleLayers(filterRecord) &&
             TryGetTargetLayerIndex(filterRecord, targetLayerIndex))
         {
-            SaveAllLayers(inputDir, inputLayerIndex.get(), targetLayerIndex, filterRecord);
+            SaveAllLayers(inputDir, bitsPerChannel, grayScale, inputLayerIndex.get(), targetLayerIndex, filterRecord);
         }
         else
 #endif
         {
-            SaveActiveLayer(inputDir, inputLayerIndex.get(), filterRecord);
+            SaveActiveLayer(inputDir, bitsPerChannel, grayScale, inputLayerIndex.get(), filterRecord);
 
             WriteAlternateInputImageData(settings, inputLayerIndex.get());
         }
@@ -99,6 +119,7 @@ OSErr WriteGmicFiles(
     boost::filesystem::path& indexFilePath,
     boost::filesystem::path& gmicParametersFilePath,
     FilterRecord* filterRecord,
+    const int32& hostBitDepth,
     const GmicIOSettings& settings)
 {
     PrintFunctionName();
@@ -109,7 +130,7 @@ OSErr WriteGmicFiles(
     {
         indexFilePath = GetTemporaryFileName(inputDir, ".idx");
 
-        WriteLayerIndexFile(inputDir, indexFilePath, filterRecord, settings);
+        WriteLayerIndexFile(inputDir, indexFilePath, filterRecord, hostBitDepth, settings);
 
         gmicParametersFilePath = GetTemporaryFileName(inputDir, ".g8p");
 

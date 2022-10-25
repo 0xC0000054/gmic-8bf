@@ -24,7 +24,8 @@ namespace
         IndexFileHeader(
             int32 numberOfLayers,
             int32 activeLayer,
-            int16 imageMode)
+            uint8 imageBitDepth,
+            bool isGrayScale)
         {
             // G8LI = GMIC 8BF layer index
             signature[0] = 'G';
@@ -47,27 +48,8 @@ namespace
             version = 2;
             layerCount = numberOfLayers;
             activeLayerIndex = activeLayer;
-
-            switch (imageMode)
-            {
-            case plugInModeGrayScale:
-            case plugInModeRGBColor:
-                grayScale = imageMode == plugInModeGrayScale;
-                bitsPerChannel = 8;
-                break;
-            case plugInModeGray16:
-            case plugInModeRGB48:
-                grayScale = imageMode == plugInModeGray16;
-                bitsPerChannel = 16;
-                break;
-            case plugInModeGray32:
-            case plugInModeRGB96:
-                grayScale = imageMode == plugInModeGray32;
-                bitsPerChannel = 32;
-                break;
-            default:
-                throw ::std::runtime_error("Unsupported image mode.");
-            }
+            bitsPerChannel = imageBitDepth;
+            grayScale = isGrayScale;
             padding = 0;
         }
 
@@ -82,8 +64,8 @@ namespace
     };
 }
 
-InputLayerIndex::InputLayerIndex(int16 imageMode)
-    : inputFiles(), activeLayerIndex(0), imageMode(imageMode)
+InputLayerIndex::InputLayerIndex(uint8 imageBitDepth, bool grayScale)
+    : inputFiles(), activeLayerIndex(0), imageBitDepth(imageBitDepth), grayScale(grayScale)
 {
 }
 
@@ -140,7 +122,8 @@ void InputLayerIndex::Write(const boost::filesystem::path& path)
     IndexFileHeader header(
         static_cast<int32>(inputFiles.size()),
         activeLayerIndex,
-        imageMode);
+        imageBitDepth,
+        grayScale);
 
     WriteFile(file.get(), &header, sizeof(header));
 

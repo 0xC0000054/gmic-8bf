@@ -565,6 +565,10 @@ int32 GetImageDepth(const FilterRecord* filterRecord) noexcept
         case plugInModeRGB48:
             depth = 16;
             break;
+        case plugInModeGray32:
+        case plugInModeRGB96:
+            depth = 32;
+            break;
         }
     }
 
@@ -579,10 +583,12 @@ int32 GetImagePlaneCount(int16 imageMode, int32 layerPlanes, int32 transparencyP
     {
     case plugInModeGrayScale:
     case plugInModeGray16:
+    case plugInModeGray32:
         imagePlanes = 1;
         break;
     case plugInModeRGBColor:
     case plugInModeRGB48:
+    case plugInModeRGB96:
         imagePlanes = 3;
         break;
     default:

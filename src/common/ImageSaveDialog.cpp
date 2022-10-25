@@ -21,7 +21,8 @@
 OSErr GetNewImageFileName(
     const FilterRecordPtr filterRecord,
     const boost::filesystem::path& defaultFileName,
-    boost::filesystem::path& outputFileName)
+    boost::filesystem::path& outputFileName,
+    int32 imageBitDepth)
 {
-    return GetNewImageFileNameNative(filterRecord, defaultFileName, outputFileName);
+    return GetNewImageFileNameNative(filterRecord, defaultFileName, outputFileName, imageBitDepth);
 }

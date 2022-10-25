@@ -54,22 +54,45 @@ namespace
         return showUI;
     }
 
-    // Determines whether the filter can precess the current document.
-    OSErr CanProcessDocument(const FilterRecord* filterRecord) noexcept
+    // Determines whether the filter can process the current document.
+    OSErr CanProcessDocument(const FilterRecordPtr filterRecord) noexcept
     {
-        OSErr result = noErr;
+        OSErr err = noErr;
 
-        if (filterRecord->imageMode != plugInModeRGBColor &&
-            filterRecord->imageMode != plugInModeGrayScale &&
-            filterRecord->imageMode != plugInModeRGB48 &&
-            filterRecord->imageMode != plugInModeGray16)
+        if (filterRecord->imageMode == plugInModeRGBColor ||
+            filterRecord->imageMode == plugInModeGrayScale ||
+            filterRecord->imageMode == plugInModeRGB48 ||
+            filterRecord->imageMode == plugInModeGray16 ||
+            filterRecord->imageMode == plugInModeRGB96 ||
+            filterRecord->imageMode == plugInModeGray32)
+        {
+            const int32 depth = GetImageDepth(filterRecord);
+
+            if (depth != 8 && depth != 16 && depth != 32)
+            {
+                DebugOut("Unsupported image depth: %d", depth);
+
+                char buffer[256]{};
+
+                const int charsWritten = ::std::snprintf(
+                    buffer,
+                    sizeof(buffer),
+                    "Unsupported image bit depth (%d), must be 8, 16 or 32.",
+                    depth);
+
+                const char* message = charsWritten > 0 ? buffer : "Unsupported image bit depth, must be 8, 16 or 32.";
+
+                err = ShowErrorMessage(message, filterRecord, filterBadMode);
+            }
+        }
+        else
         {
             DebugOut("Unsupported imageMode: %d", filterRecord->imageMode);
 
-            result = filterBadMode;
+            err = filterBadMode;
         }
 
-        return result;
+        return err;
     }
 
     OSErr CreateParameters(FilterRecordPtr filterRecord)
@@ -317,11 +340,14 @@ OSErr DoStart(FilterRecord* filterRecord)
             boost::filesystem::path indexFilePath;
             boost::filesystem::path gmicParametersFilePath;
 
+            const int32 hostBitDepth = GetImageDepth(filterRecord);
+
             err = WriteGmicFiles(
                 inputDir,
                 indexFilePath,
                 gmicParametersFilePath,
                 filterRecord,
+                hostBitDepth,
                 settings);
             DebugOut("After WriteGmicFiles err=%d", err);
 
@@ -344,6 +370,7 @@ OSErr DoStart(FilterRecord* filterRecord)
                         gmicParametersFilePath,
                         showFullUI,
                         filterRecord,
+                        hostBitDepth,
                         settings);
                     DebugOut("After ReadGmicOutput err=%d", err);
                 }

@@ -17,6 +17,7 @@
 #include "ImageSaveDialog.h"
 #include "Gmic8bfImageReader.h"
 #include "GmicQtParameters.h"
+#include "ExrWriter.h"
 #include "PngWriter.h"
 #include "resource.h"
 #include "Utilities.h"
@@ -82,7 +83,8 @@ namespace
         const FilterRecordPtr filterRecord,
         const GmicIOSettings& settings,
         const boost::filesystem::path& originalFileName,
-        boost::filesystem::path& outputFileName)
+        boost::filesystem::path& outputFileName,
+        int32 bitsPerChannel)
     {
         bool haveFilePathFromDefaultFolder = false;
 
@@ -112,7 +114,7 @@ namespace
         }
         else
         {
-            return GetNewImageFileName(filterRecord, originalFileName, outputFileName);
+            return GetNewImageFileName(filterRecord, originalFileName, outputFileName, bitsPerChannel);
         }
     }
 }
@@ -122,6 +124,7 @@ OSErr ReadGmicOutput(
     const boost::filesystem::path& gmicParametersFilePath,
     bool fullUIWasShown,
     FilterRecord* filterRecord,
+    const int32& hostBitDepth,
     const GmicIOSettings& settings)
 {
     PrintFunctionName();
@@ -138,7 +141,7 @@ OSErr ReadGmicOutput(
         }
         else
         {
-            const char* const outputFileExtension = ".png";
+            const char* const outputFileExtension = hostBitDepth == 32 ? ".exr" : ".png";
 
             GmicQtParameters parameters(gmicParametersFilePath);
 
@@ -150,7 +153,7 @@ OSErr ReadGmicOutput(
 
                 if (imageSizeMatchesDocument)
                 {
-                    CopyImageToActiveLayer(filePath, filterRecord);
+                    CopyImageToActiveLayer(filePath, filterRecord, hostBitDepth);
                 }
                 else
                 {
@@ -160,9 +163,17 @@ OSErr ReadGmicOutput(
                         filterRecord,
                         settings,
                         parameters.PrependGmicCommandName(filePath.filename()).replace_extension(outputFileExtension),
-                        outputFilePath));
+                        outputFilePath,
+                        hostBitDepth));
 
-                    ConvertGmic8bfImageToPng(filterRecord, filePath, outputFilePath);
+                    if (hostBitDepth == 32)
+                    {
+                        ConvertGmic8bfImageToExr(filterRecord, filePath, outputFilePath);
+                    }
+                    else
+                    {
+                        ConvertGmic8bfImageToPng(filterRecord, filePath, outputFilePath);
+                    }
                 }
             }
             else
@@ -180,7 +191,14 @@ OSErr ReadGmicOutput(
                     boost::filesystem::path outputFilePath = outputFolder;
                     outputFilePath /= parameters.PrependGmicCommandName(inputFilePath.filename()).replace_extension(outputFileExtension);
 
-                    ConvertGmic8bfImageToPng(filterRecord, inputFilePath, outputFilePath);
+                    if (hostBitDepth == 32)
+                    {
+                        ConvertGmic8bfImageToExr(filterRecord, inputFilePath, outputFilePath);
+                    }
+                    else
+                    {
+                        ConvertGmic8bfImageToPng(filterRecord, inputFilePath, outputFilePath);
+                    }
                 }
             }
 

@@ -44,6 +44,7 @@ OSErr ReadGmicOutput(
     const boost::filesystem::path& gmicParametersFilePath,
     bool fullUIWasShown,
     FilterRecord* filterRecord,
+    const int32& hostBitDepth,
     const GmicIOSettings& settings);
 OSErr ShowErrorMessage(const char* message, const FilterRecordPtr filterRecord, OSErr fallbackErrorCode);
 OSErr WriteGmicFiles(
@@ -51,6 +52,7 @@ OSErr WriteGmicFiles(
     boost::filesystem::path& indexFilePath,
     boost::filesystem::path& gmicParametersFilePath,
     FilterRecord* filterRecord,
+    const int32& hostBitDepth,
     const GmicIOSettings& settings);
 
 constexpr Fixed int2fixed(int value)

@@ -92,7 +92,41 @@ namespace
         }
     }
 
-    void CopyImageToActiveLayerCore(FilterRecordPtr filterRecord, FileHandle* fileHandle)
+    void CopyTileDataToHostThirtyTwoBitsPerChannel(
+        const uint8* const tileBuffer,
+        int32 tileBufferRowBytes,
+        int32 tileWidth,
+        int32 tileHeight,
+        uint8* outData,
+        int32 outRowBytes,
+        const uint8* maskData,
+        int32 maskRowBytes)
+    {
+        for (int32 y = 0; y < tileHeight; y++)
+        {
+            const float* srcPixel = reinterpret_cast<const float*>(tileBuffer + (static_cast<int64>(y) * tileBufferRowBytes));
+            float* dstPixel = reinterpret_cast<float*>(outData + (static_cast<int64>(y) * outRowBytes));
+            const uint8* mask = maskData != nullptr ? maskData + (static_cast<int64>(y) * maskRowBytes) : nullptr;
+
+            for (int32 x = 0; x < tileWidth; x++)
+            {
+                // Clip the output to the mask, if one is present.
+                if (mask == nullptr || *mask != 0)
+                {
+                    dstPixel[0] = srcPixel[0];
+                }
+
+                srcPixel++;
+                dstPixel++;
+                if (mask != nullptr)
+                {
+                    mask++;
+                }
+            }
+        }
+    }
+
+    void CopyImageToActiveLayerCore(FilterRecordPtr filterRecord, FileHandle* fileHandle, const int32& hostBitDepth)
     {
         Gmic8bfImageHeader header(fileHandle);
 
@@ -113,8 +147,6 @@ namespace
         assert(width == imageSize.h);
         assert(height == imageSize.v);
         assert(header.IsPlanar());
-
-        const int32 hostBitDepth = GetImageDepth(filterRecord);
 
         if (bitsPerChannel != hostBitDepth)
         {
@@ -213,6 +245,9 @@ namespace
                         case 16:
                             tileBufferRowBytes = columnCount * 2;
                             break;
+                        case 32:
+                            tileBufferRowBytes = columnCount * 4;
+                            break;
                         default:
                             throw ::std::runtime_error("Unsupported bit depth.");
                         }
@@ -268,6 +303,17 @@ namespace
                                             maskData,
                                             filterRecord->maskRowBytes);
                                         break;
+                                    case 32:
+                                        CopyTileDataToHostThirtyTwoBitsPerChannel(
+                                            tileBuffer,
+                                            tileBufferRowBytes,
+                                            columnCount,
+                                            rowCount,
+                                            static_cast<uint8*>(filterRecord->outData),
+                                            filterRecord->outRowBytes,
+                                            maskData,
+                                            filterRecord->maskRowBytes);
+                                        break;
                                     default:
                                         throw ::std::runtime_error("Unsupported image depth.");
                                     }
@@ -305,6 +351,17 @@ namespace
                                     break;
                                 case 16:
                                     CopyTileDataToHostSixteenBitsPerChannel(
+                                        tileBuffer,
+                                        tileBufferRowBytes,
+                                        columnCount,
+                                        rowCount,
+                                        static_cast<uint8*>(filterRecord->outData),
+                                        filterRecord->outRowBytes,
+                                        maskData,
+                                        filterRecord->maskRowBytes);
+                                    break;
+                                case 32:
+                                    CopyTileDataToHostThirtyTwoBitsPerChannel(
                                         tileBuffer,
                                         tileBufferRowBytes,
                                         columnCount,
@@ -358,6 +415,17 @@ namespace
                                     maskData,
                                     filterRecord->maskRowBytes);
                                 break;
+                            case 32:
+                                CopyTileDataToHostThirtyTwoBitsPerChannel(
+                                    tileBuffer,
+                                    tileBufferRowBytes,
+                                    columnCount,
+                                    rowCount,
+                                    static_cast<uint8*>(filterRecord->outData),
+                                    filterRecord->outRowBytes,
+                                    maskData,
+                                    filterRecord->maskRowBytes);
+                                break;
                             default:
                                 throw ::std::runtime_error("Unsupported image depth.");
                             }
@@ -379,9 +447,12 @@ bool ImageSizeMatchesDocument(
     return header.GetWidth() == documentSize.h && header.GetHeight() == documentSize.v;
 }
 
-void CopyImageToActiveLayer(const boost::filesystem::path& path, FilterRecord* filterRecord)
+void CopyImageToActiveLayer(
+    const boost::filesystem::path& path,
+    FilterRecord* filterRecord,
+    const int32& hostBitDepth)
 {
     ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Read);
 
-    CopyImageToActiveLayerCore(filterRecord, file.get());
+    CopyImageToActiveLayerCore(filterRecord, file.get(), hostBitDepth);
 }

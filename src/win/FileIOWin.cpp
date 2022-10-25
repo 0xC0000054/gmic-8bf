@@ -299,7 +299,50 @@ void SetFileLengthNative(FileHandle* fileHandle, int64 length)
     }
 }
 
-void SetFilePositionNative(FileHandle* fileHandle, int16 posMode, int64 posOffset)
+int64 GetFilePositionNative(FileHandle* fileHandle)
+{
+    int64 result;
+
+    FileHandleWin* fileHandleWin = static_cast<FileHandleWin*>(fileHandle);
+
+    HANDLE hFile = fileHandleWin->get_native_handle();
+    FileBuffer* buffer = fileHandleWin->get_buffer();
+
+    try
+    {
+        LARGE_INTEGER distanceToMove = {};
+
+        distanceToMove.QuadPart = 0;
+
+        LARGE_INTEGER currentFilePosition;
+
+        THROW_IF_WIN32_BOOL_FALSE(SetFilePointerEx(
+            hFile,
+            distanceToMove,
+            &currentFilePosition,
+            FILE_CURRENT));
+
+        // Adjust the OS file position to account for any buffered data.
+        // When reading from a file we subtract the read buffer position from OS file position.
+        // When writing to a file we add any data that is in the buffer.
+        result = currentFilePosition.QuadPart + (buffer->readOffset - buffer->readLength + buffer->writeOffset);
+    }
+    catch (const wil::ResultException& e)
+    {
+        if (e.GetErrorCode() == E_OUTOFMEMORY)
+        {
+            throw ::std::bad_alloc();
+        }
+        else
+        {
+            throw ::std::runtime_error(e.what());
+        }
+    }
+
+    return result;
+}
+
+void SetFilePositionNative(FileHandle* fileHandle, int64 posOffset)
 {
     if (!fileHandle)
     {
@@ -331,7 +374,7 @@ void SetFilePositionNative(FileHandle* fileHandle, int16 posMode, int64 posOffse
             hFile,
             distanceToMove,
             nullptr,
-            static_cast<DWORD>(posMode)));
+            FILE_BEGIN));
     }
     catch (const wil::ResultException& e)
     {

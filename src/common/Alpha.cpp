@@ -97,6 +97,46 @@ namespace
         }
     }
 
+    void PremultiplyAlphaThirtyTwoBitsPerChannel(
+        const uint8* const alphaData,
+        int32 alphaRowBytes,
+        int32 tileWidth,
+        int32 tileHeight,
+        uint8* outData,
+        int32 outRowBytes,
+        const uint8* maskData,
+        int32 maskRowBytes)
+    {
+        constexpr double maxValue = 1.0;
+
+        for (int32 y = 0; y < tileHeight; y++)
+        {
+            const float* alphaPixel = reinterpret_cast<const float*>(alphaData + (static_cast<int64>(y) * alphaRowBytes));
+            float* pixel = reinterpret_cast<float*>(outData + (static_cast<int64>(y) * outRowBytes));
+            const uint8* mask = maskData != nullptr ? maskData + (static_cast<int64>(y) * maskRowBytes) : nullptr;
+
+            for (int32 x = 0; x < tileWidth; x++)
+            {
+                // Clip the output to the mask, if one is present.
+                if (mask == nullptr || *mask != 0)
+                {
+                    double alpha = static_cast<double>(*alphaPixel);
+
+                    double premultipliedColor = (static_cast<double>(pixel[0]) * alpha) / maxValue;
+
+                    pixel[0] = static_cast<float>(std::min(premultipliedColor, maxValue));
+                }
+
+                alphaPixel++;
+                pixel++;
+                if (mask != nullptr)
+                {
+                    mask++;
+                }
+            }
+        }
+    }
+
     void SetAlphaChannelToOpaqueEightBitsPerChannel(
         int32 tileWidth,
         int32 tileHeight,
@@ -154,6 +194,35 @@ namespace
             }
         }
     }
+
+    void SetAlphaChannelToOpaqueThirtyTwoBitsPerChannel(
+        int32 tileWidth,
+        int32 tileHeight,
+        uint8* outData,
+        int32 outDataStride,
+        const uint8* maskData,
+        int32 maskDataStride)
+    {
+        for (int32 y = 0; y < tileHeight; y++)
+        {
+            float* pixel = reinterpret_cast<float*>(outData + (static_cast<int64>(y) * outDataStride));
+            const uint8* mask = maskData != nullptr ? maskData + (static_cast<int64>(y) * maskDataStride) : nullptr;
+
+            for (int32 x = 0; x < tileWidth; x++)
+            {
+                if (mask == nullptr || *mask != 0)
+                {
+                    *pixel = 1.0f;
+                }
+
+                pixel++;
+                if (mask != nullptr)
+                {
+                    mask++;
+                }
+            }
+        }
+    }
 }
 
 void PremultiplyAlpha(
@@ -170,10 +239,12 @@ void PremultiplyAlpha(
     {
     case plugInModeGrayScale:
     case plugInModeGray16:
+    case plugInModeGray32:
         numberOfImagePlanes = 1;
         break;
     case plugInModeRGBColor:
     case plugInModeRGB48:
+    case plugInModeRGB96:
         numberOfImagePlanes = 3;
         break;
     default:
@@ -243,6 +314,17 @@ void PremultiplyAlpha(
                         maskData,
                         filterRecord->maskRowBytes);
                     break;
+                case 32:
+                    PremultiplyAlphaThirtyTwoBitsPerChannel(
+                        tileBuffer,
+                        tileBufferRowBytes,
+                        columnCount,
+                        rowCount,
+                        static_cast<uint8*>(filterRecord->outData),
+                        filterRecord->outRowBytes,
+                        maskData,
+                        filterRecord->maskRowBytes);
+                    break;
                 default:
                     throw ::std::runtime_error("Unsupported image depth.");
                 }
@@ -258,10 +340,12 @@ void SetAlphaChannelToOpaque(FilterRecord* filterRecord, const VPoint& imageSize
     {
     case plugInModeGrayScale:
     case plugInModeGray16:
+    case plugInModeGray32:
         alphaChannelPlane = 1;
         break;
     case plugInModeRGBColor:
     case plugInModeRGB48:
+    case plugInModeRGB96:
         alphaChannelPlane = 3;
         break;
     default:
@@ -316,6 +400,15 @@ void SetAlphaChannelToOpaque(FilterRecord* filterRecord, const VPoint& imageSize
                 break;
             case 16:
                 SetAlphaChannelToOpaqueSixteenBitsPerChannel(
+                    columnCount,
+                    rowCount,
+                    static_cast<uint8*>(filterRecord->outData),
+                    filterRecord->outRowBytes,
+                    maskData,
+                    filterRecord->maskRowBytes);
+                break;
+            case 32:
+                SetAlphaChannelToOpaqueThirtyTwoBitsPerChannel(
                     columnCount,
                     rowCount,
                     static_cast<uint8*>(filterRecord->outData),

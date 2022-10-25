@@ -20,6 +20,7 @@
 OSErr GetNewImageFileNameNative(
     const FilterRecordPtr filterRecord,
     const boost::filesystem::path& defaultFileName,
-    boost::filesystem::path& outputFileName);
+    boost::filesystem::path& outputFileName,
+    int32 imageBitDepth);
 
 #endif // !IMAGESAVEDIALOGWIN_H

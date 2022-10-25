@@ -52,7 +52,9 @@ void ReadFile(FileHandle* fileHandle, void* data, size_t dataSize);
 
 void SetFileLength(FileHandle* fileHandle, int64 length);
 
-void SetFilePosition(FileHandle* fileHandle, int16 posMode, int64 posOffset);
+int64 GetFilePosition(FileHandle* fileHandle);
+
+void SetFilePosition(FileHandle* fileHandle, int64 posOffset);
 
 void WriteFile(FileHandle* fileHandle, const void* data, size_t dataSize);
 
