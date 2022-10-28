@@ -13,8 +13,6 @@
 #ifndef GMIC8BFIMAGEHEADER_H
 #define GMIC8BFIMAGEHEADER_H
 
-#pragma once
-
 #include "FileIO.h"
 
 struct alignas(4) Gmic8bfImageHeader

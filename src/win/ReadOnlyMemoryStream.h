@@ -19,7 +19,8 @@
 // .                                                                           //
 /////////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#ifndef READONLYMEMORYSTREAM_H
+#define READONLYMEMORYSTREAM_H
 
 #include <Shlobj.h>
 
@@ -27,59 +28,61 @@ class ReadOnlyMemoryStream
     : public IStream
 {
 public:
-    ReadOnlyMemoryStream(const void *pBuffer, size_t nSize);
+    ReadOnlyMemoryStream(const void* pBuffer, size_t nSize);
     ~ReadOnlyMemoryStream();
 
     // IUnknown methods
-    STDMETHODIMP QueryInterface(REFIID iid, void **ppvObject);
+    STDMETHODIMP QueryInterface(REFIID iid, void** ppvObject);
     STDMETHODIMP_(DWORD) AddRef();
     STDMETHODIMP_(DWORD) Release();
 
     // ISequentialStream members
-    STDMETHODIMP Read(void *pv,
-                      ULONG cb,
-                      ULONG *pcbRead);
+    STDMETHODIMP Read(void* pv,
+        ULONG cb,
+        ULONG* pcbRead);
 
-    STDMETHODIMP Write(const void *pv,
-                       ULONG cb,
-                       ULONG *pcbWritten);
+    STDMETHODIMP Write(const void* pv,
+        ULONG cb,
+        ULONG* pcbWritten);
 
     // IStream members
-    STDMETHODIMP Clone(IStream **ppstm);
+    STDMETHODIMP Clone(IStream** ppstm);
     STDMETHODIMP Commit(DWORD grfCommitFlags);
 
-    STDMETHODIMP CopyTo(IStream *pstm,
-                        ULARGE_INTEGER cb,
-                        ULARGE_INTEGER *pcbRead,
-                        ULARGE_INTEGER *pcbWritten);
+    STDMETHODIMP CopyTo(IStream* pstm,
+        ULARGE_INTEGER cb,
+        ULARGE_INTEGER* pcbRead,
+        ULARGE_INTEGER* pcbWritten);
 
     STDMETHODIMP LockRegion(ULARGE_INTEGER libOffset,
-                            ULARGE_INTEGER cb,
-                            DWORD dwLockType);
+        ULARGE_INTEGER cb,
+        DWORD dwLockType);
 
     STDMETHODIMP Revert();
 
     STDMETHODIMP Seek(LARGE_INTEGER dlibMove,
-                      DWORD dwOrigin,
-                      ULARGE_INTEGER *plibNewPosition);
+        DWORD dwOrigin,
+        ULARGE_INTEGER* plibNewPosition);
 
     STDMETHODIMP SetSize(ULARGE_INTEGER libNewSize);
 
-    STDMETHODIMP Stat(STATSTG *pstatstg,
-                      DWORD grfStatFlag);
+    STDMETHODIMP Stat(STATSTG* pstatstg,
+        DWORD grfStatFlag);
 
     STDMETHODIMP UnlockRegion(ULARGE_INTEGER libOffset,
-                              ULARGE_INTEGER cb,
-                              DWORD dwLockType);
+        ULARGE_INTEGER cb,
+        DWORD dwLockType);
 
 protected:
     volatile LONG m_lRefCount;
 
 private:
-    const BYTE *m_pbBuffer;
+    const BYTE* m_pbBuffer;
     const ULONGLONG m_nSize;
     ULONGLONG m_nPos;
     FILETIME m_ftCreation;
     FILETIME m_ftModified;
     FILETIME m_ftAccessed;
 };
+#endif // !READONLYMEMORYSTREAM_H
+
