@@ -315,6 +315,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     <ClInclude Include="..\src\common\GmicProcess.h" />
     <ClInclude Include="..\src\common\GmicQtParameters.h" />
     <ClInclude Include="..\src\common\ImageUtil.h" />
+    <ClInclude Include="..\src\common\ScopedHandleSuite.h" />
     <ClInclude Include="..\src\common\StringIO.h" />
     <ClInclude Include="..\src\common\Memory.h" />
     <ClInclude Include="..\src\common\PngWriter.h" />

@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "Utilities.h"
+#include "ScopedHandleSuite.h"
 #include <SafeInt.hpp>
 #include <codecvt>
 #include <locale>
@@ -503,40 +504,33 @@ bool TryGetActiveLayerNameAsUTF8String(const FilterRecord* filterRecord, ::std::
 
 #if PSSDK_HAS_LAYER_SUPPORT
     int32 targetLayerIndex;
-
-    if (HandleSuiteIsAvailable(filterRecord) && TryGetTargetLayerIndex(filterRecord, targetLayerIndex))
+    try
     {
-        Handle complexProperty = nullptr;
-
-        if (filterRecord->propertyProcs->getPropertyProc(
-            kPhotoshopSignature,
-            propUnicodeLayerName,
-            targetLayerIndex,
-            nullptr,
-            &complexProperty) == noErr)
+        if (HandleSuiteIsAvailable(filterRecord) && TryGetTargetLayerIndex(filterRecord, targetLayerIndex))
         {
-            if (complexProperty != nullptr)
+            ScopedHandleSuiteHandle complexProperty(filterRecord->handleProcs);
+
+            if (filterRecord->propertyProcs->getPropertyProc(
+                kPhotoshopSignature,
+                propUnicodeLayerName,
+                targetLayerIndex,
+                nullptr,
+                complexProperty.Put()) == noErr)
             {
-                Ptr data = filterRecord->handleProcs->lockProc(complexProperty, false);
-
-                if (data != nullptr)
+                if (complexProperty)
                 {
-                    try
-                    {
-                        utf8LayerName = ConvertLayerNameToUTF8(reinterpret_cast<uint16*>(data));
-                        result = !utf8LayerName.empty();
-                    }
-                    catch (...)
-                    {
-                        // Ignore any exceptions that are thrown when converting the layer name to UTF-8.
-                        result = false;
-                    }
-                }
+                    ScopedHandleSuiteLock lock = complexProperty.Lock();
 
-                filterRecord->handleProcs->unlockProc(complexProperty);
-                filterRecord->handleProcs->disposeProc(complexProperty);
+                    utf8LayerName = ConvertLayerNameToUTF8(reinterpret_cast<uint16*>(lock.Data()));
+                    result = !utf8LayerName.empty();
+                }
             }
         }
+    }
+    catch (...)
+    {
+        // Ignore any exceptions that are thrown when retrieving the layer name or converting it to UTF-8.
+        result = false;
     }
 #endif // PSSDK_HAS_LAYER_SUPPORT
 
