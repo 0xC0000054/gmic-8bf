@@ -11,23 +11,10 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "InputLayerInfo.h"
+#include "StringIO.h"
 
 namespace
 {
-    void WriteString(FileHandle* fileHandle, ::std::string value)
-    {
-        if (value.size() > static_cast<size_t>(::std::numeric_limits<int32>::max()))
-        {
-            throw ::std::runtime_error("The string length exceeds 2GB.");
-        }
-
-        int32_t stringLength = static_cast<int32>(value.size());
-
-        WriteFile(fileHandle, &stringLength, sizeof(stringLength));
-
-        WriteFile(fileHandle, value.data(), value.size());
-    }
-
     struct IndexLayerInfoHeader
     {
         IndexLayerInfoHeader(int32 width, int32 height, bool visible)
@@ -64,6 +51,6 @@ void InputLayerInfo::Write(FileHandle* fileHandle)
 
     WriteFile(fileHandle, &header, sizeof(header));
 
-    WriteString(fileHandle, utf8LayerName);
-    WriteString(fileHandle, imagePath.string());
+    WriteUtf8String(fileHandle, utf8LayerName);
+    WriteUtf8String(fileHandle, imagePath.string());
 }

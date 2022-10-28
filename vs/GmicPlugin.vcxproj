@@ -315,6 +315,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     <ClInclude Include="..\src\common\GmicProcess.h" />
     <ClInclude Include="..\src\common\GmicQtParameters.h" />
     <ClInclude Include="..\src\common\ImageUtil.h" />
+    <ClInclude Include="..\src\common\StringIO.h" />
     <ClInclude Include="..\src\common\Memory.h" />
     <ClInclude Include="..\src\common\PngWriter.h" />
     <ClInclude Include="..\src\common\ScopedBufferSuite.h" />
@@ -366,6 +367,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     <ClCompile Include="..\src\common\ImageLoadDialog.cpp" />
     <ClCompile Include="..\src\common\ImageSaveDialog.cpp" />
     <ClCompile Include="..\src\common\ImageUtil.cpp" />
+    <ClCompile Include="..\src\common\StringIO.cpp" />
     <ClCompile Include="..\src\common\InputLayerIndex.cpp" />
     <ClCompile Include="..\src\common\InputLayerInfo.cpp" />
     <ClCompile Include="..\src\common\Memory.cpp" />

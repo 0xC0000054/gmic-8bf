@@ -14,6 +14,7 @@
 #include "GmicPluginTerminology.h"
 #include "FileIO.h"
 #include "ScopedBufferSuite.h"
+#include "StringIO.h"
 #include "Utilities.h"
 #include <boost/predef.h>
 #include <array>
@@ -220,44 +221,6 @@ namespace
         ASZString zstr;
         bool zstringValid;
     };
-
-    void ReadUtf8String(FileHandle* fileHandle, ::std::string& value)
-    {
-        int32_t stringLength = 0;
-
-        ReadFile(fileHandle, &stringLength, sizeof(stringLength));
-
-        if (stringLength == 0)
-        {
-            value = ::std::string();
-        }
-        else
-        {
-            ::std::vector<char> stringChars(stringLength);
-
-            ReadFile(fileHandle, &stringChars[0], stringLength);
-
-            value.assign(stringChars.begin(), stringChars.end());
-        }
-    }
-
-    void WriteUtf8String(FileHandle* fileHandle, const ::std::string& value)
-    {
-        // Check that the required byte buffer size can fit in a uint32_t.
-        if (value.size() > static_cast<size_t>(::std::numeric_limits<int32_t>::max()))
-        {
-            throw ::std::runtime_error("The string cannot be written to the file because it is too long.");
-        }
-
-        int32_t stringLength = static_cast<int32_t>(value.size());
-
-        WriteFile(fileHandle, &stringLength, sizeof(stringLength));
-
-        if (value.size() > 0)
-        {
-            WriteFile(fileHandle, value.c_str(), stringLength);
-        }
-    }
 
     ::std::vector<ASUnicode> ConvertUtf8StringToASUnicode(const ::std::string& utf8Str)
     {
