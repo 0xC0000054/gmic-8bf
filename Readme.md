@@ -61,9 +61,16 @@ G'MIC-Qt dialog has been closed in the following cases:
 1. When a filter produces multiple output images the plug-in will prompt the user for a folder to copy them into.
 2. When a filter changes the image size the plug-in will prompt the user to save the resized image.
 
+#### Color Management
+
+The G'MIC-Qt preview image will be color managed if the 8bf plug-in host software provides the image color profile to its plug-ins.
+
+Note that there may still be some differences between the G'MIC-Qt filter preview and the output shown in the 8bf plug-in host.   
+The G'MIC-Qt preview uses [Little CMS](https://github.com/mm2/Little-CMS) for color management, and the color management software used by the 8bf plug-in host may produce different colors.
+
 #### Photoshop Actions
 
-The plugin will show the name of the G'MIC effect and the Input Mode in the actions palette. 
+The plug-in will show the name of the G'MIC effect and the Input Mode in the actions palette. 
 
 ![Photoshop Actions palette](images/PhotoshopActions.png)
 
@@ -71,7 +78,7 @@ The Photoshop Actions support has a few compatibility issues:
 
 - G'MIC effects that produce multiple images or resize the image will save the results to external files, these files will have to be manually imported into Photoshop.
 - If you use the G'MIC-Qt ability to "layer" multiple effects in a single  session, Actions will only remember the settings of the most recently applied effect.
-- The plugin will always show its user interface.
+- The plug-in will always show its user interface.
 
 ### Input/Output Settings for G'MIC-Qt
 
