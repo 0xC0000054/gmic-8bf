@@ -117,7 +117,7 @@ OSErr ExecuteGmicQt(
         default:
             err = ioErr;
             errorInfo.SetErrorMesageFormat(
-                "An unspecified error occurred when running G'MIC-Qt, exit code=%d.",
+                "An unspecified error occurred when running G'MIC-Qt, exit code=0x%x.",
                 exitCode);
             break;
         }
