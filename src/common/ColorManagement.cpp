@@ -22,7 +22,7 @@
 #error "Missing a ColorManagement header for this platform."
 #endif
 
-boost::filesystem::path GetDisplayColorProfilePath()
+boost::filesystem::path GetPrimaryDisplayColorProfilePath()
 {
     return GetPrimaryDisplayColorProfilePathNative();
 }

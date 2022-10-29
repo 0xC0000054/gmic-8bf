@@ -15,7 +15,7 @@
 
 #include "Common.h"
 
-boost::filesystem::path GetDisplayColorProfilePath();
+boost::filesystem::path GetPrimaryDisplayColorProfilePath();
 
 boost::filesystem::path WriteImageColorProfile(
     const FilterRecordPtr filterRecord,

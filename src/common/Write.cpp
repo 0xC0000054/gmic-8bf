@@ -100,7 +100,7 @@ namespace
         if (!imageProfilePath.empty())
         {
             // Only fetch the display color profile if there is an image color profile.
-            displayProfilePath = GetDisplayColorProfilePath();
+            displayProfilePath = GetPrimaryDisplayColorProfilePath();
         }
 
         inputLayerIndex->SetColorProfiles(imageProfilePath, displayProfilePath);
