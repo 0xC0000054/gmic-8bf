@@ -40,6 +40,10 @@ public:
 
     void SetActiveLayerIndex(int32 index);
 
+    void SetColorProfiles(
+        const boost::filesystem::path& imageProfile,
+        const boost::filesystem::path& displayProfile);
+
     void Write(const boost::filesystem::path& path);
 
 private:
@@ -48,6 +52,8 @@ private:
     int32 activeLayerIndex;
     uint8 imageBitDepth;
     bool grayScale;
+    boost::filesystem::path imageProfilePath;
+    boost::filesystem::path displayProfilePath;
 };
 
 #endif // !INPUTLAYERINDEX_H

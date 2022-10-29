@@ -14,6 +14,7 @@
 #include "GmicPlugin.h"
 #include "FileUtil.h"
 #include "ClipboardUtil.h"
+#include "ColorManagement.h"
 #include "ImageConversion.h"
 #include "InputLayerIndex.h"
 #include "Gmic8bfImageWriter.h"
@@ -92,6 +93,17 @@ namespace
         const bool grayScale = IsGrayScale(filterRecord);
 
         ::std::unique_ptr<InputLayerIndex> inputLayerIndex = ::std::make_unique<InputLayerIndex>(static_cast<uint8>(bitsPerChannel), grayScale);
+
+        const boost::filesystem::path imageProfilePath = WriteImageColorProfile(filterRecord, inputDir);
+        boost::filesystem::path displayProfilePath;
+
+        if (!imageProfilePath.empty())
+        {
+            // Only fetch the display color profile if there is an image color profile.
+            displayProfilePath = GetDisplayColorProfilePath();
+        }
+
+        inputLayerIndex->SetColorProfiles(imageProfilePath, displayProfilePath);
 
 #if PSSDK_HAS_LAYER_SUPPORT
         int32 targetLayerIndex = 0;

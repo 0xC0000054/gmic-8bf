@@ -114,6 +114,14 @@ OSErr ExecuteGmicQt(
             err = ioErr;
             errorInfo.SetErrorMesage("The Qt platform byte order does not match the plug-in.");
             break;
+        case 12:
+            err = ioErr;
+            errorInfo.SetErrorMesage("An error occurred when reading from one of the input files.");
+            break;
+        case 13:
+            err = ioErr;
+            errorInfo.SetErrorMesage("An error occurred when loading the image color profiles.");
+            break;
         default:
             err = ioErr;
             errorInfo.SetErrorMesageFormat(

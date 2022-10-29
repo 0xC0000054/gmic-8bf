@@ -306,6 +306,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\src\common\Alpha.h" />
+    <ClInclude Include="..\src\common\ColorManagement.h" />
     <ClInclude Include="..\src\common\ExrWriter.h" />
     <ClInclude Include="..\src\common\FileIO.h" />
     <ClInclude Include="..\src\common\Gmic8bfImageHeader.h" />
@@ -334,6 +335,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     <ClInclude Include="..\src\common\Utilities.h" />
     <ClInclude Include="..\src\common\version.h" />
     <ClInclude Include="..\src\win\ClipboardUtilWin.h" />
+    <ClInclude Include="..\src\win\ColorManagementWin.h" />
     <ClInclude Include="..\src\win\CommonUIWin.h" />
     <ClInclude Include="..\src\win\FileIOWin.h" />
     <ClInclude Include="..\src\win\FileUtilWin.h" />
@@ -352,6 +354,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
   <ItemGroup>
     <ClCompile Include="..\src\common\Alpha.cpp" />
     <ClCompile Include="..\src\common\ClipboardUtil.cpp" />
+    <ClCompile Include="..\src\common\ColorManagement.cpp" />
     <ClCompile Include="..\src\common\Common.cpp" />
     <ClCompile Include="..\src\common\ExrWriter.cpp" />
     <ClCompile Include="..\src\common\FileIO.cpp" />
@@ -377,6 +380,7 @@ copy "$(TargetPath)" "$(ProjectDir)\bin\GmicPlugin_arm64_win10\$(TargetFileName)
     <ClCompile Include="..\src\common\Utilities.cpp" />
     <ClCompile Include="..\src\common\Write.cpp" />
     <ClCompile Include="..\src\win\ClipboardUtilWin.cpp" />
+    <ClCompile Include="..\src\win\ColorManagementWin.cpp" />
     <ClCompile Include="..\src\win\CommonUIWin.cpp" />
     <ClCompile Include="..\src\win\dllmain.cpp" />
     <ClCompile Include="..\src\win\FileIOWin.cpp" />
