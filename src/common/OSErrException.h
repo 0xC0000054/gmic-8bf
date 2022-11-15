@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #ifndef OSERREXCEPTION_H
+#define OSERREXCEPTION_H
 
 #include "PITypes.h"
 #include <stdexcept>
