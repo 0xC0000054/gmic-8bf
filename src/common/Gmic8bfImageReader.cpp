@@ -197,7 +197,7 @@ namespace
 
         ScopedBufferSuiteBuffer scopedBuffer(filterRecord, tileBufferSize);
 
-        uint8* tileBuffer = reinterpret_cast<uint8*>(scopedBuffer.Lock());
+        uint8* tileBuffer = reinterpret_cast<uint8*>(scopedBuffer.lock());
 
         if (filterRecord->haveMask)
         {

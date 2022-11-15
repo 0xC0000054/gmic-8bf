@@ -243,7 +243,7 @@ namespace
         {
             ScopedBufferSuiteBuffer buffer(filterRecord, imageDataBufferSize);
 
-            void* imageDataBuffer = buffer.Lock();
+            void* imageDataBuffer = buffer.lock();
 
             PixelMemoryDesc dest{};
             dest.bitOffset = 0;

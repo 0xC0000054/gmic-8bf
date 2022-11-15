@@ -588,7 +588,7 @@ OSErr GmicQtParameters::ReadFilterOpaqueData(
 
         ScopedBufferSuiteBuffer scopedBuffer(filterRecord, dataSize);
 
-        char* data = static_cast<char*>(scopedBuffer.Lock());
+        char* data = static_cast<char*>(scopedBuffer.lock());
 
         OSErrException::ThrowIfError(suite->GetData(descriptor, keyFilterOpaqueData, data));
 
@@ -627,7 +627,7 @@ void GmicQtParameters::WriteFilterOpaqueData(
 
     ScopedBufferSuiteBuffer scopedBuffer(filterRecord, static_cast<int32>(dataSize));
 
-    uint8* data = static_cast<uint8*>(scopedBuffer.Lock());
+    uint8* data = static_cast<uint8*>(scopedBuffer.lock());
 
     FilterOpaqueDataHeader* header = (FilterOpaqueDataHeader*)data;
     header->commandLength = static_cast<int32>(command.size());

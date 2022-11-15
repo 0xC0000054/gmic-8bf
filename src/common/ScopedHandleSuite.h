@@ -27,10 +27,10 @@ public:
 
     ~ScopedHandleSuiteLock()
     {
-        Unlock();
+        unlock();
     }
 
-    Ptr Data() const
+    Ptr data() const
     {
         if (ptr == nullptr)
         {
@@ -40,7 +40,7 @@ public:
         return ptr;
     }
 
-    void Unlock()
+    void unlock()
     {
         if (ptr != nullptr)
         {
@@ -80,27 +80,27 @@ public:
 
     ~ScopedHandleSuiteHandle()
     {
-        Reset();
+        reset();
     }
 
-    Handle Get() const noexcept
+    Handle get() const noexcept
     {
         return handle;
     }
 
-    int32 GetSize() const
+    int32 size() const
     {
-        int32 size = 0;
+        int32 allocatedSize = 0;
 
         if (handle != nullptr)
         {
-            size = handleProcs->getSizeProc(handle);
+            allocatedSize = handleProcs->getSizeProc(handle);
         }
 
-        return size;
+        return allocatedSize;
     }
 
-    ScopedHandleSuiteLock Lock() const
+    ScopedHandleSuiteLock lock() const
     {
         if (handle == nullptr)
         {
@@ -110,15 +110,15 @@ public:
         return ScopedHandleSuiteLock(handleProcs, handle);
     }
 
-    Handle* Put()
+    Handle* put()
     {
-        Reset();
+        reset();
 
         return &handle;
     }
 
     // Returns the underlying handle and releases the ownership.
-    Handle Release()
+    Handle release()
     {
         Handle existing = handle;
         handle = nullptr;
@@ -126,7 +126,7 @@ public:
         return existing;
     }
 
-    void Reset()
+    void reset()
     {
         if (handle != nullptr)
         {

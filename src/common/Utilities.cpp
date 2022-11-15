@@ -515,13 +515,13 @@ bool TryGetActiveLayerNameAsUTF8String(const FilterRecord* filterRecord, ::std::
                 propUnicodeLayerName,
                 targetLayerIndex,
                 nullptr,
-                complexProperty.Put()) == noErr)
+                complexProperty.put()) == noErr)
             {
                 if (complexProperty)
                 {
-                    ScopedHandleSuiteLock lock = complexProperty.Lock();
+                    ScopedHandleSuiteLock lock = complexProperty.lock();
 
-                    utf8LayerName = ConvertLayerNameToUTF8(reinterpret_cast<uint16*>(lock.Data()));
+                    utf8LayerName = ConvertLayerNameToUTF8(reinterpret_cast<uint16*>(lock.data()));
                     result = !utf8LayerName.empty();
                 }
             }

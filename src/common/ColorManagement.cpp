@@ -44,7 +44,7 @@ boost::filesystem::path WriteImageColorProfile(
 
         const ScopedHandleSuiteLock lock(filterRecord->handleProcs, filterRecord->iCCprofileData);
 
-        WriteFile(file.get(), lock.Data(), static_cast<size_t>(filterRecord->iCCprofileSize));
+        WriteFile(file.get(), lock.data(), static_cast<size_t>(filterRecord->iCCprofileSize));
     }
 
     return path;

@@ -38,7 +38,7 @@ public:
         }
     }
 
-    void* Lock()
+    void* lock()
     {
         if (!bufferIDValid)
         {

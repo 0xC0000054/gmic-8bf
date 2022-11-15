@@ -132,7 +132,7 @@ namespace
 
         Imf::FrameBuffer frameBuffer;
 
-        char* frameBufferScan0 = static_cast<char*>(scopedBuffer.Lock());
+        char* frameBufferScan0 = static_cast<char*>(scopedBuffer.lock());
 
         switch (numberOfChannels)
         {
