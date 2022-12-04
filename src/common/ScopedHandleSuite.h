@@ -78,6 +78,25 @@ public:
         }
     }
 
+    ScopedHandleSuiteHandle(ScopedHandleSuiteHandle&& other) noexcept
+        : handleProcs(other.handleProcs), handle(other.handle)
+    {
+        other.handle = nullptr;
+    }
+
+    ScopedHandleSuiteHandle& operator=(ScopedHandleSuiteHandle&& other) noexcept
+    {
+        handleProcs = other.handleProcs;
+        handle = other.handle;
+
+        other.handle = nullptr;
+
+        return *this;
+    }
+
+    ScopedHandleSuiteHandle(const ScopedHandleSuiteHandle&) = delete;
+    ScopedHandleSuiteHandle& operator=(const ScopedHandleSuiteHandle&) = delete;
+
     ~ScopedHandleSuiteHandle()
     {
         reset();
@@ -151,7 +170,7 @@ public:
     }
 
 private:
-    const HandleProcs* const handleProcs;
+    const HandleProcs* handleProcs;
     Handle handle;
 };
 
