@@ -82,7 +82,7 @@ namespace
                 else if (pNMLink->hdr.idFrom == IDC_GMICCORE && (pNMLink->item.iLink == 0))
                 {
                     // The item.szUrl field is always empty, so the link has to be hard-coded.
-                    ShellExecuteW(nullptr, L"open", L"https://github.com/dtschump/gmic", nullptr, nullptr, SW_SHOW);
+                    ShellExecuteW(nullptr, L"open", L"https://github.com/GreycLab/gmic", nullptr, nullptr, SW_SHOW);
                 }
                 else if (pNMLink->hdr.idFrom == IDC_LIBPNG && (pNMLink->item.iLink == 0))
                 {
