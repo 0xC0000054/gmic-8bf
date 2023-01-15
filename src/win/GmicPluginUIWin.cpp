@@ -3,7 +3,7 @@
 // This file is part of gmic-8bf, a filter plug-in module that
 // interfaces with G'MIC-Qt.
 //
-// Copyright (c) 2020, 2021, 2022 Nicholas Hayes
+// Copyright (c) 2020, 2021, 2022, 2023 Nicholas Hayes
 //
 // This file is licensed under the MIT License.
 // See LICENSE.txt for complete licensing and attribution information.
@@ -82,7 +82,7 @@ namespace
                 else if (pNMLink->hdr.idFrom == IDC_GMICCORE && (pNMLink->item.iLink == 0))
                 {
                     // The item.szUrl field is always empty, so the link has to be hard-coded.
-                    ShellExecuteW(nullptr, L"open", L"https://github.com/dtschump/gmic", nullptr, nullptr, SW_SHOW);
+                    ShellExecuteW(nullptr, L"open", L"https://github.com/GreycLab/gmic", nullptr, nullptr, SW_SHOW);
                 }
                 else if (pNMLink->hdr.idFrom == IDC_LIBPNG && (pNMLink->item.iLink == 0))
                 {

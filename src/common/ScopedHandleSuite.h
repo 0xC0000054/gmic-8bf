@@ -3,7 +3,7 @@
 // This file is part of gmic-8bf, a filter plug-in module that
 // interfaces with G'MIC-Qt.
 //
-// Copyright (c) 2020, 2021, 2022 Nicholas Hayes
+// Copyright (c) 2020, 2021, 2022, 2023 Nicholas Hayes
 //
 // This file is licensed under the MIT License.
 // See LICENSE.txt for complete licensing and attribution information.
@@ -24,6 +24,26 @@ public:
           ptr(handleProcs->lockProc(handle, false))
     {
     }
+
+    ScopedHandleSuiteLock(ScopedHandleSuiteLock&& other) noexcept
+        : handleProcs(other.handleProcs), handle(other.handle), ptr(other.ptr)
+    {
+        other.ptr = nullptr;
+    }
+
+    ScopedHandleSuiteLock& operator=(ScopedHandleSuiteLock&& other) noexcept
+    {
+        handleProcs = other.handleProcs;
+        handle = other.handle;
+        ptr = other.ptr;
+
+        other.ptr = nullptr;
+
+        return *this;
+    }
+
+    ScopedHandleSuiteLock(const ScopedHandleSuiteLock&) = delete;
+    ScopedHandleSuiteLock& operator=(const ScopedHandleSuiteLock&) = delete;
 
     ~ScopedHandleSuiteLock()
     {
@@ -50,7 +70,7 @@ public:
     }
 
 private:
-    const HandleProcs* const handleProcs;
+    const HandleProcs* handleProcs;
     Handle handle;
     Ptr ptr;
 };
