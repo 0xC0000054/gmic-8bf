@@ -44,8 +44,7 @@ namespace
         }
     }
 
-    void PreallocateFile(
-        FileHandle* fileHandle,
+    int64 GetPreallocationSize(
         int32 width,
         int32 height,
         int32 numberOfChannels,
@@ -66,7 +65,11 @@ namespace
 
         if (fileLength <= static_cast<uint64>(::std::numeric_limits<int64>::max()))
         {
-            SetFileLength(fileHandle, static_cast<int64>(fileLength));
+            return static_cast<int64>(fileLength);
+        }
+        else
+        {
+            return 0;
         }
     }
 
@@ -75,7 +78,7 @@ namespace
         const VPoint& imageSize,
         const int32& bitsPerChannel,
         const bool& grayScale,
-        FileHandle* fileHandle)
+        const boost::filesystem::path& path)
     {
         const bool hasTransparency = filterRecord->inLayerPlanes != 0 && filterRecord->inTransparencyMask != 0;
 
@@ -92,14 +95,16 @@ namespace
             numberOfChannels = hasTransparency ? 4 : 3;
         }
 
-        PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
+        int64 preallocationSize = GetPreallocationSize(width, height, numberOfChannels, bitsPerChannel);
+
+        ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Write, preallocationSize);
 
         const int32 tileWidth = ::std::min(GetTileWidth(filterRecord->inTileWidth), width);
         const int32 tileHeight = ::std::min(GetTileHeight(filterRecord->inTileHeight), height);
 
         Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, /* planar */ true, tileWidth, tileHeight);
 
-        WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
+        WriteFile(file.get(), &fileHeader, sizeof(fileHeader));
 
         const int32 bytesPerChannel = bitsPerChannel / 8;
 
@@ -141,7 +146,7 @@ namespace
                         // If the host's buffer stride matches the output image stride
                         // we can write the buffer directly.
 
-                        WriteFile(fileHandle, filterRecord->inData, static_cast<size_t>(rowCount) * outputStride);
+                        WriteFile(file.get(), filterRecord->inData, static_cast<size_t>(rowCount) * outputStride);
                     }
                     else
                     {
@@ -149,7 +154,7 @@ namespace
                         {
                             const uint8* row = static_cast<const uint8*>(filterRecord->inData) + (static_cast<int64>(j) * filterRecord->inRowBytes);
 
-                            WriteFile(fileHandle, row, outputStride);
+                            WriteFile(file.get(), row, outputStride);
                         }
                     }
                 }
@@ -163,7 +168,7 @@ namespace
         const int32& bitsPerChannel,
         const bool& grayScale,
         const ReadLayerDesc* layerDescriptor,
-        FileHandle* fileHandle,
+        const boost::filesystem::path& path,
         VPoint& layerSize)
     {
         const bool hasTransparency = layerDescriptor->transparency != nullptr;
@@ -211,14 +216,16 @@ namespace
             numberOfChannels = hasTransparency ? 4 : 3;
         }
 
-        PreallocateFile(fileHandle, width, height, numberOfChannels, bitsPerChannel);
+        int64 preallocationSize = GetPreallocationSize(width, height, numberOfChannels, bitsPerChannel);
+
+        ::std::unique_ptr<FileHandle> file = OpenFile(path, FileOpenMode::Write, preallocationSize);
 
         const int32 tileWidth = ::std::min(firstCompositeChannel.tileSize.h, width);
         const int32 tileHeight = ::std::min(firstCompositeChannel.tileSize.v, height);
 
         Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, /* planar */ true, tileWidth, tileHeight);
 
-        WriteFile(fileHandle, &fileHeader, sizeof(fileHeader));
+        WriteFile(file.get(), &fileHeader, sizeof(fileHeader));
 
         filterRecord->inPlaneBytes = bitsPerChannel / 8;
         filterRecord->inColumnBytes = filterRecord->inPlaneBytes;
@@ -319,7 +326,7 @@ namespace
                             ScaleSixteenBitDataToOutputRange(dest.data, columnCount, rowCount, tileRowBytes);
                         }
 
-                        WriteFile(fileHandle, imageDataBuffer, static_cast<size_t>(rowCount) * tileRowBytes);
+                        WriteFile(file.get(), imageDataBuffer, static_cast<size_t>(rowCount) * tileRowBytes);
                     }
                 }
             }
@@ -344,9 +351,9 @@ void WritePixelsFromCallback(
         throw ::std::runtime_error("Null write callback.");
     }
 
-    ::std::unique_ptr<FileHandle> file = OpenFile(outputPath, FileOpenMode::Write);
+    int64 preallocationSize = GetPreallocationSize(width, height, numberOfChannels, bitsPerChannel);
 
-    PreallocateFile(file.get(), width, height, numberOfChannels, bitsPerChannel);
+    ::std::unique_ptr<FileHandle> file = OpenFile(outputPath, FileOpenMode::Write, preallocationSize);
 
     Gmic8bfImageHeader fileHeader(width, height, numberOfChannels, bitsPerChannel, planar, tileWidth, tileHeight);
 
@@ -370,11 +377,9 @@ void SaveActiveLayer(
 {
     boost::filesystem::path activeLayerPath = GetTemporaryFileName(outputDir, ".g8i");
 
-    ::std::unique_ptr<FileHandle> file = OpenFile(activeLayerPath, FileOpenMode::Write);
-
     const VPoint imageSize = GetImageSize(filterRecord);
 
-    SaveActiveLayerCore(filterRecord, imageSize, bitsPerChannel, grayScale, file.get());
+    SaveActiveLayerCore(filterRecord, imageSize, bitsPerChannel, grayScale, activeLayerPath);
 
     int32 layerWidth = imageSize.h;
     int32 layerHeight = imageSize.v;
@@ -414,8 +419,6 @@ void SaveAllLayers(
         {
             boost::filesystem::path imagePath = GetTemporaryFileName(outputDir, ".g8i");
 
-            ::std::unique_ptr<FileHandle> file = OpenFile(imagePath, FileOpenMode::Write);
-
             VPoint layerSize{};
 
             SaveDocumentLayer(
@@ -424,7 +427,7 @@ void SaveAllLayers(
                 bitsPerChannel,
                 grayScale,
                 layerDescriptor,
-                file.get(),
+                imagePath,
                 layerSize);
 
             int32 layerWidth = layerSize.h;

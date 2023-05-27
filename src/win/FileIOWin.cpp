@@ -118,7 +118,7 @@ struct FileBuffer
 class FileHandleWin : public FileHandle
 {
 public:
-    FileHandleWin(const boost::filesystem::path& path, FileOpenMode mode)
+    FileHandleWin(const boost::filesystem::path& path, FileOpenMode mode, int64 preallocationSize)
         : buffer(::std::make_unique<FileBuffer>()), uncaughtExceptionCount(::std::uncaught_exceptions()), hFile()
     {
         DWORD dwDesiredAccess;
@@ -144,9 +144,26 @@ public:
 
         hFile.reset(CreateFileW(path.c_str(), dwDesiredAccess, dwShareMode, nullptr, dwCreationDisposition, dwFlagsAndAttributes, nullptr));
 
-        if (!hFile)
+        THROW_LAST_ERROR_IF(!hFile);
+
+        if (mode == FileOpenMode::Write && preallocationSize > 0)
         {
-            THROW_LAST_ERROR();
+            FILE_ALLOCATION_INFO allocationInfo = {};
+            allocationInfo.AllocationSize.QuadPart = preallocationSize;
+
+            if (!SetFileInformationByHandle(
+                hFile.get(),
+                FileAllocationInfo,
+                &allocationInfo,
+                sizeof(allocationInfo)))
+            {
+                // Preserve the error code and throw an exception after closing the file handle.
+                DWORD lastError = GetLastError();
+
+                hFile.reset();
+
+                THROW_WIN32(lastError);
+            }
         }
     }
 
@@ -185,11 +202,14 @@ private:
     wil::unique_hfile hFile;
 };
 
-::std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode)
+::std::unique_ptr<FileHandle> OpenFileNative(
+    const boost::filesystem::path& path,
+    FileOpenMode mode,
+    int64 preallocationSize)
 {
     try
     {
-        return ::std::make_unique<FileHandleWin>(path, mode);
+        return ::std::make_unique<FileHandleWin>(path, mode, preallocationSize);
     }
     catch (const wil::ResultException& e)
     {
@@ -270,32 +290,6 @@ void ReadFileNative(FileHandle* fileHandle, void* data, size_t dataSize)
         // Invalidate the existing buffer.
         buffer->readOffset = 0;
         buffer->readLength = 0;
-    }
-}
-
-void SetFileLengthNative(FileHandle* fileHandle, int64 length)
-{
-    try
-    {
-        FILE_END_OF_FILE_INFO endOfFileInfo;
-        endOfFileInfo.EndOfFile.QuadPart = length;
-
-        THROW_IF_WIN32_BOOL_FALSE(SetFileInformationByHandle(
-            static_cast<const FileHandleWin*>(fileHandle)->get_native_handle(),
-            FileEndOfFileInfo,
-            &endOfFileInfo,
-            sizeof(endOfFileInfo)));
-    }
-    catch (const wil::ResultException& e)
-    {
-        if (e.GetErrorCode() == E_OUTOFMEMORY)
-        {
-            throw ::std::bad_alloc();
-        }
-        else
-        {
-            throw ::std::runtime_error(e.what());
-        }
     }
 }
 

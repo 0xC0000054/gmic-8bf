@@ -44,11 +44,9 @@ protected:
     FileHandle operator=(FileHandle&&) = delete;
 };
 
-::std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOpenMode mode);
+::std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOpenMode mode, int64 preallocationSize = 0);
 
 void ReadFile(FileHandle* fileHandle, void* data, size_t dataSize);
-
-void SetFileLength(FileHandle* fileHandle, int64 length);
 
 int64 GetFilePosition(FileHandle* fileHandle);
 

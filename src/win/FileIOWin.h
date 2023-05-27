@@ -15,11 +15,12 @@
 
 #include "FileIO.h"
 
-::std::unique_ptr<FileHandle> OpenFileNative(const boost::filesystem::path& path, FileOpenMode mode);
+::std::unique_ptr<FileHandle> OpenFileNative(
+    const boost::filesystem::path& path,
+    FileOpenMode mode,
+    int64 preallocationSize);
 
 void ReadFileNative(FileHandle* fileHandle, void* data, size_t dataSize);
-
-void SetFileLengthNative(FileHandle* fileHandle, int64 length);
 
 int64 GetFilePositionNative(FileHandle* fileHandle);
 

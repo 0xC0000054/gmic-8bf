@@ -19,19 +19,14 @@
 #error "Missing a FileIO header for this platform."
 #endif
 
-::std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOpenMode mode)
+::std::unique_ptr<FileHandle> OpenFile(const boost::filesystem::path& path, FileOpenMode mode, int64 preallocationSize)
 {
-    return OpenFileNative(path, mode);
+    return OpenFileNative(path, mode, preallocationSize);
 }
 
 void ReadFile(FileHandle* fileHandle, void* data, size_t dataSize)
 {
     ReadFileNative(fileHandle, data, dataSize);
-}
-
-void SetFileLength(FileHandle* fileHandle, int64 length)
-{
-    SetFileLengthNative(fileHandle, length);
 }
 
 int64 GetFilePosition(FileHandle* fileHandle)
