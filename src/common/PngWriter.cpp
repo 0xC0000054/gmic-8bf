@@ -144,7 +144,7 @@ namespace
     {
         OSErr err = noErr;
 
-        BufferID inputDataBufferID;
+        BufferID inputDataBufferID = nullptr;
         bool inputBufferValid = false;
 
         png_structp pngPtr = png_create_write_struct(PNG_LIBPNG_VER_STRING, static_cast<png_voidp>(errorData), PngWriteErrorHandler, nullptr);
