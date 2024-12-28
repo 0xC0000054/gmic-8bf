@@ -165,8 +165,10 @@ public:
                 // file without preallocating it.
                 if (lastError == ERROR_DISK_FULL || lastError == ERROR_FILE_TOO_LARGE)
                 {
-                    // Throw the exception after closing the file handle.
+                    // Throw the exception after closing the file handle and deleting
+                    // the file we just created.
                     hFile.reset();
+                    DeleteFileW(path.c_str());
                     THROW_WIN32(lastError);
                 }
             }
