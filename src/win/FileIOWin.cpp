@@ -157,12 +157,18 @@ public:
                 &allocationInfo,
                 sizeof(allocationInfo)))
             {
-                // Preserve the error code and throw an exception after closing the file handle.
                 DWORD lastError = GetLastError();
 
-                hFile.reset();
-
-                THROW_WIN32(lastError);
+                // As preallocating the file is a performance optimization, we only throw
+                // an exception for errors that indicate there is not enough space.
+                // If SetFileInformationByHandle fails for any other reason, we write the
+                // file without preallocating it.
+                if (lastError == ERROR_DISK_FULL || lastError == ERROR_FILE_TOO_LARGE)
+                {
+                    // Throw the exception after closing the file handle.
+                    hFile.reset();
+                    THROW_WIN32(lastError);
+                }
             }
         }
     }
