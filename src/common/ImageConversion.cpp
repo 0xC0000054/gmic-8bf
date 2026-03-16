@@ -20,9 +20,10 @@
 
 void ConvertImageToGmicInputFormat(
     const boost::filesystem::path& input,
-    ::std::unique_ptr<InputLayerInfo>& output)
+    ::std::unique_ptr<InputLayerInfo>& output,
+    bool ignoreFileNotFound)
 {
-    ConvertImageToGmicInputFormatNative(input, output);
+    ConvertImageToGmicInputFormatNative(input, output, ignoreFileNotFound);
 }
 
 void ConvertImageToGmicInputFormat(

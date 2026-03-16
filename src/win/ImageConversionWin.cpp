@@ -279,7 +279,8 @@ namespace
 
 void ConvertImageToGmicInputFormatNative(
     const boost::filesystem::path& input,
-    ::std::unique_ptr<InputLayerInfo>& output)
+    ::std::unique_ptr<InputLayerInfo>& output,
+    bool ignoreFileNotFound)
 {
     try
     {
@@ -301,11 +302,15 @@ void ConvertImageToGmicInputFormatNative(
     }
     catch (const wil::ResultException& e)
     {
-        if (e.GetErrorCode() == E_OUTOFMEMORY)
+        constexpr HRESULT E_FILENOTFOUND = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+
+        const HRESULT errorCode = e.GetErrorCode();
+
+        if (errorCode == E_OUTOFMEMORY)
         {
             throw ::std::bad_alloc();
         }
-        else
+        else if (errorCode != E_FILENOTFOUND || !ignoreFileNotFound)
         {
             throw ::std::runtime_error(e.what());
         }

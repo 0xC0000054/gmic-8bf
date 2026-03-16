@@ -54,9 +54,19 @@ namespace
             }
             else if (source == SecondInputImageSource::File)
             {
+                // File not found errors are ignored when reading the second input
+                // image from a file. this makes G'MIC get a single input image
+                // instead of failing to launch the plugin with an exception.
+                // As seen in https://github.com/0xC0000054/gmic-8bf/issues/23,
+                // users had been getting confused by that behavior.
+                //
+                // The behavior now matches the image from clipboard case when
+                // there is no image on the clipboard.
+
                 ConvertImageToGmicInputFormat(
                     settings.GetSecondInputImagePath(),
-                    layer);
+                    layer,
+                    /*ignoreFileNotFound*/true);
             }
 
             if (layer)
