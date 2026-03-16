@@ -282,14 +282,14 @@ void ConvertClipboardImageToGmicInputNative(::std::unique_ptr<InputLayerInfo>& l
                     break;
                 }
             }
-            else if (format == CF_DIB || format == CF_DIBV5)
-            {
-                ProcessDib(format, layer);
-                break;
-            }
             else if (format == pngFormatId || format == pngMimeFormatId)
             {
                 ProcessPng(format, layer);
+                break;
+            }
+            else if (format == CF_DIB || format == CF_DIBV5)
+            {
+                ProcessDib(format, layer);
                 break;
             }
         }
